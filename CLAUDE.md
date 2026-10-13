@@ -43,3 +43,41 @@ server-side. Never trust a score sent by the client.
 - Don't do extra work beyond the request. If you spot something worth fixing, mention it
   instead of changing it.
 - Ask before adding a new dependency.
+- Never add Co-Authored-By or Claude-Session lines, or any other attribution, to commit
+  messages or PR descriptions. ep2wq is the only author.
+
+## Session routine
+
+- At the start of a session, read this file and the "Current status" section before
+  doing anything else.
+- Before ending a session, or when I say we're done, update "Current status" to match
+  reality. Rewrite the section; don't append to it. Remove items that are finished or no
+  longer true, so the file stays short (under about 60 lines in total).
+- Only record facts you verified in the repo or that I told you. Don't guess.
+- Update the other sections of this file too if something in them became wrong.
+- Don't commit the CLAUDE.md update unless I ask. Tell me it changed.
+
+## Current status
+
+### Done
+- Laravel 13 scaffold (local PHP 8.4); default migrations (users, cache, jobs) have run
+  on MySQL. MySQL is the default connection in `.env`, `.env.example` and the
+  `config/database.php` fallback. Committed and pushed.
+
+### In progress
+- Nothing.
+
+### Next
+- Install Sanctum and add the auth endpoints (there is no `routes/api.php` yet).
+- Create the planned tables.
+- Add `SANDBOX_URL` and `SANDBOX_SECRET` to `.env` and `.env.example` (not there yet).
+
+### Decisions
+- MySQL runs in Docker (`algosproj-mysql`) on host port 3307, because a local `mysqld`
+  already listens on 3306.
+
+### Gotchas
+- The Laravel scaffold's `config/database.php` fell back to `sqlite`; now `mysql`. The
+  unused `database/database.sqlite` still exists locally (gitignored).
+- Start the container (`docker start algosproj-mysql`) before `migrate` or `serve`.
+- `php artisan serve` and the sandbox both default to port 8000; run the sandbox on 8001.
