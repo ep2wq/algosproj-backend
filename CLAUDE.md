@@ -23,8 +23,10 @@ server-side. Never trust a score sent by the client.
 
 ## This repo
 
-- Stack: Laravel (PHP 8.3+), MySQL or Postgres, Sanctum personal access tokens (not
-  cookie mode, because the frontend lives on a different domain).
+- Stack: Laravel (PHP 8.3+), MySQL 8, Sanctum personal access tokens (not cookie mode,
+  because the frontend lives on a different domain).
+- MySQL 8 runs locally in a Docker container named `algosproj-mysql` (data volume
+  `algosproj-mysql-data`).
 - Planned tables: `users` (with a `points` column), `modules`, `lessons`, `problems`,
   `test_cases`, `submissions`, `completions` (unique on `user_id` + `lesson_id`),
   `ai_hints`.
