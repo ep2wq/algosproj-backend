@@ -1,47 +1,43 @@
-<laravel-boost-guidelines>
-# Laravel Application
+# CLAUDE.md
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+## Project overview
 
-## Prerequisites
+AlgosProj is an interactive learning platform for data structures and algorithms.
+Students read a lesson, watch a visualization, write code in the browser (Python or
+Java), and the code is run against test cases. Passing earns points on a leaderboard.
+An AI tutor gives hints.
 
-Verify that PHP and Composer are available:
+Three separate repos, three separate deployments:
 
-```sh
-php -v
-composer -V
-```
+- **algosproj-frontend**: React + TypeScript + Vite + Tailwind v4. Talks only to the backend.
+- **algosproj-backend**: Laravel API. Handles auth (Sanctum tokens), lessons, problems,
+  submissions, points and the leaderboard. It is the only service that calls the sandbox.
+- **algosproj-sandbox**: FastAPI service that runs user code in throwaway Docker containers
+  and returns the results. Never exposed to the public internet; the backend calls it with
+  a shared secret.
 
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
+Flow: frontend -> backend -> sandbox. The frontend never calls the sandbox directly.
 
-macOS:
+Points and completions are only awarded after the sandbox grades a submission
+server-side. Never trust a score sent by the client.
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
+## This repo
 
-Windows PowerShell:
+- Stack: Laravel (PHP 8.3+), MySQL or Postgres, Sanctum personal access tokens (not
+  cookie mode, because the frontend lives on a different domain).
+- Planned tables: `users` (with a `points` column), `modules`, `lessons`, `problems`,
+  `test_cases`, `submissions`, `completions` (unique on `user_id` + `lesson_id`),
+  `ai_hints`.
+- Planned endpoints: register, login, logout, me, modules, lesson detail, submit, hint,
+  leaderboard.
+- Use Laravel's `throttle` middleware on the submit and hint endpoints.
+- Config: `SANDBOX_URL` and `SANDBOX_SECRET` in `.env`.
+- Commands: `composer install`, `php artisan serve`, `php artisan migrate`,
+  `php artisan test`.
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
+## Working rules
 
-Linux:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
-
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+- Keep code simple. Don't add abstractions, patterns or dependencies I didn't ask for.
+- Don't do extra work beyond the request. If you spot something worth fixing, mention it
+  instead of changing it.
+- Ask before adding a new dependency.
