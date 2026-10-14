@@ -1,6 +1,7 @@
 <?php
 
 // Seed content: modules, lessons, one problem per lesson and its test cases.
+// Lesson text (body) lives in lesson_bodies.php, keyed by slug.
 // Expected outputs were produced by running a reference solution for each problem.
 
 return [
@@ -12,9 +13,6 @@ return [
             [
                 'slug' => 'warm-up',
                 'title' => 'Warm-up',
-                'body' => 'Every problem here works the same way: your program reads its input from standard input and prints its answer to standard output. The grader runs it once per test case and compares what you print with the expected output, ignoring whitespace at the start and end.
-
-Start small: read one integer and print it doubled. In Python that is int(input()); in Java, a Scanner on System.in; in JavaScript, read all of stdin with require(\'fs\').readFileSync(0, \'utf8\'); in C++, std::cin.',
                 'problem' => [
                     'title' => 'Double the number',
                     'description' => 'Read an integer n and print 2 * n.
@@ -71,11 +69,6 @@ Constraints
             [
                 'slug' => 'sum-of-an-array',
                 'title' => 'Sum of an array',
-                'body' => 'An array is a list of values stored one after another. Most array problems start the same way: read n, read the n numbers, then walk through them once.
-
-To add up an array, keep a running total that starts at 0 and add each element to it. That is one pass over the array, so the time grows linearly with n: O(n).
-
-Watch out for the empty array. When n is 0 the sum is 0, and the second line is empty.',
                 'problem' => [
                     'title' => 'Sum of an array',
                     'description' => 'Print the sum of the n integers.
@@ -140,9 +133,6 @@ Constraints
             [
                 'slug' => 'maximum-of-an-array',
                 'title' => 'Maximum of an array',
-                'body' => 'Finding the largest element is another single pass. Keep the largest value seen so far and replace it whenever you meet a larger one.
-
-A common mistake is to start that value at 0. If every element is negative, the answer is below 0 and the start value would win. Start with the first element instead.',
                 'problem' => [
                     'title' => 'Maximum of an array',
                     'description' => 'Print the largest of the n integers.
@@ -207,9 +197,6 @@ Constraints
             [
                 'slug' => 'reverse-a-string',
                 'title' => 'Reverse a string',
-                'body' => 'A string is an array of characters, so reversing it works like reversing an array: swap the first and last characters, then the second and second-to-last, and so on until the two ends meet. This is the two-pointer technique. It takes O(n) time and no extra space.
-
-Most languages also have a built-in way to do it. Try writing the loop yourself first.',
                 'problem' => [
                     'title' => 'Reverse a string',
                     'description' => 'Read a line of text and print it reversed.
@@ -267,11 +254,6 @@ s contains only letters, digits and single spaces, with no space at the start or
             [
                 'slug' => 'two-sum',
                 'title' => 'Two Sum',
-                'body' => 'Given an array and a target, find the two positions whose values add up to the target.
-
-Trying every pair takes O(n^2) time. A faster way uses a hash map from value to index: walk through the array once, and for each element x check whether target - x has been seen already. If it has, you have found the pair. That takes O(n) time.
-
-Indices start at 0. Print the smaller one first.',
                 'problem' => [
                     'title' => 'Two Sum',
                     'description' => 'Find the two different positions i < j with a[i] + a[j] = target and print them. Every input has exactly one such pair.
@@ -330,9 +312,6 @@ Exactly one pair of positions adds up to target.',
             [
                 'slug' => 'check-for-a-palindrome',
                 'title' => 'Check for a palindrome',
-                'body' => 'A palindrome reads the same forwards and backwards, like "level" or "racecar".
-
-Check it with two pointers: compare the first and last characters, move both inward, and stop at the first mismatch. If the pointers meet without a mismatch, the string is a palindrome. That takes O(n) time.',
                 'problem' => [
                     'title' => 'Check for a palindrome',
                     'description' => 'Print yes if the word is a palindrome, otherwise no.
@@ -397,11 +376,6 @@ s contains only lowercase letters a-z.',
             [
                 'slug' => 'balanced-brackets',
                 'title' => 'Balanced brackets',
-                'body' => 'A stack is a last-in, first-out collection: you push items on top and pop them off the top. Brackets fit a stack well, because the most recently opened bracket must be the first one closed.
-
-Walk through the string and push every opening bracket. For a closing bracket, the stack must not be empty and its top must be the matching opening bracket; pop it. At the end the stack must be empty.
-
-Counting brackets is not enough: "([)]" has the right counts but is not balanced.',
                 'problem' => [
                     'title' => 'Balanced brackets',
                     'description' => 'Print yes if every bracket is closed by the matching bracket in the right order, otherwise no. An empty line counts as balanced.
@@ -459,11 +433,6 @@ The line contains only the characters ( ) [ ] { }',
             [
                 'slug' => 'evaluate-a-postfix-expression',
                 'title' => 'Evaluate a postfix expression',
-                'body' => 'In postfix notation (also called reverse Polish notation) the operator comes after its operands: "3 4 +" means 3 + 4, and "3 4 + 2 *" means (3 + 4) * 2. No parentheses are needed.
-
-Evaluate it with a stack. Read the tokens from left to right and push numbers. For an operator, pop the right operand first, then the left one, apply the operator and push the result. When the tokens run out, the stack holds the answer.
-
-Division truncates toward zero, so 7 / 2 is 3 and -7 / 2 is -3. Python\'s // rounds down instead (-7 // 2 is -4), so handle the sign yourself there; in JavaScript use Math.trunc.',
                 'problem' => [
                     'title' => 'Evaluate a postfix expression',
                     'description' => 'Evaluate the postfix expression and print its value.
@@ -523,9 +492,6 @@ Every intermediate result fits in a 32-bit signed integer.',
             [
                 'slug' => 'next-greater-element',
                 'title' => 'Next greater element',
-                'body' => 'For each element, the next greater element is the first element to its right that is strictly larger. If there is none, the answer is -1.
-
-Checking everything to the right takes O(n^2) time. A monotonic stack does it in O(n): walk from left to right and keep a stack of positions whose answer is still unknown. When the current element is larger than the value at the top position, it is that position\'s answer: pop it and check the new top. Then push the current position. Positions left on the stack at the end get -1.',
                 'problem' => [
                     'title' => 'Next greater element',
                     'description' => 'For each element, print the first element to its right that is strictly greater, or -1 if there is none.
@@ -597,9 +563,6 @@ Constraints
             [
                 'slug' => 'sort-an-array',
                 'title' => 'Sort an array',
-                'body' => 'Sorting puts elements in order. Simple algorithms such as insertion sort or selection sort take O(n^2) time, which is fine for small inputs. Merge sort and quicksort take O(n log n) and handle large inputs comfortably.
-
-Any correct algorithm is accepted here, including your language\'s built-in sort. Duplicates stay in the output: sorting 3 1 3 gives 1 3 3.',
                 'problem' => [
                     'title' => 'Sort an array',
                     'description' => 'Print the n integers in ascending order.
@@ -664,9 +627,6 @@ Constraints
             [
                 'slug' => 'binary-search',
                 'title' => 'Binary search',
-                'body' => 'Binary search finds a value in a sorted array by halving the search range at each step. Compare the target with the middle element: if they are equal you are done; if the target is larger, keep the right half; otherwise keep the left half. When the range is empty, the target is not there.
-
-Each step halves the range, so it takes O(log n) steps. The classic bugs are off-by-one errors in the range bounds and forgetting the empty array.',
                 'problem' => [
                     'title' => 'Binary search',
                     'description' => 'Print the position of target in the sorted array, or -1 if it is not there.
@@ -732,11 +692,6 @@ All n integers are different.
             [
                 'slug' => 'count-inversions',
                 'title' => 'Count inversions',
-                'body' => 'An inversion is a pair of positions i < j where a[i] > a[j]. The count measures how far an array is from sorted: a sorted array has 0, and a reversed array of n different elements has n(n-1)/2.
-
-Checking every pair takes O(n^2) time. Merge sort can count them in O(n log n): while merging two sorted halves, every time you take an element from the right half, it forms an inversion with each element still waiting in the left half. Add that number to the count.
-
-Equal elements do not form an inversion.',
                 'problem' => [
                     'title' => 'Count inversions',
                     'description' => 'Print the number of pairs of positions i < j with a[i] > a[j].

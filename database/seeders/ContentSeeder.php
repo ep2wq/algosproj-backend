@@ -15,7 +15,10 @@ class ContentSeeder extends Seeder
 
     public function run(): void
     {
-        // Modules, lessons (one problem each) and test cases live in data/lessons.php.
+        // Modules, lessons (one problem each) and test cases live in data/lessons.php;
+        // lesson text lives in data/lesson_bodies.php, keyed by slug.
+        $bodies = require __DIR__.'/data/lesson_bodies.php';
+
         foreach (require __DIR__.'/data/lessons.php' as $moduleIndex => $moduleData) {
             $module = Module::create([
                 'slug' => $moduleData['slug'],
@@ -28,7 +31,7 @@ class ContentSeeder extends Seeder
                 $lesson = $module->lessons()->create([
                     'slug' => $lessonData['slug'],
                     'title' => $lessonData['title'],
-                    'body' => $lessonData['body'],
+                    'body' => $bodies[$lessonData['slug']],
                     'sort_order' => $lessonIndex + 1,
                 ]);
 
