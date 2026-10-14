@@ -54,6 +54,40 @@ class AuthTest extends TestCase
             ->assertJsonMissingPath('token');
     }
 
+    public function test_sixth_register_in_a_minute_is_throttled(): void
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            $this->postJson('/api/register', [
+                'name' => "User $i",
+                'email' => "user$i@example.com",
+                'password' => 'secret-password',
+            ])->assertCreated();
+        }
+
+        $this->postJson('/api/register', [
+            'name' => 'User 6',
+            'email' => 'user6@example.com',
+            'password' => 'secret-password',
+        ])->assertStatus(429);
+    }
+
+    public function test_sixth_login_in_a_minute_is_throttled(): void
+    {
+        User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
+
+        for ($i = 1; $i <= 5; $i++) {
+            $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password'])
+                ->assertUnauthorized();
+        }
+
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])
+            ->assertStatus(429);
+
+        // The limit is per IP plus email, so another email from the same IP still gets through.
+        $this->postJson('/api/login', ['email' => 'other@example.com', 'password' => 'wrong-password'])
+            ->assertUnauthorized();
+    }
+
     public function test_login_requires_fields(): void
     {
         $this->postJson('/api/login', [])->assertUnprocessable();

@@ -6,8 +6,9 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Guests are throttled per IP; login is throttled per IP plus email (see AppServiceProvider).
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::get('/modules', [LessonController::class, 'modules']);
 Route::get('/lessons/{slug}', [LessonController::class, 'show']);
