@@ -30,6 +30,18 @@ class ContentSeederTest extends TestCase
         }
     }
 
+    public function test_every_lesson_has_a_body_of_at_least_150_words(): void
+    {
+        $this->seed(ContentSeeder::class);
+
+        $this->assertSame(12, Lesson::count());
+
+        foreach (Lesson::all() as $lesson) {
+            $words = count(preg_split('/\s+/', trim((string) $lesson->body), -1, PREG_SPLIT_NO_EMPTY));
+            $this->assertGreaterThanOrEqual(150, $words, $lesson->slug);
+        }
+    }
+
     public function test_keeps_the_warm_up_lesson(): void
     {
         $this->seed(ContentSeeder::class);
