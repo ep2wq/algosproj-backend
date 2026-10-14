@@ -62,13 +62,13 @@ server-side. Never trust a score sent by the client.
 ## Current status
 
 ### Done
-- Sanctum token auth (register, login, logout, me), content schema with seeder
-  (`migrate:fresh --seed` gives the "Warm-up" lesson and the "Double the number" problem),
-  lesson endpoints, submit (calls the sandbox, awards points once), leaderboard, CORS,
-  rate limits (register 5/min per IP, login 5/min per IP + email, submit 10/min per
-  user), sandbox failures logged with `Log::error`. 36 tests pass (SQLite in memory,
-  `Http::fake()` for the sandbox). Verified end to end against the real sandbox on 8001.
-  Committed, not pushed.
+- Sanctum token auth, lesson endpoints, submit (calls the sandbox, awards points once),
+  leaderboard, CORS, rate limits, sandbox failures logged with `Log::error`.
+- Seed: 4 modules, 12 lessons with one problem each, in
+  `database/seeders/data/lessons.php` (2 visible + 3-4 hidden tests per problem; points
+  easy 10 / medium 20 / hard 30). Expected outputs come from Python reference solutions;
+  all 12 pass 100% through the real sandbox.
+- 37 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
 
 ### In progress
 - Nothing.
@@ -92,3 +92,6 @@ server-side. Never trust a score sent by the client.
 - Start the container (`docker start algosproj-mysql`) before `migrate` or `serve`.
 - `php artisan serve` and the sandbox both default to port 8000; run the sandbox on 8001.
 - The unused `database/database.sqlite` still exists locally (gitignored).
+- Seed expected outputs must match trimmed stdout exactly (no line-ending or space
+  normalisation), so keep answers on one line and regenerate them from a reference
+  solution, never by hand.
