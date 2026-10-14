@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class SubmitTest extends TestCase
@@ -157,20 +158,34 @@ class SubmitTest extends TestCase
 
     public function test_sandbox_connection_error_returns_503_without_submission(): void
     {
+        Log::spy();
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
         $this->submit()->assertStatus(503)
             ->assertJsonPath('message', 'Code runner unavailable, try again shortly');
         $this->assertDatabaseCount('submissions', 0);
+        Log::shouldHaveReceived('error')->once()->withArgs(
+            fn ($message, $context) => $context === ['error' => 'Connection refused']
+        );
     }
 
     public function test_sandbox_server_error_returns_503_without_submission(): void
     {
-        Http::fake(['sandbox.test/*' => Http::response('Server error', 500)]);
+        Log::spy();
+        Http::fake(['sandbox.test/*' => Http::response(str_repeat('x', 500), 500)]);
 
         $this->submit()->assertStatus(503)
             ->assertJsonPath('message', 'Code runner unavailable, try again shortly');
         $this->assertDatabaseCount('submissions', 0);
+        Log::shouldHaveReceived('error')->once()->withArgs(function ($message, $context) {
+            $logged = json_encode([$message, $context]);
+
+            return $context['status'] === 500
+                && $context['body'] === str_repeat('x', 300)
+                && ! str_contains($logged, 'print(int(input())')
+                && ! str_contains($logged, 'HIDDEN-')
+                && ! str_contains($logged, 'test-secret');
+        });
     }
 
     public function test_invalid_language_is_rejected(): void

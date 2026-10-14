@@ -39,13 +39,24 @@ class SubmissionController extends Controller
                     ])->all(),
                 ]);
         } catch (ConnectionException $e) {
-            Log::warning('Sandbox unreachable', ['error' => $e->getMessage()]);
+            // Never log the code, the test cases or the secret.
+            Log::error('Sandbox request failed', ['error' => $e->getMessage()]);
 
             return $this->runnerUnavailable();
         }
 
-        if (! $response->successful() || ! in_array($response->json('status'), self::STATUSES, true)) {
-            Log::warning('Sandbox returned an unusable response', ['status' => $response->status()]);
+        if (! $response->successful()) {
+            Log::error('Sandbox returned an error', [
+                'status' => $response->status(),
+                'body' => mb_strcut($response->body(), 0, 300),
+            ]);
+
+            return $this->runnerUnavailable();
+        }
+
+        if (! in_array($response->json('status'), self::STATUSES, true)) {
+            // A 2xx body holds test results, so only the status code is logged.
+            Log::error('Sandbox returned an unknown result status', ['status' => $response->status()]);
 
             return $this->runnerUnavailable();
         }
