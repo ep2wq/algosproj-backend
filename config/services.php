@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'sandbox' => [
+        'url' => env('SANDBOX_URL'),
+        'secret' => env('SANDBOX_SECRET'),
+        'languages' => ['python', 'java', 'javascript', 'cpp'],
+    ],
+
 ];
