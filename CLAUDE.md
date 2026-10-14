@@ -2,42 +2,27 @@
 
 ## Project overview
 
-AlgosProj is an interactive learning platform for data structures and algorithms.
-Students read a lesson, watch a visualization, write code in the browser (Python or
-Java), and the code is run against test cases. Passing earns points on a leaderboard.
-An AI tutor gives hints.
-
-Three separate repos, three separate deployments:
-
+AlgosProj teaches data structures and algorithms: lessons, visualizations, in-browser code
+(Python, Java, JavaScript, C++) run against test cases, points on a leaderboard, AI hints.
+Three repos, three deployments. Flow: frontend -> backend -> sandbox.
 - **algosproj-frontend**: React + TypeScript + Vite + Tailwind v4. Talks only to the backend.
-- **algosproj-backend**: Laravel API. Handles auth (Sanctum tokens), lessons, problems,
-  submissions, points and the leaderboard. It is the only service that calls the sandbox.
-- **algosproj-sandbox**: FastAPI service that runs user code in throwaway Docker containers
-  and returns the results. Never exposed to the public internet; the backend calls it with
-  a shared secret.
-
-Flow: frontend -> backend -> sandbox. The frontend never calls the sandbox directly.
-
-Points and completions are only awarded after the sandbox grades a submission
-server-side. Never trust a score sent by the client.
+- **algosproj-backend** (this repo): Laravel API (Sanctum auth, lessons, problems,
+  submissions, points, leaderboard). The only service that calls the sandbox.
+- **algosproj-sandbox**: FastAPI, runs user code in throwaway Docker containers. Never
+  public; the backend calls it with a shared secret.
+Points are only awarded after server-side grading. Never trust a score sent by the client.
 
 ## This repo
 
-- Stack: Laravel (PHP 8.3+), MySQL 8, Sanctum personal access tokens (not cookie mode,
-  because the frontend lives on a different domain).
-- MySQL 8 runs locally in a Docker container named `algosproj-mysql` (data volume
-  `algosproj-mysql-data`).
-- Tables: `users` (with `points`), `modules`, `lessons`, `problems`, `test_cases`
-  (`is_hidden`), `submissions`, `completions` (unique on `user_id` + `problem_id`).
-  Planned: `ai_hints`.
-- Endpoints are in `routes/api.php` (listed in README "API"). Planned: hint.
-- Plain controllers with inline validation; no service layer.
-- Use Laravel's `throttle` middleware on the submit and hint endpoints.
-- Config: `SANDBOX_URL`, `SANDBOX_SECRET` (read via `config('services.sandbox')`) and
-  `FRONTEND_URL` (the only CORS origin) in `.env`.
-- `Dockerfile` builds a PHP 8.4 + Apache image (no `.env` inside; config via env vars); see README "Docker".
-- Commands: `composer install`, `php artisan serve`, `php artisan migrate`,
-  `php artisan test`.
+- Laravel (PHP 8.3+), MySQL 8 in Docker (`algosproj-mysql`, host port 3307), Sanctum
+  personal access tokens (not cookie mode: the frontend is on another domain).
+- Tables: `users` (`points`), `modules`, `lessons`, `problems`, `test_cases` (`is_hidden`),
+  `submissions`, `completions` (unique `user_id` + `problem_id`). Planned: `ai_hints`.
+- Endpoints in `routes/api.php` (README "API"). Plain controllers, inline validation, no
+  service layer. `throttle` on submit and (planned) hint.
+- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET` (`config('services.sandbox')`), `FRONTEND_URL`
+  (the only CORS origin). Dockerfile: PHP 8.4 + Apache, config via env vars (README).
+- Commands: `composer install`, `php artisan serve`, `php artisan migrate`, `php artisan test`.
 
 ## Working rules
 
@@ -50,48 +35,24 @@ server-side. Never trust a score sent by the client.
 
 ## Session routine
 
-- At the start of a session, read this file and the "Current status" section before
-  doing anything else.
-- Before ending a session, or when I say we're done, update "Current status" to match
-  reality. Rewrite the section; don't append to it. Remove items that are finished or no
-  longer true, so the file stays short (under about 60 lines in total).
+- At the start of a session, read this file and "Current status" before anything else.
+- Before ending a session, or when I say we're done, rewrite "Current status" to match
+  reality (don't append). Remove finished or untrue items; keep the file under 60 lines.
 - Only record facts you verified in the repo or that I told you. Don't guess.
 - Update the other sections of this file too if something in them became wrong.
 - Don't commit the CLAUDE.md update unless I ask. Tell me it changed.
 
 ## Current status
 
-### Done
-- Sanctum token auth, lesson endpoints, submit (calls the sandbox, awards points once),
-  leaderboard, CORS, rate limits, sandbox failures logged with `Log::error`.
-- Seed: 4 modules, 12 lessons with one problem each, in
-  `database/seeders/data/lessons.php` (2 visible + 3-4 hidden tests per problem; points
-  easy 10 / medium 20 / hard 30). Expected outputs come from Python reference solutions;
-  all 12 pass 100% through the real sandbox.
-- 37 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
-
-### In progress
-- Nothing.
-
-### Next
-- AI hint endpoint and the `ai_hints` table.
-
-### Decisions
-- MySQL runs in Docker (`algosproj-mysql`) on host port 3307, because a local `mysqld`
-  already listens on 3306.
-- Any sandbox failure (unreachable, timeout, non-2xx, unknown status) returns 503 and
-  stores no submission.
-- Leaderboard ranks ties equally (rank = 1 + users with more points), in the list and in
-  `/leaderboard/me`.
-- Code size is validated in bytes (max 65536), matching the sandbox's 64 KB limit.
-  `submissions.code` stays `mediumText`.
-- Sandbox failure logs never include the code, test cases or secret; a 2xx body with an
-  unknown status is logged without the body, since it holds test results.
-
-### Gotchas
-- Start the container (`docker start algosproj-mysql`) before `migrate` or `serve`.
-- `php artisan serve` and the sandbox both default to port 8000; run the sandbox on 8001.
-- The unused `database/database.sqlite` still exists locally (gitignored).
-- Seed expected outputs must match trimmed stdout exactly (no line-ending or space
-  normalisation), so keep answers on one line and regenerate them from a reference
-  solution, never by hand.
+- Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
+  Seed: 4 modules, 12 lessons, one problem each (`data/lessons.php`; 2 visible + 3-4
+  hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
+  Lesson text (312-350 words each) in `data/lesson_bodies.php`, keyed by slug.
+  38 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
+- Next: AI hint endpoint and the `ai_hints` table.
+- Decisions: any sandbox failure returns 503 and stores no submission; logs never include
+  code, tests or the secret. Leaderboard ties share a rank. Code size max 65536 bytes.
+  Lesson text is plain text (the frontend keeps line breaks, renders no markdown).
+- Gotchas: `docker start algosproj-mysql` before `migrate` or `serve`. Run the sandbox on
+  8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly:
+  one line, regenerated from a reference solution, never by hand.
