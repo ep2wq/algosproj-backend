@@ -34,6 +34,7 @@ server-side. Never trust a score sent by the client.
   leaderboard.
 - Use Laravel's `throttle` middleware on the submit and hint endpoints.
 - Config: `SANDBOX_URL` and `SANDBOX_SECRET` in `.env`.
+- `Dockerfile` builds a PHP 8.4 + Apache image (no `.env` inside; config via env vars); see README "Docker".
 - Commands: `composer install`, `php artisan serve`, `php artisan migrate`,
   `php artisan test`.
 
