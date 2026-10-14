@@ -7,34 +7,41 @@ use Illuminate\Database\Seeder;
 
 class ContentSeeder extends Seeder
 {
+    private const POINTS = [
+        'easy' => 10,
+        'medium' => 20,
+        'hard' => 30,
+    ];
+
     public function run(): void
     {
-        $module = Module::create([
-            'slug' => 'algorithms',
-            'title' => 'Algorithms',
-            'track' => 'algorithms',
-            'sort_order' => 1,
-        ]);
+        // Modules, lessons (one problem each) and test cases live in data/lessons.php.
+        foreach (require __DIR__.'/data/lessons.php' as $moduleIndex => $moduleData) {
+            $module = Module::create([
+                'slug' => $moduleData['slug'],
+                'title' => $moduleData['title'],
+                'track' => $moduleData['track'],
+                'sort_order' => $moduleIndex + 1,
+            ]);
 
-        $lesson = $module->lessons()->create([
-            'slug' => 'warm-up',
-            'title' => 'Warm-up',
-            'body' => 'A first exercise to get used to reading input and printing output.',
-            'sort_order' => 1,
-        ]);
+            foreach ($moduleData['lessons'] as $lessonIndex => $lessonData) {
+                $lesson = $module->lessons()->create([
+                    'slug' => $lessonData['slug'],
+                    'title' => $lessonData['title'],
+                    'body' => $lessonData['body'],
+                    'sort_order' => $lessonIndex + 1,
+                ]);
 
-        $problem = $lesson->problems()->create([
-            'title' => 'Double the number',
-            'description' => 'Read an integer from standard input and print it doubled.',
-            'difficulty' => 'easy',
-            'points' => 10,
-        ]);
+                $problemData = $lessonData['problem'];
+                $problem = $lesson->problems()->create([
+                    'title' => $problemData['title'],
+                    'description' => $problemData['description'],
+                    'difficulty' => $problemData['difficulty'],
+                    'points' => self::POINTS[$problemData['difficulty']],
+                ]);
 
-        $problem->testCases()->createMany([
-            ['input' => '2', 'expected_output' => '4', 'is_hidden' => false],
-            ['input' => '21', 'expected_output' => '42', 'is_hidden' => false],
-            ['input' => '-7', 'expected_output' => '-14', 'is_hidden' => true],
-            ['input' => '1000000', 'expected_output' => '2000000', 'is_hidden' => true],
-        ]);
+                $problem->testCases()->createMany($problemData['test_cases']);
+            }
+        }
     }
 }
