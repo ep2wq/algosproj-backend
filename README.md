@@ -50,12 +50,17 @@ Hidden test cases are never returned. In a submit response they only show `{"pas
 
 ```bash
 # Register (or log in with POST /api/login and the same email and password)
-curl -X POST http://localhost:8000/api/register   -H "Accept: application/json" -H "Content-Type: application/json"   -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
+curl -X POST http://localhost:8000/api/register \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
 # -> {"token":"1|...","user":{"id":1,"name":"Ada","points":0,...}}
 
 curl http://localhost:8000/api/lessons/warm-up -H "Accept: application/json"
 
-curl -X POST http://localhost:8000/api/problems/1/submit   -H "Accept: application/json" -H "Content-Type: application/json"   -H "Authorization: Bearer <token>"   -d '{"language":"python","code":"print(int(input()) * 2)"}'
+curl -X POST http://localhost:8000/api/problems/1/submit \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"language":"python","code":"print(int(input()) * 2)"}'
 # -> {"status":"passed","passed_count":4,"total_count":4,"runtime_ms":31,"compile_error":null,
 #     "points_awarded":10,"results":[{"passed":true,"input":"2","expected":"4","actual":"4","error":null},
 #     {"passed":true,"input":"21","expected":"42","actual":"42","error":null},{"passed":true},{"passed":true}]}

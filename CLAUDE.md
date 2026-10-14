@@ -66,8 +66,9 @@ server-side. Never trust a score sent by the client.
   (`migrate:fresh --seed` gives the "Warm-up" lesson and the "Double the number" problem),
   lesson endpoints, submit (calls the sandbox, awards points once), leaderboard, CORS,
   rate limits (register 5/min per IP, login 5/min per IP + email, submit 10/min per
-  user), sandbox failures logged with `Log::error`. 36 tests pass (SQLite in memory, `Http::fake()` for the sandbox). Verified end
-  to end against the real sandbox on 8001. Committed, not pushed.
+  user), sandbox failures logged with `Log::error`. 36 tests pass (SQLite in memory,
+  `Http::fake()` for the sandbox). Verified end to end against the real sandbox on 8001.
+  Committed, not pushed.
 
 ### In progress
 - Nothing.
