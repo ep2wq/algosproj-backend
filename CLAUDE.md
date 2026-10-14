@@ -27,13 +27,14 @@ server-side. Never trust a score sent by the client.
   because the frontend lives on a different domain).
 - MySQL 8 runs locally in a Docker container named `algosproj-mysql` (data volume
   `algosproj-mysql-data`).
-- Planned tables: `users` (with a `points` column), `modules`, `lessons`, `problems`,
-  `test_cases`, `submissions`, `completions` (unique on `user_id` + `lesson_id`),
-  `ai_hints`.
-- Planned endpoints: register, login, logout, me, modules, lesson detail, submit, hint,
-  leaderboard.
+- Tables: `users` (with `points`), `modules`, `lessons`, `problems`, `test_cases`
+  (`is_hidden`), `submissions`, `completions` (unique on `user_id` + `problem_id`).
+  Planned: `ai_hints`.
+- Endpoints are in `routes/api.php` (listed in README "API"). Planned: hint.
+- Plain controllers with inline validation; no service layer.
 - Use Laravel's `throttle` middleware on the submit and hint endpoints.
-- Config: `SANDBOX_URL` and `SANDBOX_SECRET` in `.env`.
+- Config: `SANDBOX_URL`, `SANDBOX_SECRET` (read via `config('services.sandbox')`) and
+  `FRONTEND_URL` (the only CORS origin) in `.env`.
 - `Dockerfile` builds a PHP 8.4 + Apache image (no `.env` inside; config via env vars); see README "Docker".
 - Commands: `composer install`, `php artisan serve`, `php artisan migrate`,
   `php artisan test`.
@@ -61,24 +62,32 @@ server-side. Never trust a score sent by the client.
 ## Current status
 
 ### Done
-- Laravel 13 scaffold (local PHP 8.4); default migrations (users, cache, jobs) have run
-  on MySQL. MySQL is the default connection in `.env`, `.env.example` and the
-  `config/database.php` fallback. Committed and pushed.
+- Sanctum token auth (register, login, logout, me), content schema with seeder
+  (`migrate:fresh --seed` gives the "Warm-up" lesson and the "Double the number" problem),
+  lesson endpoints, submit (calls the sandbox, awards points once), leaderboard, CORS,
+  rate limits (register 5/min per IP, login 5/min per IP + email, submit 10/min per
+  user), sandbox failures logged with `Log::error`. 36 tests pass (SQLite in memory, `Http::fake()` for the sandbox). Verified end
+  to end against the real sandbox on 8001. Committed, not pushed.
 
 ### In progress
 - Nothing.
 
 ### Next
-- Install Sanctum and add the auth endpoints (there is no `routes/api.php` yet).
-- Create the planned tables.
-- Add `SANDBOX_URL` and `SANDBOX_SECRET` to `.env` and `.env.example` (not there yet).
+- AI hint endpoint and the `ai_hints` table.
 
 ### Decisions
 - MySQL runs in Docker (`algosproj-mysql`) on host port 3307, because a local `mysqld`
   already listens on 3306.
+- Any sandbox failure (unreachable, timeout, non-2xx, unknown status) returns 503 and
+  stores no submission.
+- Leaderboard ranks ties equally (rank = 1 + users with more points), in the list and in
+  `/leaderboard/me`.
+- Code size is validated in bytes (max 65536), matching the sandbox's 64 KB limit.
+  `submissions.code` stays `mediumText`.
+- Sandbox failure logs never include the code, test cases or secret; a 2xx body with an
+  unknown status is logged without the body, since it holds test results.
 
 ### Gotchas
-- The Laravel scaffold's `config/database.php` fell back to `sqlite`; now `mysql`. The
-  unused `database/database.sqlite` still exists locally (gitignored).
 - Start the container (`docker start algosproj-mysql`) before `migrate` or `serve`.
 - `php artisan serve` and the sandbox both default to port 8000; run the sandbox on 8001.
+- The unused `database/database.sqlite` still exists locally (gitignored).

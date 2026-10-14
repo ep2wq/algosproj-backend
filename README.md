@@ -15,7 +15,7 @@ Laravel on PHP 8.3+, MySQL or Postgres, Sanctum personal access tokens.
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed   # seeds one module, the "Warm-up" lesson and one problem
 php artisan serve
 ```
 
@@ -27,6 +27,54 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 
 - `SANDBOX_URL` — base URL of the sandbox service
 - `SANDBOX_SECRET` — shared secret sent to the sandbox as the `X-Sandbox-Secret` header
+- `FRONTEND_URL` — the only origin allowed by CORS (default `http://localhost:5173`)
+
+## API
+
+All routes are under `/api`. Send `Accept: application/json`. Authenticated routes need
+`Authorization: Bearer <token>`, using the token from register or login.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/api/register` | | Create a user (`name`, `email`, `password`); returns `token` and `user`; 5 per minute per IP |
+| POST | `/api/login` | | `email`, `password`; returns `token` and `user` (401 on a wrong password); 5 per minute per IP and email |
+| POST | `/api/logout` | yes | Deletes the current token |
+| GET | `/api/me` | yes | The current user, with `points` |
+| GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
+| GET | `/api/lessons/{slug}` | | A lesson with its problems and their visible test cases |
+| POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
+| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points}]`, users with points > 0 (limit max 100) |
+| GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
+
+Hidden test cases are never returned. In a submit response they only show `{"passed": bool}`.
+
+```bash
+# Register (or log in with POST /api/login and the same email and password)
+curl -X POST http://localhost:8000/api/register   -H "Accept: application/json" -H "Content-Type: application/json"   -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
+# -> {"token":"1|...","user":{"id":1,"name":"Ada","points":0,...}}
+
+curl http://localhost:8000/api/lessons/warm-up -H "Accept: application/json"
+
+curl -X POST http://localhost:8000/api/problems/1/submit   -H "Accept: application/json" -H "Content-Type: application/json"   -H "Authorization: Bearer <token>"   -d '{"language":"python","code":"print(int(input()) * 2)"}'
+# -> {"status":"passed","passed_count":4,"total_count":4,"runtime_ms":31,"compile_error":null,
+#     "points_awarded":10,"results":[{"passed":true,"input":"2","expected":"4","actual":"4","error":null},
+#     {"passed":true,"input":"21","expected":"42","actual":"42","error":null},{"passed":true},{"passed":true}]}
+
+curl "http://localhost:8000/api/leaderboard?limit=10" -H "Accept: application/json"
+# -> [{"rank":1,"name":"Ada","points":10}]
+```
+
+Submit details:
+
+- `language` is one of `python`, `java`, `javascript`, `cpp`; `code` is required, at most
+  64 KB (65536 bytes, not characters). Invalid input returns 422.
+- `status` is `passed`, `failed`, `error` or `timeout`. Points are awarded only the first
+  time a problem is passed; later passing submissions return `points_awarded: 0`.
+- If the sandbox is unreachable, times out (60 s) or returns an error, the response is
+  503 `{"message": "Code runner unavailable, try again shortly"}` and nothing is stored.
+  The failure is logged with `Log::error` (status code, at most 300 characters of the body,
+  the exception message), never with the code, test cases or secret.
+- Going over a rate limit returns 429.
 
 ## Docker
 
@@ -44,7 +92,7 @@ docker run -d --name algosproj-backend -p 8080:80 \
 ```
 
 - Environment variables: `APP_KEY`, `APP_ENV`, `APP_DEBUG`, `DB_*`, `SANDBOX_URL`,
-  `SANDBOX_SECRET`. Generate a key with
+  `SANDBOX_SECRET`, `FRONTEND_URL`. Generate a key with
   `docker run --rm algosproj-backend php artisan key:generate --show`.
 - Inside a container, `DB_HOST` and `SANDBOX_URL` must point at `host.docker.internal`
   (or a Docker network name), not `127.0.0.1`.
