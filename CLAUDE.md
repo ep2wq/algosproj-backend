@@ -47,12 +47,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
   Seed: 4 modules, 12 lessons, one problem each (`data/lessons.php`; 2 visible + 3-4
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
-  Lesson text (312-350 words each) in `data/lesson_bodies.php`, keyed by slug.
+  Lesson text (312-350 words each, with section headings) in `data/lesson_bodies.php`.
   38 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
 - Next: AI hint endpoint and the `ai_hints` table.
 - Decisions: any sandbox failure returns 503 and stores no submission; logs never include
   code, tests or the secret. Leaderboard ties share a rank. Code size max 65536 bytes.
-  Lesson text is plain text (the frontend keeps line breaks, renders no markdown).
+  Lesson text uses a tiny format (`## ` headings, `- ` lists, 4-space code, paragraphs);
+  see README "Lesson text format". The frontend parses it; no markdown library.
 - Gotchas: `docker start algosproj-mysql` before `migrate` or `serve`. Run the sandbox on
   8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly:
   one line, regenerated from a reference solution, never by hand.
