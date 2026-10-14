@@ -204,6 +204,17 @@ class SubmitTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_code_over_64_kb_in_bytes_is_rejected_even_when_under_the_character_count(): void
+    {
+        Http::fake();
+        $code = str_repeat('é', 40000);
+        $this->assertLessThan(65536, mb_strlen($code));
+        $this->assertGreaterThan(65536, strlen($code));
+
+        $this->submit(['code' => $code])->assertUnprocessable()->assertJsonValidationErrors('code');
+        Http::assertNothingSent();
+    }
+
     public function test_submit_requires_auth(): void
     {
         $this->postJson("/api/problems/{$this->problem->id}/submit", ['language' => 'python', 'code' => 'x'])

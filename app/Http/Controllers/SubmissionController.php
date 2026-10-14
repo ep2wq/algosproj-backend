@@ -21,7 +21,12 @@ class SubmissionController extends Controller
     {
         $data = $request->validate([
             'language' => ['required', 'string', Rule::in(config('services.sandbox.languages'))],
-            'code' => ['required', 'string', 'max:65536'],
+            // Bytes, not characters: the sandbox rejects code over 64 KB.
+            'code' => ['required', 'string', function ($attribute, $value, $fail) {
+                if (is_string($value) && strlen($value) > 65536) {
+                    $fail('The code may not be larger than 64 KB.');
+                }
+            }],
         ]);
 
         // All test cases, hidden ones included, are sent to the sandbox.
