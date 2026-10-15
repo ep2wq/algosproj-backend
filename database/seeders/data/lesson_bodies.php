@@ -755,6 +755,222 @@ O(n) for n lines.
 Ifs on the method name also pass; the grader only sees numbers.
 TEXT,
 
+    'linear-search' => <<<'TEXT'
+Linear search looks at the items one by one, from the front, until it finds the target or runs out of items. It works on any list, sorted or not.
+
+## Example
+Find 8 in 3 8 -2 8 5.
+Index 0: 3 is not 8.
+Index 1: 8 is the target. Stop: the answer is 1.
+The second 8, at index 3, is never checked.
+Find 4 in the same list: all 5 items are checked, none matches, so the answer is -1.
+
+## How to think about it
+Go through the indexes from 0 to n - 1 and return the first index whose item equals the target. Return -1 only after the loop has finished: only then do you know the target is missing.
+
+## Python
+    def find(a, target):
+        for i in range(len(a)):
+            if a[i] == target:
+                return i
+        return -1
+
+## Java
+    static int find(int[] a, int target) {
+        for (int i = 0; i < a.length; i++)
+            if (a[i] == target) return i;
+        return -1;
+    }
+
+## JavaScript
+    function find(a, target) {
+      for (let i = 0; i < a.length; i++)
+        if (a[i] === target) return i
+      return -1
+    }
+
+## C++
+    int find(const vector<int>& a, int target) {
+        for (int i = 0; i < (int)a.size(); i++)
+            if (a[i] == target) return i;
+        return -1;
+    }
+
+## Complexity
+Time: O(n). A missing target costs n comparisons, one per item, and a target at index i costs i + 1. Twice as many items means twice the work.
+Space: O(1): only the index i.
+
+## Watch out for
+- The last match instead of the first. A loop that saves i at every match and keeps going ends with the last one: 3 for the example, not 1. Return at the first match.
+- 0 for a missing target. 0 is a real index, so "not found" must be -1.
+- Returning -1 inside the loop at the first mismatch. Then only index 0 is checked.
+
+Binary search, later in the course, is faster but needs a sorted list.
+TEXT,
+
+    'greatest-common-divisor' => <<<'TEXT'
+The greatest common divisor gcd(a, b) is the largest number that divides both a and b. Every number divides 0, so gcd(a, 0) = a.
+
+Euclid's algorithm rests on one fact: a number divides a and b exactly when it divides b and a % b. So gcd(a, b) = gcd(b, a % b). Repeat until b is 0; then a is the answer.
+
+## Example
+gcd(48, 18):
+48 % 18 = 12, so gcd(18, 12).
+18 % 12 = 6, so gcd(12, 6).
+12 % 6 = 0, so gcd(6, 0) = 6.
+gcd(18, 48) takes one extra step: 18 % 48 = 18, which just swaps the numbers.
+
+## How to think about it
+Subtracting the smaller number from the bigger one until both are equal also works; % does all those subtractions at once. For 10^18 and 10^18 - 1, Euclid needs 2 steps and subtraction needs 999999999999999999: about 32 years at a billion steps per second.
+
+## Python
+    def gcd(a, b):
+        while b != 0:
+            a, b = b, a % b
+        return a
+
+## Java
+    static long gcd(long a, long b) {
+        while (b != 0) {
+            long t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+
+## JavaScript
+    function gcd(a, b) {  // a and b are BigInts
+      while (b !== 0n) [a, b] = [b, a % b]
+      return a
+    }
+
+## C++
+    long long gcd(long long a, long long b) {
+        while (b != 0) {
+            long long t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+
+## Complexity
+Time: O(log n) steps for numbers up to n. Up to 10^18, Euclid never needs more than 86.
+Space: O(1).
+
+## Watch out for
+- JavaScript Number is exact only up to 2^53 - 1 = 9007199254740991. Number("999999999999999999") is 10^18, so gcd(10^18, 10^18 - 1) gives 10^18, not 1. Use BigInt(text), and print String(g): console.log(g) adds an n.
+- int overflows: use long in Java, long long in C++.
+- a = 0 needs no special case.
+TEXT,
+
+    'prime-check' => <<<'TEXT'
+A prime is a whole number greater than 1 whose only divisors are 1 and itself. 0 and 1 are not prime: 1 has only one divisor, and every number divides 0.
+
+## Example
+Is 91 prime? sqrt(91) is about 9.5, so try 2 to 9.
+2, 3, 4, 5 and 6 don't divide 91. 7 does: 91 = 7 * 13. Not prime.
+Is 97 prime? sqrt(97) is about 9.8, and none of 2 to 9 divides 97. Prime.
+
+## How to think about it
+If n = a * b, the smaller of a and b is at most sqrt(n). So if nothing from 2 to sqrt(n) divides n, nothing bigger does. Write the bound as i * i <= n.
+
+## Python
+    def is_prime(n):
+        if n < 2:
+            return False
+        i = 2
+        while i * i <= n:
+            if n % i == 0:
+                return False
+            i += 1
+        return True
+
+## Java
+    static boolean isPrime(long n) {
+        if (n < 2) return false;
+        for (long i = 2; i * i <= n; i++)
+            if (n % i == 0) return false;
+        return true;
+    }
+
+## JavaScript
+    function isPrime(n) {
+      if (n < 2) return false
+      for (let i = 2; i * i <= n; i++)
+        if (n % i === 0) return false
+      return true
+    }
+
+## C++
+    bool isPrime(long long n) {
+        if (n < 2) return false;
+        for (long long i = 2; i * i <= n; i++)
+            if (n % i == 0) return false;
+        return true;
+    }
+
+## Complexity
+Time: O(sqrt(n)). A prime near 10^12 takes about 10^6 divisions; a loop to n / 2 would take 5 * 10^11 and run out of time.
+Space: O(1).
+
+## Watch out for
+- int i in Java or C++. i * i overflows at i = 46341, the loop runs past sqrt(n), and a large prime runs out of time. Use long (long long in C++).
+- Leaving out n < 2 makes 0 or 1 prime.
+- i * i < n instead of <= makes 49 prime.
+TEXT,
+
+    'count-primes-with-a-sieve' => <<<'TEXT'
+The Sieve of Eratosthenes finds all the primes up to n at once. The smallest number not yet crossed out is prime: cross out its multiples, and repeat.
+
+## Example
+n = 30.
+2: cross out 4, 6, ..., 30.
+3: cross out 9, 12, ..., 30.
+5: cross out 25, 30.
+Next is 7, and 7 * 7 = 49 is past 30: stop.
+Left: 2 3 5 7 11 13 17 19 23 29, 10 primes.
+
+## How to think about it
+Start at p * p: smaller multiples, like 2 * p, are already crossed out. Stop once p * p > n, then count what is left from 2 to n. Use n + 1 places so that n itself is included.
+
+## Python
+    composite = [False] * (n + 1)
+    p = 2
+    while p * p <= n:
+        if not composite[p]:
+            for m in range(p * p, n + 1, p):
+                composite[m] = True
+        p += 1
+
+## Java
+    boolean[] composite = new boolean[n + 1];
+    for (int p = 2; p * p <= n; p++)
+        if (!composite[p])
+            for (int m = p * p; m <= n; m += p) composite[m] = true;
+
+## JavaScript
+    const composite = new Uint8Array(n + 1)
+    for (let p = 2; p * p <= n; p++)
+      if (!composite[p])
+        for (let m = p * p; m <= n; m += p) composite[m] = 1
+
+## C++
+    vector<bool> composite(n + 1, false);
+    for (int p = 2; p * p <= n; p++)
+        if (!composite[p])
+            for (int m = p * p; m <= n; m += p) composite[m] = true;
+
+## Complexity
+Time: O(n log log n), a few steps per number: 11192870 cross-outs for n = 5000000. Trial division of every number takes 654184150 divisions, 58 times more.
+Space: O(n).
+
+## Watch out for
+- Off by one: n places, or a count that stops at n - 1, misses n. n = 3 gives 1, not 2.
+- Trial division of every number: correct, but in Python over the 3 second limit.
+TEXT,
+
     'reverse-a-string' => <<<'TEXT'
 A string is a sequence of characters, so you can treat it like an array. Reversing it puts the last character first and the first character last.
 
