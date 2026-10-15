@@ -41,7 +41,7 @@ or numbered lists):
   a paragraph are kept (worked examples rely on that).
 
 Each lesson uses the headings `## Example`, `## How to think about it`, `## Complexity`
-and `## Watch out for`, and is 200-350 words. Run any code snippet through the sandbox
+and `## Watch out for`, and is 300-350 words. Run any code snippet through the sandbox
 before adding it; the warm-up snippets were checked in all four languages.
 
 Run the tests with `php artisan test`.

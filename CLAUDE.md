@@ -48,7 +48,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   Seed: 5 modules, 15 lessons, one problem each (`data/lessons.php`; 2 visible + 3-4
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
   Lesson text (312-350 words each, with section headings) in `data/lesson_bodies.php`.
-  38 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
+  40 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
 - Next: AI hint endpoint and the `ai_hints` table.
 - Decisions: any sandbox failure returns 503 and stores no submission; logs never include
   code, tests or the secret. Leaderboard ties share a rank. Code size max 65536 bytes.
