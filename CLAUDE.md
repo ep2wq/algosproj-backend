@@ -45,10 +45,10 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
-  Seed: 10 modules, 31 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
+  Seed: 11 modules, 35 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
   Module `basics` is titled "Getting started" (was "Basics"; slug unchanged). Lesson text
-  (312-350 words, section headings) in `data/lesson_bodies.php`. 40 tests pass (SQLite in
+  (312-450 words, section headings) in `data/lesson_bodies.php`. 40 tests pass (SQLite in
   memory, `Http::fake()` for the sandbox).
 - Next: AI hint endpoint and the `ai_hints` table.
 - Decisions: any sandbox failure returns 503 and stores no submission; logs never include
@@ -57,4 +57,4 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   see README "Lesson text format". The frontend parses it; no markdown library.
 - Gotchas: `docker start algosproj-mysql` before `migrate` or `serve`. Run the sandbox on
   8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly and
-  come from a reference solution, never by hand (FizzBuzz and recursion print several lines).
+  come from a reference solution, never by hand (some answers span several lines).
