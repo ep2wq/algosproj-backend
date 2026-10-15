@@ -763,6 +763,208 @@ Constraints
         ],
     ],
     [
+        'slug' => 'hash-tables',
+        'title' => 'Hash tables',
+        'track' => 'data-structures',
+        'lessons' => [
+            [
+                'slug' => 'valid-anagram',
+                'title' => 'Valid anagram',
+                'problem' => [
+                    'title' => 'Valid anagram',
+                    'description' => 'Print yes if t is an anagram of s: the same letters, each used the same number of times, in any order. Otherwise print no.
+
+Input
+Line 1: the word s. It may be empty.
+Line 2: the word t. It may be empty.
+
+Output
+One line: yes or no.
+
+Constraints
+0 <= length of s <= 1000
+0 <= length of t <= 1000
+s and t contain only lowercase letters a-z.',
+                    'difficulty' => 'easy',
+                    'test_cases' => [
+                        [
+                            'input' => 'anagram
+nagaram
+',
+                            'expected_output' => 'yes',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => 'rat
+car
+',
+                            'expected_output' => 'no',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '
+a
+',
+                            'expected_output' => 'no',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'aabbaaacacbbccccccbabcaacaacbabcabcbaaacacbbaacccbbaacaacabcababcacbcabacaabaabcbabccbbcabaaccbaabccbcbbacccabcacbcabbcaaabbbcaaacacaaccabbbaaacbccacbcbbcbcbaacbbcbacaaacabaaacaacbcbbaacaaccbbabbacbcbaacacccababacabaaaaabcbaacccabbaaacbcaaccccaacacbbaababcababaacbbbaccbbbbabcbccccbbcacbcaabaaabacabacabababbaccaaabaacbccbbabaccacbbbaabccabaabcbcacaabcbcabcaccacaaacaccaabaacacacacccbabcabcabbbbacabbbabccacbcbacccbacbcbbcabacbcaabbacccbbbcaaabcaccaacbabbabcccccaabbbaccccccbacacbbbcaaacaaacaaccabaabbccbaabbcaccaaaacabaabacabacbcabccbbbbaabbbacbabbcbcbcabbaabaabcccbaabcbabcacaccbaabbaccbacbbccaacbbcbcbabcacbcabbcabbacccabcccaaaabcbaccaacacbacbcbccccbcaaabcbcbaabaccbcabaabbbacbcbcaaaccbcaaabcbcbaaabaabbaaacbbacbabccbbababbaacbcccbbccbcabbcbcbcbbcabccababcbccbaaababccaaccababcbbcacabaabcaccbaccbabcaaccaccacbbcaaaccaaaabbabbcabcccbbbacaaabbcabcbbcaaabbbbccbcbccabcabacbabcbacccacacabaabbbbbbcbcbcccbbacaaabababccbabacccaccbbcaacababcccaabbbbabacbcccacbaaacccaabbbababcbaabbcaaaacccbbbbbbaabbccabb
+cabcccaabcbcbaaabcbbbbcbbccacabcacbcbaababbaacaaaabcbabbacccacacccbcbacbbcbcabcaaabacacabbcbcaababbcabbbacaacabaabcbccccbabaacccbbcaabbbbaabbccacbcaaaacbbbbacbbbbbbabcbbcccabbabaabbcccbcacaacccababbbbbabbcaaaabaaacabccbaaabacacbccbbaccbbaacbcacabbaaacbbaaacacbbacccacabababccbbaccacbbbabcbbccaabcaacbbabcbacabaccaaaccababcaacccbccabcccabacbaaababbbabacacccbaccaacbacbcbacabbbabbaaaabacbcbabcacbabccbabbaccabacaaabccbaabaabcbaabaaaabbbaccccccbbbcccbaaabcbccabcbbacaababaaccaaacaaccbcaccbcbaccabacaaabbcabbcaabbbabbabaccabcbabaaaabcaacabacababcabccbacaccccbccbcabbcbbbcccccccacccccccabaccbbbcbbaaaaccaabcabbccacacccbcaaccbcbabbcaacccbacaaabccaabaabbbacabacacacbaabbaaaacacccabaaabbabbbcaabccacbbbbbcccacbabccaaabbaabacbccbcbbcabbccbacbacbccaaacbcbaabcacacaabaaabbbaaccaacabaabbaaccaccbcbacaccacbcbcaacbabbbacbbaabcbbacacaabbcbcabbababaaacbacaaccbacbbacabbcccccbbbcaaaaabcaccaccbcabaccabcaccbbbbbaabaccaabbbabbbbbaacabaaccbcbbaabacabbbccaaaabccbcbaacccbbbaacabccacccccccbaccbaccaaacabcbaabcbbcbacaaabcba
+',
+                            'expected_output' => 'yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'banana
+banana
+',
+                            'expected_output' => 'yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'aaabbc
+aabbcc
+',
+                            'expected_output' => 'no',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'longest-substring-without-repeating-characters',
+                'title' => 'Longest substring without repeating characters',
+                'problem' => [
+                    'title' => 'Longest substring without repeating characters',
+                    'description' => 'Print the length of the longest substring of s in which no letter appears more than once. A substring is a run of consecutive characters.
+
+Input
+One line with the word s. It may be empty.
+
+Output
+One line with the length.
+
+Constraints
+0 <= length of s <= 1000
+s contains only lowercase letters a-z.',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => 'abcabcbb
+',
+                            'expected_output' => '3',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => 'bbbbb
+',
+                            'expected_output' => '1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => 'abcdefghijklmnopqrstuvwxyz
+',
+                            'expected_output' => '26',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'abcbdefa
+',
+                            'expected_output' => '6',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'a
+',
+                            'expected_output' => '1',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'gscnxocprgdobsuhfkemssxgsnbkpzgnnrjvvdsmsebutalittzwifwdlusyeyqakikdsoksypphlimvledgcivaqcsckuiyvccuydjnqmnwjyhqdrzplswtosbruegwwqpbjqifdzokvqnjaicfaldicnxcygxrmkedcyxtcplpljvqnbdlutwcpovsoqvaddqeuccaftpkbavnaogrbfdoirulfmrucejcxtobnpuffngszbqilumbbwhfjmubgqnkcdpnhftchpgdqxinfkqimenparcalzkosxqsmluvdvkssfrqshlzipagargjdtosqkxqsfjuopdxxjzejzcxkklqozkuypncvvmgdmmbfhkwyyayzxgvelpuaftueudhaaibcuaiduytwieoufirehdbqgoycmvuiylonujuxmysczgzljsvjgvgphrphpvrjufeojlbaoakqtrdxyrarwqwrrextunskzuqmiyubaohogttuyedytcaqvvedewxyrpmjvyhrgfotdbjacddezvjprziajmpqsvwxzeocgirapbiqrkiovlpdfpykfthvokeqgjqpcwnlbzhjpalocppnefodeppktxtzcptolhrpzwooklkrgilmudrsxntregiyxpdwtwueguqegetwgbelpytboyzueekkbyqnuoxbwwzfzpeelasceyzskiclndqcxgxgpnipxoajwgzvxhspkbmnoucyflnctjiaulqcmuysesgdiakoaakapmbiruqqjlbnzcehtoasfizmxfwlbcaunturphrxpelfelykimfcoslnhqzrasqufptfwsoikzmhalconmvzeujgiygunbgnzxeltfatznxmxobpdryutyyffabcejnplhxhuzalyidragydazpmchiixgcrugrkvmnglfwywxzisokxjoromectyloxjbgtrycfyjazbgwkiylsojokfhvrcvgoodcaqxgyrep
+',
+                            'expected_output' => '20',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'subarray-sum-equals-k',
+                'title' => 'Subarray sum equals K',
+                'problem' => [
+                    'title' => 'Subarray sum equals K',
+                    'description' => 'Count the contiguous, non-empty subarrays whose values add up to exactly k.
+
+Input
+Line 1: n, the number of values.
+Line 2: the n values, separated by single spaces.
+Line 3: k.
+
+Output
+One line with the number of subarrays.
+
+Constraints
+1 <= n <= 1000
+-1000 <= each value <= 1000
+-1000000 <= k <= 1000000
+The answer fits in a 32-bit int.',
+                    'difficulty' => 'hard',
+                    'test_cases' => [
+                        [
+                            'input' => '3
+1 1 1
+2
+',
+                            'expected_output' => '2',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '3
+1 2 3
+3
+',
+                            'expected_output' => '2',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '9
+0 0 -1 1 0 0 2 -2 0
+0
+',
+                            'expected_output' => '28',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '5
+-3 5 -2 4 -1
+3
+',
+                            'expected_output' => '3',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '1
+7
+-7
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '1000
+-2 2 2 0 -1 -2 0 -1 2 1 1 0 1 1 -1 -2 0 -2 2 1 0 0 1 0 2 -2 2 -2 -2 2 -1 0 -1 0 -1 2 1 1 1 2 1 1 1 2 -1 1 -2 1 -1 -2 1 0 0 -1 1 -2 0 0 -2 0 -1 -2 0 0 1 -1 0 0 0 0 -1 0 -1 2 0 0 0 -1 -2 2 -2 0 -2 -2 2 -2 -2 -1 1 -1 -1 -1 -2 1 -2 0 1 0 0 0 0 1 -2 2 0 1 -2 1 2 1 1 0 -2 0 -2 -2 0 1 0 -1 -1 0 -2 -2 -2 1 0 0 2 0 2 0 2 0 2 0 0 -1 -1 -2 -2 2 2 -2 -2 0 0 -2 0 -2 0 0 0 -2 0 1 -2 0 1 -1 2 2 2 -2 -1 -2 2 2 -1 0 0 0 -2 2 2 2 1 -2 -2 2 1 2 -1 -2 -1 0 -1 -2 -1 1 1 1 -1 0 0 -2 1 -1 1 0 -1 0 1 -1 -1 0 0 -2 2 1 -2 -2 -2 -2 0 0 -1 1 1 -2 0 0 2 1 2 0 1 -1 -1 0 -1 1 -1 -2 -1 0 0 1 0 1 2 -1 0 2 0 -2 0 -2 2 -1 0 0 0 0 0 1 -2 1 0 -1 2 -2 -1 2 -1 1 2 0 -1 -2 -2 -1 -1 -1 0 2 -2 0 1 0 0 2 -2 0 1 2 0 -1 2 2 0 0 0 1 -1 0 -1 -1 2 2 2 0 0 -2 -2 2 -2 -2 -2 -1 0 0 0 -2 2 1 0 0 0 0 0 2 0 0 -1 2 0 1 0 0 1 1 2 0 2 0 1 -1 0 0 1 0 1 -1 0 -1 -1 -1 1 0 2 -1 0 -1 0 -1 0 -2 -1 1 2 0 -1 2 1 2 0 0 0 1 -2 1 0 -1 0 -2 -1 0 1 0 2 0 0 0 2 -1 -2 1 0 2 0 0 2 -1 0 0 2 -2 0 2 0 -2 0 0 0 -2 -2 2 -2 0 -1 1 -2 -1 -2 1 -2 1 -1 -2 2 1 -1 -1 -1 -1 1 -1 0 1 -1 1 1 1 1 2 1 2 0 2 1 0 2 0 -2 0 0 1 -1 1 2 -1 2 2 -2 0 -2 1 2 -1 -1 -2 -2 -2 0 2 1 0 0 -1 0 0 1 0 0 -2 0 1 2 -1 1 -1 2 2 0 2 -1 -1 0 1 -1 1 0 0 0 0 0 0 0 1 2 0 2 0 -2 -2 -2 2 2 2 -2 -2 1 -1 2 1 -2 2 2 -2 -1 0 0 0 -1 0 -1 2 0 -2 0 2 2 -2 -2 2 -2 0 0 0 -1 0 2 1 -1 1 -1 -2 2 0 1 -2 0 -2 0 -1 0 -1 2 0 0 2 0 -1 2 2 -1 2 0 2 -1 2 -1 2 -1 2 -2 0 1 1 0 -1 0 -2 2 1 0 0 0 -1 2 0 1 -2 1 1 1 2 -2 -1 1 -2 0 -1 1 1 2 0 -2 2 2 2 0 -1 -2 0 2 0 0 2 0 1 -2 2 -1 -1 0 -1 -1 -1 1 -1 0 0 -1 0 1 -1 -1 1 2 2 -2 0 -2 0 -2 -1 2 1 1 0 -1 2 0 -2 2 0 -1 -2 -2 2 2 -1 -1 0 0 -2 -2 0 2 0 -1 0 -1 -1 -2 2 1 1 -2 1 -1 -1 1 2 -1 2 0 1 -1 2 2 2 0 1 0 0 2 -2 0 1 0 2 -2 0 2 0 1 -2 -1 -2 -1 2 -2 0 0 0 1 0 -2 2 2 0 -1 -2 0 1 -1 2 1 0 2 0 2 0 -2 -1 -1 2 1 -1 0 0 0 2 0 0 0 0 0 0 2 2 0 -2 0 0 0 0 0 2 -2 0 2 0 -2 -1 -1 0 0 -2 -1 -2 2 1 0 -2 2 -1 -2 1 1 1 -2 2 0 1 1 -1 2 1 2 0 -2 -1 0 1 -1 0 0 1 1 1 -2 2 0 1 2 0 0 -2 1 -2 1 -2 0 -2 0 -2 -2 -2 0 0 0 0 1 -1 0 1 -1 -2 0 1 -2 -2 0 0 2 0 -2 0 1 -2 -2 1 0 0 0 2 0 1 0 -1 1 0 0 -1 -2 -1 -2 0 1 0 0 -2 2 0 -1 0 0 -2 -1 2 0 0 -2 0 2 0 -1 -2 -2 -2 1 -1 2 0 2 0 0 2 1 1 1 2 2 1 0 0 0 2 0 -1 -1 -2 2 2 0 2 -1 0 2 0 0 0 -1 -1 -2 -2 -2 -2 0 2 1 0 1 2 0 1 2 -1 1 0 -1 0 2 -2 1 -2 -1 0 0 1 2 1 2 2 -2 0 0 -1 -1 0 -2 -2 1 -2 -1 -2 1 1 0 2 -1 2 0 -1 2 2 1 0 2 0 0 1 -2 -2 0 0 2 0 -2 0 -1 2 0 2 2 2 -2 0 0 1 0 0 1 0 -1 2
+3
+',
+                            'expected_output' => '11752',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
         'slug' => 'sorting-and-searching',
         'title' => 'Sorting and searching',
         'track' => 'algorithms',
