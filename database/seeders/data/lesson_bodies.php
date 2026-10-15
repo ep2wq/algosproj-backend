@@ -283,6 +283,92 @@ Space: O(n) for the stack and the answer array.
 Write the stack version for the problem below, and compare it with the brute force on small inputs.
 TEXT,
 
+    'reverse-a-linked-list' => <<<'TEXT'
+A linked list stores its values in nodes. Each node holds a value and next, a pointer to the following node. The last node's next is nothing: None in Python, null in Java and JavaScript, nullptr in C++. The list is a pointer to its first node, the head. To visit every value, start at the head and follow next until you reach nothing.
+
+Unlike an array, a linked list has no index to jump to, but reordering it only means changing next pointers.
+
+## Example
+Take 1 -> 2 -> 3, with prev at nothing and cur at the head.
+cur = 1: save its next, 2. Point 1 at prev, nothing. Then prev = 1 and cur = 2.
+cur = 2: save 3. Point 2 at 1. Then prev = 2 and cur = 3.
+cur = 3: save nothing. Point 3 at 2. Then prev = 3 and cur = nothing.
+cur is nothing, so stop. prev is the new head: 3 -> 2 -> 1.
+
+## How to think about it
+First build the list. A node is a small class with val and next in Python and Java, an object { val, next } in JavaScript, and a struct in C++. Keep a tail pointer, so each new node is attached in O(1).
+
+Then walk once with prev and cur. At each node, save cur.next, point cur.next back at prev, and step both pointers forward. When cur runs out, prev is the new head.
+
+## Complexity
+Time: O(n), because each node is visited once to build, once to reverse, once to print.
+Space: O(n) for the nodes; the reversal itself needs O(1).
+
+## Watch out for
+- Losing the rest of the list. Set cur.next = prev before saving the old cur.next, and the remaining nodes are lost.
+- Returning the wrong head. After the loop, the new head is prev, not cur.
+- n = 0. The loop never runs, and the answer is an empty line.
+
+Printing the input backwards also passes the problem below, so turn the pointers around on purpose.
+TEXT,
+
+    'middle-of-a-linked-list' => <<<'TEXT'
+Each node holds a value and next, the pointer to the following node; the last node's next is nothing. A linked list doesn't know its length, so you can't jump to the middle. Counting takes two passes: walk once to count n, then take n / 2 steps, rounded down. Two pointers take one pass: slow moves one node at a time and fast moves two. When fast reaches the end, slow has covered half the distance.
+
+## Example
+Take 1 2 3 4 5. Both pointers start at the head, 1.
+Step 1: slow moves to 2, fast moves to 3.
+Step 2: slow moves to 3, fast moves to 5.
+fast.next is nothing, so stop. slow is at 3, the middle.
+Take 1 2 3 4 5 6.
+Step 1: slow 2, fast 3. Step 2: slow 3, fast 5.
+Step 3: slow moves to 4, and fast moves past 6 to nothing.
+fast is nothing, so stop. slow is at 4, the second of the two middles, 3 and 4.
+
+## How to think about it
+Loop while fast and fast.next are both not nothing, moving slow one step and fast two. The first check ends the loop for an even n, the second for an odd n. Slow then lands on the second middle when n is even, as the problem asks.
+
+## Complexity
+Time: O(n), because fast crosses the list once.
+Space: O(1) extra for the two pointers, plus O(n) for the nodes.
+
+## Watch out for
+- The loop condition. Checking only fast crashes on an odd length, when the last node's next.next is read. Checking only fast.next crashes on an even length, once fast is nothing.
+- Which middle. Stopping when fast.next.next is nothing gives the first middle: 3 instead of 4 for 1 2 3 4 5 6, and 10 instead of 20 for 10 20.
+- n = 1. The loop never runs, and the head is the answer.
+
+The fast and slow pointers come back in the next lesson, so write them here instead of counting first.
+TEXT,
+
+    'detect-a-cycle' => <<<'TEXT'
+A normal list ends in nothing. If the last node points back to an earlier node, the walk never ends: that loop is a cycle.
+
+A set of visited nodes works but needs O(n) extra memory. Floyd's method uses the slow and fast pointers from Middle of a linked list instead. Without a cycle, fast reaches the end. With one, both end up in the loop and fast gains one node per step, so it lands on slow.
+
+## Example
+Take 3 2 0 -4 with pos 1: the -4 node links back to the 2 node.
+Both start at 3.
+Step 1: slow moves to 2, fast moves to 0.
+Step 2: slow moves to 0, fast moves to -4 and on to 2.
+Step 3: slow moves to -4, fast to 0 and on to -4. Same node, so print yes.
+Take 1 2 1 2 with pos -1. In step 2, fast moves past the last node to nothing, so print no.
+
+## How to think about it
+Create the nodes in an array, link each to the next, and if pos is not -1, point the last node at node pos. Start slow and fast at the head. While fast and fast.next are not nothing, move both, then check whether they are the same node. If the loop ends, there is no cycle.
+
+## Complexity
+Time: O(n). Slow enters the loop within n steps, and fast catches it within one more lap.
+Space: O(1) extra; O(n) with a visited set.
+
+## Watch out for
+- Compare nodes, not values. In 1 2 1 2 the values repeat without a cycle. Use is in Python, == on objects in Java, === in JavaScript, pointer equality in C++.
+- Compare after moving: both start at the head, so checking first always says yes.
+- A node linking to itself. With n = 1 and pos = 0, the answer is yes.
+- n = 0. With no nodes, the answer is no.
+
+Answering from pos alone would pass the problem below; write the fast and slow pointers anyway.
+TEXT,
+
     'sort-an-array' => <<<'TEXT'
 Sorting puts numbers in order, smallest first. The three methods here are the same three as in the visualization section on this page; watch each one there on a small array before you code it.
 
