@@ -455,6 +455,306 @@ Space: O(n) for the list.
 The grader only sees the final order, so it can't tell one comparison from two passes.
 TEXT,
 
+    'bank-accounts' => <<<'TEXT'
+A class is a blueprint, and an object is one thing built from it. A class bundles fields, the data each object holds, with methods, the functions that use that data. The constructor runs when an object is created and sets up its fields.
+
+The program reads commands from standard input, and your classes do the work: main reads each line, finds the right Account and calls its method.
+
+## Example
+OPEN ann starts a balance at 0. DEPOSIT ann 100, then WITHDRAW ann 30, leaves 70. WITHDRAW ann 100 asks for too much: print Insufficient funds and change nothing. BALANCE ann prints 70.
+
+## How to think about it
+Keep a dictionary from name to Account. Each object has its own balance, so ann and bob never mix.
+
+The trap is shared state. A class-level field in Python, or a static field elsewhere, belongs to the class, so every account would share one number. The snippets show both. In Java and C++, the lines after // in main: go inside main.
+
+## Python
+    class Account:
+        opened = 0            # class-level: one value shared by all accounts
+        def __init__(self):
+            self.balance = 0  # field: every object has its own
+            Account.opened += 1
+        def deposit(self, amount):
+            self.balance += amount
+
+    a, b = Account(), Account()
+    a.deposit(50)
+    print(a.balance, b.balance, Account.opened)  # 50 0 2
+
+## Java
+    class Account {
+        static int opened = 0;  // shared by all accounts
+        long balance = 0;
+        Account() { opened++; }
+        void deposit(long amount) { balance += amount; }
+    }
+    // in main:
+    Account a = new Account(), b = new Account();
+    a.deposit(50);
+    System.out.println(a.balance + " " + b.balance + " " + Account.opened);  // 50 0 2
+
+## JavaScript
+    class Account {
+      static opened = 0    // shared by all accounts
+      constructor() {
+        this.balance = 0
+        Account.opened++
+      }
+      deposit(amount) { this.balance += amount }
+    }
+    const a = new Account(), b = new Account()
+    a.deposit(50)
+    console.log(a.balance, b.balance, Account.opened)  // 50 0 2
+
+## C++
+    class Account {
+    public:
+        static int opened;      // shared by all accounts
+        long long balance = 0;
+        Account() { opened++; }
+        void deposit(long long amount) { balance += amount; }
+    };
+    int Account::opened = 0;
+    // in main:
+    Account a, b;
+    a.deposit(50);
+    cout << a.balance << " " << b.balance << " " << Account::opened << "\n";  // 50 0 2
+
+## Complexity
+O(1) per command on average with a hash map.
+
+## Watch out for
+- Five deposits of 1,000,000,000 make 5,000,000,000, so use 64-bit integers.
+- Withdrawing exactly the balance is allowed and leaves 0.
+
+A dictionary of plain numbers also passes; the grader only sees the lines. Write the class anyway.
+TEXT,
+
+    'stack-class' => <<<'TEXT'
+Encapsulation means an object hides its data and lets outside code change it only through its methods, which protect its rules, such as never popping an empty stack.
+
+The program reads commands from standard input, and your Stack class does the work: main calls push, pop, peek or size for each line.
+
+Hiding works differently in each language:
+- Python: a leading underscore, as in _items, means internal, by convention only.
+- Java and C++: private fields. Outside access doesn't compile.
+- JavaScript: a #private field. Outside access is a SyntaxError.
+
+## Example
+PUSH 3, PUSH 7, then PEEK prints 7, POP prints 7 and removes it, and SIZE prints 1. On an empty stack, POP and PEEK print empty.
+
+## How to think about it
+Keep the items in a list inside the class, with the top at the end. pop and peek return nothing (None or null) on an empty stack, and main prints empty. size is a getter: it reads private data without exposing it. In Java and C++, the lines after // in main: go inside main.
+
+## Python
+    class Stack:
+        def __init__(self):
+            self._items = []
+        def push(self, x):
+            self._items.append(x)
+        def pop(self):
+            return self._items.pop() if self._items else None
+        def size(self):
+            return len(self._items)
+
+    s = Stack()
+    s.push(4)
+    print(s.pop(), s.pop(), s.size())  # 4 None 0
+
+## Java
+    class Stack {
+        private final ArrayList<Long> items = new ArrayList<>();
+        void push(long x) { items.add(x); }
+        Long pop() { return items.isEmpty() ? null : items.remove(items.size() - 1); }
+        int size() { return items.size(); }
+    }
+    // in main:
+    Stack s = new Stack();
+    s.push(4);
+    System.out.println(s.pop() + " " + s.pop() + " " + s.size());  // 4 null 0
+
+## JavaScript
+    class Stack {
+      #items = []
+      push(x) { this.#items.push(x) }
+      pop() { return this.#items.length > 0 ? this.#items.pop() : null }
+      size() { return this.#items.length }
+    }
+    const s = new Stack()
+    s.push(4)
+    console.log(s.pop(), s.pop(), s.size())  // 4 null 0
+
+## C++
+    class Stack {
+        vector<long long> items;  // class members are private by default
+    public:
+        void push(long long x) { items.push_back(x); }
+        bool empty() const { return items.empty(); }
+        long long pop() { long long top = items.back(); items.pop_back(); return top; }
+        int size() const { return items.size(); }
+    };
+    // in main:
+    Stack s;
+    s.push(4);
+    cout << s.pop() << " " << s.empty() << " " << s.size() << "\n";  // 4 1 0
+
+## Complexity
+O(1) per command.
+
+## Watch out for
+- PEEK must not remove the top; POP must.
+- 0 is a value, not empty. if value: treats 0 as nothing.
+- In C++, check empty() before back().
+
+A bare list in main also passes; the grader can't see privacy.
+TEXT,
+
+    'shapes' => <<<'TEXT'
+A subclass inherits from a base class and can override its methods: a Square is a Rectangle with equal sides. Polymorphism means a loop calling area() on a list of Shape runs each object's own version.
+
+The program reads the shapes from standard input, and your classes do the work: main puts a Circle, Rectangle or Square for each line into one list.
+
+## Example
+circle 1, rect 2 3 and square 4 print 3.14, 6.00 and 16.00, then total 25.14. Round only when printing, not before adding.
+
+## How to think about it
+Circle overrides area() with pi * r * r, using math.pi, Math.PI or M_PI: 3.14 gives 314.00 for r = 10, not 314.16. In Java and C++, the lines after // in main: go inside main.
+
+## Python
+    class Shape:
+        def area(self):
+            return 0.0
+    class Rectangle(Shape):
+        def __init__(self, w, h):
+            self.w, self.h = w, h
+        def area(self):  # overrides Shape.area
+            return self.w * self.h
+    class Square(Rectangle):
+        def __init__(self, s):
+            super().__init__(s, s)  # parent constructor
+
+    for shape in [Rectangle(2, 3), Square(4)]:
+        print(f"{shape.area():.2f}")  # 6.00, then 16.00
+
+## Java
+    class Shape { double area() { return 0; } }
+    class Rectangle extends Shape {
+        double w, h;
+        Rectangle(double w, double h) { this.w = w; this.h = h; }
+        @Override double area() { return w * h; }
+    }
+    class Square extends Rectangle { Square(double s) { super(s, s); } }
+    // in main:
+    for (Shape shape : List.of(new Rectangle(2, 3), new Square(4)))
+        System.out.println(String.format(Locale.ROOT, "%.2f", shape.area()));  // 6.00, 16.00
+
+## JavaScript
+    class Shape { area() { return 0 } }
+    class Rectangle extends Shape {
+      constructor(w, h) { super(); this.w = w; this.h = h }
+      area() { return this.w * this.h }
+    }
+    class Square extends Rectangle { constructor(s) { super(s, s) } }
+    for (const shape of [new Rectangle(2, 3), new Square(4)]) console.log(shape.area().toFixed(2))  // 6.00, 16.00
+
+## C++
+    class Shape {
+    public:
+        virtual double area() const { return 0; }
+        virtual ~Shape() = default;
+    };
+    class Rectangle : public Shape {
+        double w, h;
+    public:
+        Rectangle(double w, double h) : w(w), h(h) {}
+        double area() const override { return w * h; }
+    };
+    class Square : public Rectangle { public: Square(double s) : Rectangle(s, s) {} };
+    // in main:
+    Rectangle rect(2, 3);
+    Square square(4);
+    const Shape* shapes[] = {&rect, &square};  // base-type pointers
+    for (const Shape* shape : shapes) printf("%.2f\n", shape->area());  // 6.00, 16.00
+
+## Complexity
+O(n) for n shapes.
+
+## Watch out for
+- In C++, without virtual, shape->area() runs Shape's version and prints 0.00.
+- Java's String.format follows the computer's language, so German prints 6,00; Locale.ROOT prints a point.
+
+Ifs on the shape name also pass; the grader only sees numbers.
+TEXT,
+
+    'fee-calculator' => <<<'TEXT'
+An interface lists methods a class promises to have, without code. An abstract class can't be created and has abstract methods, with no body, for subclasses to write. Both let main call fee(amount) on any Fee without knowing its kind.
+
+The program reads lines from standard input, and your classes do the work: main looks up the Fee for each method name and calls it.
+
+Python uses ABC, Java an interface, C++ a pure virtual method (= 0); JavaScript has none, so a base method that throws stands in.
+
+## Example
+card 100, cash 50 and transfer 10 print 2, 0 and 5, then total 7. card 49 gives 0.98, rounded down to 0.
+
+## How to think about it
+Keep one object per class in a map from name to Fee. The card fee needs integer division (// in Python, Math.floor in JavaScript): round(0.98) gives 1. In Java and C++, the lines after // in main: go inside main.
+
+## Python
+    from abc import ABC, abstractmethod
+    class Fee(ABC):
+        @abstractmethod
+        def fee(self, amount): ...
+    class Card(Fee):
+        def fee(self, amount):
+            return amount * 2 // 100
+    class Transfer(Fee):
+        def fee(self, amount):
+            return 5
+
+    methods = {"card": Card(), "transfer": Transfer()}
+    print(methods["card"].fee(149), methods["transfer"].fee(149))  # 2 5
+
+## Java
+    interface Fee { long fee(long amount); }
+    class Card implements Fee { public long fee(long amount) { return amount * 2 / 100; } }
+    class Transfer implements Fee { public long fee(long amount) { return 5; } }
+    // in main:
+    Map<String, Fee> methods = Map.of("card", new Card(), "transfer", new Transfer());
+    System.out.println(methods.get("card").fee(149) + " " + methods.get("transfer").fee(149));  // 2 5
+
+## JavaScript
+    class Fee { fee(amount) { throw new Error('not implemented') } }
+    class Card extends Fee { fee(amount) { return Math.floor(amount * 2 / 100) } }
+    class Transfer extends Fee { fee(amount) { return 5 } }
+    const methods = { card: new Card(), transfer: new Transfer() }
+    console.log(methods.card.fee(149), methods.transfer.fee(149))  // 2 5
+
+## C++
+    class Fee {
+    public:
+        virtual long long fee(long long amount) const = 0;
+    };
+    class Card : public Fee {
+    public: long long fee(long long amount) const override { return amount * 2 / 100; }
+    };
+    class Transfer : public Fee {
+    public: long long fee(long long) const override { return 5; }
+    };
+    // in main:
+    Card card;
+    const Fee& f = card;
+    cout << f.fee(149) << " " << Transfer().fee(149) << "\n";  // 2 5
+
+## Complexity
+O(n) for n lines.
+
+## Watch out for
+- In Python, Fee() raises TypeError; in C++, Fee f; doesn't compile.
+- In Java, a method that implements an interface must be public.
+
+Ifs on the method name also pass; the grader only sees numbers.
+TEXT,
+
     'reverse-a-string' => <<<'TEXT'
 A string is a sequence of characters, so you can treat it like an array. Reversing it puts the last character first and the first character last.
 
