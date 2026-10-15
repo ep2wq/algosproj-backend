@@ -369,6 +369,93 @@ Space: O(1) extra; O(n) with a visited set.
 Answering from pos alone would pass the problem below; write the fast and slow pointers anyway.
 TEXT,
 
+    'valid-anagram' => <<<'TEXT'
+A hash table stores values by key. A hash function turns each key into a position, so looking up, adding or updating a key takes O(1) on average. Use a dict in Python, a HashMap in Java, a Map in JavaScript, an unordered_map in C++. Two Sum used one to remember positions; here it counts.
+
+Two words are anagrams when they use the same letters the same number of times. Count the letters of the first word, then take away the letters of the second.
+
+## Example
+Take "anagram" and "nagaram", both 7 letters.
+Counting "anagram" gives a: 3, n: 1, g: 1, r: 1, m: 1.
+Take away n, a, g, a, r, a, m. Every count ends at 0, so print yes.
+Take "rat" and "car". Counting "rat" gives r: 1, a: 1, t: 1. Take away c: it was never counted, so it drops to -1. Print no.
+
+## How to think about it
+Compare the lengths first; different lengths never match. Then add 1 for each letter of s and take 1 away for each letter of t. If a count goes below 0, t uses that letter more often than s. With equal lengths and no negative count, every count is 0 and the answer is yes.
+
+Comparing sorted copies also works, in O(n log n). At 1000 letters both pass, so the grader can't tell them apart. Write the counting version anyway: the next two lessons build on it.
+
+## Complexity
+Time: O(n) on average, one map update per letter.
+Space: O(1), because the map holds at most 26 keys.
+
+## Watch out for
+- Same letters, different counts. "aab" and "abb" have the same length and letters, but the answer is no.
+- Empty lines. Either word can be empty; two empty words are anagrams. Read whole lines as in Reverse a string: nextLine() in Java, getline in C++. next() and cin >> s skip an empty line. In JavaScript, split the input into lines before trimming them.
+
+Count with a map in the problem below, and test an empty word first.
+TEXT,
+
+    'longest-substring-without-repeating-characters' => <<<'TEXT'
+A sliding window is a stretch of the string, between positions left and right, that moves forward instead of being rebuilt. Here it holds no repeated letter. Each step adds the letter at right; if it is already in the window, left jumps just past its earlier copy. A hash map from letter to last-seen position finds that copy in O(1).
+
+## Example
+Take "abcabcbb", with left = 0 and best = 0.
+right = 0 to 2: a, b, c are new. Window "abc", so best = 3.
+right = 3, a: last seen at 0, so left = 1. Window "bca".
+right = 4, b: last seen at 1, so left = 2. Window "cab".
+right = 5, c: last seen at 2, so left = 3. Window "abc".
+right = 6, b: last seen at 4, so left = 5. Window "cb".
+right = 7, b: last seen at 6, so left = 7. Window "b".
+Print 3.
+
+## How to think about it
+For each right: if its letter was last seen at p >= left, set left = p + 1. Then store right as its last position and update best with right - left + 1. left only moves forward, so each letter enters and leaves the window once.
+
+Extending from every start until a letter repeats also passes, since no window holds more than 26 letters. The grader can't force the window here; write it anyway, because it stays O(n) for any alphabet.
+
+## Complexity
+Time: O(n), one lookup and one update per letter.
+Space: O(1), at most 26 entries.
+
+## Watch out for
+- Old positions. In "abba" the last a was seen at 0, but left is already 2. Jumping back to 1 gives 3 instead of 2; "tmmzuxt" gives 6 instead of 5. Only move left forward.
+- Emptying the window on a repeat. It drops letters that are still valid: "dvdf" gives 2, but "vdf" has length 3.
+- An empty line. The answer is 0.
+
+Write the window in the problem below, and try abba first.
+TEXT,
+
+    'subarray-sum-equals-k' => <<<'TEXT'
+A prefix sum is the running total so far. If it is sum now and was p earlier, the numbers in between add up to sum - p. So a subarray ending here adds up to k exactly when an earlier total equals sum - k. A hash map from each total to how often it has appeared counts those in O(1) on average.
+
+## Example
+Take 1 2 3 with k = 3. The map starts as {0: 1}.
+Read 1: sum = 1. Look up -2: not there. Store 1.
+Read 2: sum = 3. Look up 0: seen once, so count = 1 (the subarray 1 2). Store 3.
+Read 3: sum = 6. Look up 3: seen once, so count = 2 (the subarray 3). Store 6.
+Print 2.
+
+## How to think about it
+For each number, add it to sum, add the stored count of sum - k to the answer, and only then add 1 to the count of sum. Looking up before storing, as in Two Sum, keeps empty subarrays out, even when k = 0.
+
+The map starts with {0: 1} because before the first number the total is 0: the empty prefix. Without it, subarrays starting at position 0 are missed; for 1 2 3, the subarray 1 2 is lost and the answer is 1.
+
+A sliding window fails here: with negative numbers, growing the window can lower the sum.
+
+Two loops over every start and end take O(n^2), about 500000 sums at n = 1000, and pass here. The grader can't force the map at this size; write it anyway.
+
+## Complexity
+Time: O(n) on average, one lookup and one update per number.
+Space: O(n) for the map.
+
+## Watch out for
+- Zeros. In 0 0 0 with k = 0, all 6 subarrays add up to 0.
+- Add the stored count, not 1, and store counts, not positions: one total can match several earlier ones.
+
+Use the map in the problem below, and try 0 0 0 with k = 0 first.
+TEXT,
+
     'sort-an-array' => <<<'TEXT'
 Sorting puts numbers in order, smallest first. The three methods here are the same three as in the visualization section on this page; watch each one there on a small array before you code it.
 
