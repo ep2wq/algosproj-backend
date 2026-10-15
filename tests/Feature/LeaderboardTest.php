@@ -29,10 +29,10 @@ class LeaderboardTest extends TestCase
         $this->getJson('/api/leaderboard')
             ->assertOk()
             ->assertExactJson([
-                ['rank' => 1, 'name' => 'Top', 'points' => 30],
-                ['rank' => 2, 'name' => 'Earlier tie', 'points' => 20],
-                ['rank' => 2, 'name' => 'Later tie', 'points' => 20],
-                ['rank' => 4, 'name' => 'Low', 'points' => 5],
+                ['rank' => 1, 'name' => 'Top', 'points' => 30, 'is_you' => false],
+                ['rank' => 2, 'name' => 'Earlier tie', 'points' => 20, 'is_you' => false],
+                ['rank' => 2, 'name' => 'Later tie', 'points' => 20, 'is_you' => false],
+                ['rank' => 4, 'name' => 'Low', 'points' => 5, 'is_you' => false],
             ]);
     }
 
@@ -46,6 +46,33 @@ class LeaderboardTest extends TestCase
         $this->getJson('/api/leaderboard?limit=3')->assertOk()->assertJsonCount(3)
             ->assertJsonPath('0.name', 'User 101');
         $this->getJson('/api/leaderboard?limit=500')->assertOk()->assertJsonCount(100);
+    }
+
+    public function test_leaderboard_marks_only_the_requesters_row_when_name_and_points_tie(): void
+    {
+        $first = $this->userWithPoints('Same', 10, '2026-01-01 00:00:00');
+        $second = $this->userWithPoints('Same', 10, '2026-02-01 00:00:00');
+
+        foreach ([[$first, [true, false]], [$second, [false, true]]] as [$user, $expected]) {
+            $this->app['auth']->forgetGuards();
+            $rows = $this->withToken($user->createToken('api')->plainTextToken)
+                ->getJson('/api/leaderboard')
+                ->assertOk()
+                ->json();
+
+            $this->assertSame($expected, array_column($rows, 'is_you'));
+            $this->assertArrayNotHasKey('id', $rows[0]);
+        }
+    }
+
+    public function test_leaderboard_logged_out_marks_no_row(): void
+    {
+        $this->userWithPoints('Top', 30);
+        $this->userWithPoints('Other', 20);
+
+        $rows = $this->getJson('/api/leaderboard')->assertOk()->json();
+
+        $this->assertSame([false, false], array_column($rows, 'is_you'));
     }
 
     public function test_leaderboard_me_returns_rank_and_points(): void

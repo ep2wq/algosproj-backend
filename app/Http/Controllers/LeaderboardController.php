@@ -16,19 +16,22 @@ class LeaderboardController extends Controller
             ->orderBy('created_at')
             ->orderBy('id')
             ->limit($limit)
-            ->get(['name', 'points']);
+            ->get(['id', 'name', 'points']);
+
+        // The route is public; a token, if sent, marks the requester's row. Ids are not returned.
+        $meId = auth('sanctum')->id();
 
         // Same rank rule as /leaderboard/me: 1 + number of users with more points.
         $rank = 0;
         $previousPoints = null;
 
-        return response()->json($users->values()->map(function ($user, $index) use (&$rank, &$previousPoints) {
+        return response()->json($users->values()->map(function ($user, $index) use (&$rank, &$previousPoints, $meId) {
             if ($user->points !== $previousPoints) {
                 $rank = $index + 1;
                 $previousPoints = $user->points;
             }
 
-            return ['rank' => $rank, 'name' => $user->name, 'points' => $user->points];
+            return ['rank' => $rank, 'name' => $user->name, 'points' => $user->points, 'is_you' => $user->id === $meId];
         }));
     }
 
