@@ -119,6 +119,123 @@ Space: O(1) extra, because only best is kept (plus the input, if you store it).
 Solve the problem below in one pass, without sorting.
 TEXT,
 
+    'even-or-odd' => <<<'TEXT'
+Input arrives as text, so first turn it into a number. In Python that is int(input()). In Java, use a Scanner and nextInt(). In C++, cin >> n. In JavaScript, read the line and call Number on it.
+
+A number is even when it splits into two equal whole halves. The remainder operator, %, gives what is left over after a division: 7 % 2 is 1, because 7 = 3 * 2 + 1. So n is even exactly when n % 2 is 0.
+
+## Example
+n = 7: 7 % 2 is 1, not 0, so print odd.
+n = 0: 0 % 2 is 0, so print even. Zero is even.
+n = -3: here the languages disagree. Python gives -3 % 2 = 1. Java, C++ and JavaScript give -1.
+
+## How to think about it
+The difference comes from how each language rounds the division. Python rounds -3 / 2 down, to -2, so the remainder is 1: -3 = -2 * 2 + 1. Java, C++ and JavaScript round toward zero, to -1, so the remainder is -1: -3 = -1 * 2 - 1.
+
+Both rules agree on one thing: an even number always leaves 0. So test n % 2 == 0 for even, and everything else is odd. That works for positive numbers, negative numbers and zero, in every language.
+
+## Complexity
+Time: O(1), one division.
+Space: O(1).
+
+## Watch out for
+- Testing n % 2 == 1 for odd. In Java, C++ and JavaScript, -3 % 2 is -1, so -3 comes out even. In Python the same test happens to work.
+- The size of n. 1,000,000,000 fits in a 32-bit int, whose largest value is 2,147,483,647, so int is enough here.
+- The exact words: even and odd, in lower case.
+
+The grader only sees the word, so it can't tell whether you used % or some other trick. Use %: it comes back in nearly every problem.
+TEXT,
+
+    'fizzbuzz' => <<<'TEXT'
+A loop repeats a block of code. A for loop runs it once for each value of a counter. In Python, for i in range(1, n + 1) gives i = 1, 2, ..., n. In Java, C++ and JavaScript, for (i = 1; i <= n; i++) does the same.
+
+A number is a multiple of 3 when dividing by 3 leaves nothing over: i % 3 == 0. The same goes for 5.
+
+## Example
+Take n = 15. The lines are:
+1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz.
+3, 6, 9 and 12 are multiples of 3. 5 and 10 are multiples of 5. 15 is a multiple of both, so it gets FizzBuzz.
+
+## How to think about it
+Inside the loop, use an if, else if, else chain. The computer checks the conditions from the top and runs only the first one that is true.
+
+That is why the FizzBuzz case goes first. A number that is a multiple of both 3 and 5 is also a multiple of 3. If the test for 3 comes first, 15 matches it, prints Fizz, and the FizzBuzz line is never reached. So test i % 15 == 0 first: a multiple of both 3 and 5 is exactly a multiple of 15. Then test 3, then 5, and otherwise print i.
+
+Another way works too: start with an empty word, add Fizz for a multiple of 3, add Buzz for a multiple of 5, and print i if the word is still empty.
+
+## Complexity
+Time: O(n), one pass through the numbers.
+Space: O(1) besides the output.
+
+## Watch out for
+- The range. Start at 1 and include n itself: range(1, n) stops at n - 1.
+- One answer per line, spelled exactly Fizz, Buzz and FizzBuzz.
+- n = 1. The only line is 1.
+
+The grader only compares the lines, so it can't tell which of the two ways you used. Try n = 15 first and check the last line says FizzBuzz.
+TEXT,
+
+    'count-vowels' => <<<'TEXT'
+A string is a piece of text, and a character is one letter, digit or space in it. Here the input is a whole line, and it can contain spaces, so read the full line, not one word.
+- Python: input() reads the whole line.
+- Java: Scanner's nextLine() or BufferedReader's readLine(). next() stops at the first space.
+- C++: getline(cin, s). cin >> s stops at the first space.
+- JavaScript: read all of standard input and take the first line.
+
+## Example
+Take the line Programming  Is   FUN.
+In lower case it is programming  is   fun.
+Go through it one character at a time. The vowels are o, a and i in programming, i in is, and u in fun. Print 5.
+An empty line, or a line of only spaces, has no vowels, so print 0.
+
+## How to think about it
+Loop over the characters: for ch in s in Python, or an index from 0 to the length minus 1 in the other languages. Compare each character with a, e, i, o and u, and add 1 to count when it matches.
+
+Characters compare exactly: A and a are different. So turn each character into lower case first, with lower() in Python, Character.toLowerCase in Java, tolower in C++ and toLowerCase() in JavaScript. Then five comparisons cover both cases.
+
+## Complexity
+Time: O(length of the line), one look at each character.
+Space: O(length of the line) to hold it.
+
+## Watch out for
+- Reading one word. On Programming  Is   FUN, cin >> s or next() reads only Programming and prints 3.
+- Upper case. Without lower-casing, the I and the U are missed, which also gives 3.
+- An empty line. The answer is 0, not an error.
+
+The grader only sees the number, so a regular expression or a built-in count also passes. Write the loop: it is the pattern behind most string problems.
+TEXT,
+
+    'factorial' => <<<'TEXT'
+n factorial, written n!, is 1 * 2 * 3 * ... * n. 0! is 1.
+
+A function is a named piece of code you can call. Its parameter is the value you pass in, and its return value is what it hands back. Here, factorial(n) returns n!.
+
+## Example
+5! = 1 * 2 * 3 * 4 * 5 = 120.
+For 0!, start with result = 1. The loop has nothing to multiply, so result stays 1.
+12! = 479001600, 13! = 6227020800 and 20! = 2432902008176640000.
+
+## How to think about it
+With a loop: set result = 1, multiply it by every i from 2 to n, and return it.
+With recursion, the function calls itself: factorial(n) = n * factorial(n - 1), with factorial(0) = 1 as the stopping point.
+
+The hard part is size. A number type has a largest value, and going past it is called overflow.
+- A 32-bit int, the default in Java and C++, holds up to 2,147,483,647. 12! fits, but 13! does not. Java silently wraps around and prints 1932053504; in C++ the result is undefined, and here it printed the same.
+- long in Java and long long in C++ hold up to about 9.2 * 10^18, so 20! fits.
+- Python integers grow as needed.
+- A JavaScript Number stores whole numbers exactly only up to 9,007,199,254,740,991. 19! is past that, so arithmetic may round without warning. Use BigInt instead: write 1n, convert with BigInt(n), and it never rounds.
+
+## Complexity
+Time: O(n) multiplications.
+Space: O(1) for the loop, O(n) for the recursion's calls.
+
+## Watch out for
+- int instead of long. 13 is the first input that breaks it.
+- Plain Number in JavaScript. Up to 21!, the results happen to come out right anyway, so the tests can't catch it. Use BigInt so the answer is right by design.
+
+The grader can't tell whether you wrote a function, a loop or recursion, and a table of the 21 answers would also pass. Write the function: the next lessons build on it.
+TEXT,
+
     'reverse-a-string' => <<<'TEXT'
 A string is a sequence of characters, so you can treat it like an array. Reversing it puts the last character first and the first character last.
 
