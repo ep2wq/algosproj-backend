@@ -45,16 +45,16 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
-  Seed: 9 modules, 27 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
+  Seed: 10 modules, 31 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
-  Lesson text (312-350 words each, with section headings) in `data/lesson_bodies.php`.
-  40 tests pass (SQLite in memory, `Http::fake()` for the sandbox).
+  Module `basics` is titled "Getting started" (was "Basics"; slug unchanged). Lesson text
+  (312-350 words, section headings) in `data/lesson_bodies.php`. 40 tests pass (SQLite in
+  memory, `Http::fake()` for the sandbox).
 - Next: AI hint endpoint and the `ai_hints` table.
 - Decisions: any sandbox failure returns 503 and stores no submission; logs never include
   code, tests or the secret. Leaderboard ties share a rank. Code size max 65536 bytes.
   Lesson text uses a tiny format (`## ` headings, `- ` lists, 4-space code, paragraphs);
   see README "Lesson text format". The frontend parses it; no markdown library.
 - Gotchas: `docker start algosproj-mysql` before `migrate` or `serve`. Run the sandbox on
-  8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly
-  (usually one line; the recursion problems print several), regenerated from a reference
-  solution, never by hand.
+  8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly and
+  come from a reference solution, never by hand (FizzBuzz and recursion print several lines).
