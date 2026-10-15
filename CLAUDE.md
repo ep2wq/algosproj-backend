@@ -45,7 +45,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
-  Seed: 11 modules, 35 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
+  Seed: 12 modules, 39 lessons, one problem each (`data/lessons.php`; 2 visible + 3-6
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
   Module `basics` is titled "Getting started" (was "Basics"; slug unchanged). Lesson text
   (312-450 words, section headings) in `data/lesson_bodies.php`. 40 tests pass (SQLite in
