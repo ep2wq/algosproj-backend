@@ -1360,6 +1360,2118 @@ eegkml -50',
         ],
     ],
     [
+        'slug' => 'oop',
+        'title' => 'Object-oriented programming',
+        'track' => 'basics',
+        'lessons' => [
+            [
+                'slug' => 'bank-accounts',
+                'title' => 'Bank accounts',
+                'problem' => [
+                    'title' => 'Bank accounts',
+                    'description' => 'Run a set of bank accounts. Each command works on one account, named by its owner. Write an Account class and let it do the work.
+- OPEN name: create an account with balance 0.
+- DEPOSIT name amount: add the amount to the balance.
+- WITHDRAW name amount: take the amount out. If it is larger than the balance, print Insufficient funds and change nothing.
+- BALANCE name: print the balance.
+OPEN, DEPOSIT and a successful WITHDRAW print nothing.
+
+Input
+Line 1: n, the number of commands.
+Next n lines: one command each.
+
+Output
+One line for each BALANCE and each refused WITHDRAW, in order.
+
+Constraints
+1 <= n <= 1000
+Names have 1 to 10 lower-case letters a-z. Each name is opened once, before any other command uses it.
+1 <= amount <= 1000000000
+A balance can grow past a 32-bit integer, so use 64-bit integers.',
+                    'difficulty' => 'easy',
+                    'test_cases' => [
+                        [
+                            'input' => '6
+OPEN ann
+DEPOSIT ann 100
+WITHDRAW ann 30
+BALANCE ann
+WITHDRAW ann 100
+BALANCE ann
+',
+                            'expected_output' => '70
+Insufficient funds
+70',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '5
+OPEN ann
+OPEN bob
+DEPOSIT ann 50
+BALANCE bob
+BALANCE ann
+',
+                            'expected_output' => '0
+50',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '11
+OPEN x
+OPEN y
+OPEN z
+DEPOSIT x 10
+DEPOSIT y 20
+WITHDRAW z 5
+DEPOSIT z 7
+WITHDRAW x 3
+BALANCE x
+BALANCE y
+BALANCE z
+',
+                            'expected_output' => 'Insufficient funds
+7
+20
+7',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '6
+OPEN sam
+DEPOSIT sam 250
+WITHDRAW sam 250
+BALANCE sam
+WITHDRAW sam 1
+BALANCE sam
+',
+                            'expected_output' => '0
+Insufficient funds
+0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '11
+OPEN rich
+DEPOSIT rich 1000000000
+DEPOSIT rich 1000000000
+DEPOSIT rich 1000000000
+DEPOSIT rich 1000000000
+DEPOSIT rich 1000000000
+BALANCE rich
+WITHDRAW rich 999999999
+BALANCE rich
+WITHDRAW rich 5000000000
+BALANCE rich
+',
+                            'expected_output' => '5000000000
+4000000001
+Insufficient funds
+4000000001',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '2
+OPEN quiet
+BALANCE quiet
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '200
+OPEN ann
+OPEN bob
+OPEN cy
+OPEN dee
+OPEN eve
+DEPOSIT cy 188
+BALANCE dee
+BALANCE eve
+BALANCE eve
+BALANCE eve
+DEPOSIT eve 550819401
+WITHDRAW eve 183
+DEPOSIT bob 927
+DEPOSIT ann 183
+DEPOSIT eve 347173299
+DEPOSIT eve 922
+DEPOSIT bob 430455637
+DEPOSIT dee 73
+BALANCE eve
+WITHDRAW cy 41489580
+DEPOSIT cy 458530115
+DEPOSIT ann 5973954
+BALANCE dee
+DEPOSIT cy 133597905
+DEPOSIT bob 667
+DEPOSIT ann 509
+DEPOSIT ann 884
+WITHDRAW bob 407
+DEPOSIT ann 932200454
+WITHDRAW eve 32
+DEPOSIT ann 11
+BALANCE eve
+WITHDRAW dee 547603946
+DEPOSIT dee 21756906
+DEPOSIT dee 607
+WITHDRAW ann 710
+WITHDRAW bob 485005642
+BALANCE ann
+DEPOSIT ann 743162625
+DEPOSIT ann 464
+DEPOSIT bob 583247866
+BALANCE dee
+DEPOSIT eve 116303729
+DEPOSIT eve 619609805
+WITHDRAW cy 926303309
+WITHDRAW dee 378281758
+DEPOSIT eve 526
+WITHDRAW ann 531025186
+DEPOSIT cy 856876330
+DEPOSIT eve 781096822
+BALANCE cy
+BALANCE ann
+DEPOSIT bob 128132787
+DEPOSIT dee 470
+BALANCE dee
+WITHDRAW eve 800386292
+BALANCE dee
+WITHDRAW eve 972924953
+WITHDRAW bob 933067889
+WITHDRAW bob 562
+BALANCE bob
+BALANCE dee
+BALANCE cy
+WITHDRAW bob 425
+DEPOSIT dee 347462676
+BALANCE cy
+WITHDRAW ann 605265111
+WITHDRAW dee 235
+DEPOSIT dee 22131839
+BALANCE dee
+DEPOSIT eve 809
+DEPOSIT eve 955960529
+WITHDRAW ann 99
+WITHDRAW dee 480
+WITHDRAW eve 322
+WITHDRAW cy 559426996
+WITHDRAW dee 656
+DEPOSIT eve 991051120
+WITHDRAW cy 596
+BALANCE bob
+BALANCE cy
+DEPOSIT dee 870783526
+DEPOSIT cy 742
+DEPOSIT cy 825722027
+WITHDRAW ann 93365269
+DEPOSIT ann 459161492
+WITHDRAW dee 376
+WITHDRAW dee 82
+DEPOSIT bob 97
+WITHDRAW eve 280269796
+BALANCE dee
+BALANCE eve
+WITHDRAW cy 420570342
+DEPOSIT cy 413
+DEPOSIT dee 734
+DEPOSIT eve 978
+WITHDRAW dee 471
+WITHDRAW bob 976
+WITHDRAW cy 343
+DEPOSIT bob 941671756
+DEPOSIT eve 390778646
+BALANCE bob
+BALANCE cy
+BALANCE dee
+BALANCE eve
+DEPOSIT dee 523
+DEPOSIT ann 546
+DEPOSIT eve 930
+BALANCE eve
+DEPOSIT ann 223
+BALANCE bob
+WITHDRAW cy 866
+BALANCE cy
+BALANCE eve
+DEPOSIT dee 506
+BALANCE dee
+WITHDRAW eve 482282714
+BALANCE dee
+DEPOSIT ann 289
+BALANCE eve
+WITHDRAW bob 581423778
+DEPOSIT dee 433
+BALANCE eve
+DEPOSIT ann 254
+WITHDRAW cy 930745246
+DEPOSIT cy 235
+BALANCE eve
+DEPOSIT dee 37942508
+WITHDRAW bob 273
+DEPOSIT cy 473
+WITHDRAW cy 307
+WITHDRAW dee 807
+WITHDRAW eve 480
+BALANCE dee
+BALANCE ann
+WITHDRAW bob 322
+BALANCE bob
+WITHDRAW eve 281844500
+WITHDRAW eve 503
+WITHDRAW eve 340671067
+DEPOSIT bob 935358285
+BALANCE dee
+WITHDRAW cy 741
+WITHDRAW ann 57
+BALANCE eve
+BALANCE ann
+BALANCE cy
+BALANCE cy
+WITHDRAW cy 285459718
+DEPOSIT eve 32
+DEPOSIT dee 221288820
+BALANCE eve
+DEPOSIT eve 912
+WITHDRAW bob 947
+WITHDRAW cy 687888844
+DEPOSIT dee 391
+BALANCE cy
+BALANCE ann
+BALANCE dee
+DEPOSIT dee 940
+DEPOSIT dee 62
+DEPOSIT eve 399708486
+WITHDRAW bob 417321839
+WITHDRAW ann 415906856
+BALANCE eve
+WITHDRAW bob 820310834
+WITHDRAW cy 322
+DEPOSIT bob 121136463
+DEPOSIT bob 33069676
+BALANCE ann
+DEPOSIT ann 541042938
+DEPOSIT cy 5211928
+WITHDRAW ann 112499618
+DEPOSIT cy 361492300
+BALANCE eve
+BALANCE bob
+DEPOSIT cy 437
+BALANCE dee
+WITHDRAW bob 102840372
+DEPOSIT eve 639535689
+DEPOSIT ann 188
+BALANCE bob
+DEPOSIT eve 990269696
+DEPOSIT ann 290
+WITHDRAW dee 554237477
+DEPOSIT eve 985
+WITHDRAW ann 28
+BALANCE eve
+WITHDRAW ann 635388100
+BALANCE dee
+WITHDRAW bob 436731805
+DEPOSIT ann 570
+WITHDRAW eve 969
+WITHDRAW ann 394
+BALANCE dee
+DEPOSIT bob 653
+BALANCE eve
+DEPOSIT bob 131
+WITHDRAW ann 610582605
+WITHDRAW ann 915729632
+',
+                            'expected_output' => '0
+0
+0
+0
+897993439
+Insufficient funds
+73
+897993407
+Insufficient funds
+Insufficient funds
+938175285
+21757586
+Insufficient funds
+Insufficient funds
+1449004538
+1150313188
+21758056
+21758056
+208769026
+21758056
+1449004538
+1449004538
+391352336
+208768601
+889576946
+1262134268
+2308435384
+1150439478
+1294729443
+1262134531
+2699215008
+2699215938
+1150439478
+1294728577
+2699215938
+1262135560
+1262135560
+2216933224
+2216933224
+2216933224
+1300077694
+910845513
+569015105
+1300077694
+1594416674
+910845456
+363982991
+363982991
+1594416706
+Insufficient funds
+78523273
+910845456
+1521366905
+1994126104
+494938600
+1994126104
+420945909
+1521367907
+318105537
+3623932474
+967130430
+Insufficient funds
+967130430
+3623931505
+Insufficient funds
+Insufficient funds',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'stack-class',
+                'title' => 'Stack class',
+                'problem' => [
+                    'title' => 'Stack class',
+                    'description' => 'Write a Stack class that keeps its items hidden inside it, and use it to run the commands.
+- PUSH x: put x on top. Prints nothing.
+- POP: remove the top value and print it.
+- PEEK: print the top value without removing it.
+- SIZE: print how many values the stack holds.
+POP and PEEK on an empty stack print empty.
+
+Input
+Line 1: n, the number of commands.
+Next n lines: one command each.
+
+Output
+One line for each POP, PEEK and SIZE, in order.
+
+Constraints
+1 <= n <= 1000
+-1000000000 <= x <= 1000000000',
+                    'difficulty' => 'easy',
+                    'test_cases' => [
+                        [
+                            'input' => '5
+PUSH 3
+PUSH 7
+PEEK
+POP
+SIZE
+',
+                            'expected_output' => '7
+7
+1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '4
+POP
+PEEK
+PUSH 5
+SIZE
+',
+                            'expected_output' => 'empty
+empty
+1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '4
+PEEK
+POP
+SIZE
+POP
+',
+                            'expected_output' => 'empty
+empty
+0
+empty',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '13
+PUSH 1
+PUSH 2
+PUSH 3
+PUSH 4
+PUSH 5
+POP
+POP
+POP
+POP
+POP
+POP
+PEEK
+SIZE
+',
+                            'expected_output' => '5
+4
+3
+2
+1
+empty
+empty
+0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '12
+PUSH 1
+PUSH 2
+POP
+PUSH 3
+PUSH 4
+SIZE
+PEEK
+POP
+POP
+SIZE
+PUSH 9
+SIZE
+',
+                            'expected_output' => '2
+3
+4
+4
+3
+1
+2',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '8
+PUSH -5
+PUSH 0
+PUSH -1000000000
+PEEK
+POP
+POP
+PEEK
+SIZE
+',
+                            'expected_output' => '-1000000000
+-1000000000
+0
+-5
+1',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '500
+POP
+SIZE
+PUSH 817070185
+PUSH -624600209
+SIZE
+SIZE
+SIZE
+POP
+SIZE
+PUSH -522145515
+PEEK
+POP
+PUSH 727281663
+PEEK
+SIZE
+SIZE
+POP
+PEEK
+PUSH -545161426
+PEEK
+PUSH -59790231
+POP
+POP
+PUSH 238589912
+PUSH 638243686
+POP
+SIZE
+SIZE
+PEEK
+SIZE
+PUSH 532090967
+POP
+SIZE
+POP
+POP
+POP
+SIZE
+POP
+PUSH 265229066
+PUSH -233168294
+SIZE
+POP
+PUSH 4844635
+PUSH 44779089
+SIZE
+PUSH -690990402
+PUSH 87429328
+PUSH -749692528
+SIZE
+PUSH -432239086
+PUSH -349695551
+PUSH -41372061
+PEEK
+PUSH -960755574
+PEEK
+PUSH 856595230
+PUSH -389129812
+POP
+SIZE
+SIZE
+POP
+PUSH 625107100
+POP
+PUSH 969162875
+POP
+SIZE
+PUSH -448505914
+PUSH 218237400
+POP
+PUSH 272438113
+POP
+SIZE
+PEEK
+POP
+PUSH 327410569
+SIZE
+POP
+PUSH -218492228
+PUSH 410241266
+PUSH -827071647
+SIZE
+PUSH 465646141
+PEEK
+PUSH 649369877
+PUSH 98703576
+PEEK
+PUSH 80820163
+PUSH 470088879
+PUSH 37073108
+PUSH -612569173
+POP
+SIZE
+SIZE
+POP
+PEEK
+SIZE
+POP
+POP
+PEEK
+POP
+SIZE
+PUSH 210124975
+PUSH 5596808
+POP
+PUSH 647920642
+PUSH -979647723
+PUSH 10936738
+PUSH 111192070
+PUSH 388186025
+POP
+PEEK
+POP
+PUSH 407894717
+PUSH 489696039
+POP
+PEEK
+SIZE
+POP
+POP
+POP
+PUSH -320634816
+SIZE
+POP
+SIZE
+SIZE
+POP
+PEEK
+SIZE
+PUSH 886913378
+PUSH -804756438
+PUSH 768428193
+PUSH -921010327
+PEEK
+PUSH -39635986
+SIZE
+PUSH -699320815
+PUSH 503977700
+SIZE
+PUSH 781878213
+SIZE
+SIZE
+PUSH 72884893
+SIZE
+POP
+POP
+SIZE
+PUSH -665526940
+POP
+SIZE
+PUSH -29272867
+SIZE
+PEEK
+PUSH 321943530
+POP
+POP
+PUSH 439857531
+PUSH 93537839
+PUSH -995689375
+PUSH 225119143
+PUSH -337190261
+PUSH 621263513
+POP
+PUSH -768299885
+SIZE
+PUSH 705591816
+PEEK
+PEEK
+SIZE
+PUSH 514138452
+PEEK
+PUSH 242135950
+SIZE
+PUSH 415696014
+POP
+PUSH -376302878
+PUSH 324725343
+PUSH -193263846
+POP
+PUSH 298864891
+POP
+SIZE
+POP
+POP
+PEEK
+PUSH -94198341
+PUSH -981410300
+POP
+SIZE
+PUSH -700611390
+PUSH -371053135
+SIZE
+PUSH 202536549
+PUSH 778163379
+PUSH -561888784
+POP
+PUSH 92367121
+SIZE
+PEEK
+PEEK
+PEEK
+POP
+PUSH -942542903
+SIZE
+POP
+SIZE
+PUSH -246053022
+PUSH -13227392
+POP
+PUSH -841772445
+POP
+SIZE
+POP
+PUSH -643243109
+POP
+SIZE
+SIZE
+PEEK
+PEEK
+SIZE
+SIZE
+PEEK
+PEEK
+PUSH 757399763
+PUSH -81404409
+POP
+PUSH 522837106
+PUSH 573257300
+PUSH -834188348
+POP
+PUSH -815643247
+POP
+PUSH 653926961
+PUSH -690449257
+POP
+PUSH -850326230
+POP
+PUSH 405445332
+PEEK
+POP
+PUSH -533268191
+PUSH 107313585
+SIZE
+PEEK
+PEEK
+SIZE
+PUSH -663543057
+PUSH -728904988
+PEEK
+PUSH 110910923
+PUSH 486821734
+PUSH 258106471
+PUSH -198611573
+POP
+PEEK
+POP
+SIZE
+PUSH -845253624
+POP
+POP
+SIZE
+POP
+PEEK
+PUSH -834174536
+PUSH 431800863
+PUSH 769720481
+POP
+PUSH -703943990
+PUSH 528493751
+POP
+POP
+PUSH 511673183
+SIZE
+PUSH 967790935
+PUSH 390802424
+POP
+POP
+PEEK
+PUSH -109953835
+PUSH 168919450
+POP
+PUSH -522482902
+SIZE
+SIZE
+POP
+PUSH 669608986
+PUSH -89746405
+SIZE
+POP
+PUSH 937501364
+POP
+POP
+SIZE
+PUSH -696346836
+PUSH 613056282
+PUSH 441743999
+POP
+PEEK
+PUSH -437874309
+PUSH -541224110
+SIZE
+PUSH -2670624
+SIZE
+SIZE
+SIZE
+PUSH -629248793
+POP
+POP
+SIZE
+SIZE
+PUSH 618431513
+PUSH 611943536
+PEEK
+SIZE
+POP
+PUSH 661369959
+POP
+PUSH 501603540
+SIZE
+POP
+PUSH -304320926
+PUSH 192883319
+PUSH 555229889
+PUSH -311087260
+PEEK
+PUSH -414006939
+PUSH 728621168
+PUSH 667793077
+POP
+PEEK
+PUSH -607159326
+PEEK
+PUSH 841952357
+PUSH 620886511
+PUSH 802468456
+POP
+PUSH 844416618
+PUSH -359221816
+POP
+POP
+PEEK
+PUSH 907849340
+PUSH -925664925
+PUSH 318259246
+POP
+PUSH 188354115
+PUSH 293026899
+POP
+PUSH 717725275
+PUSH 689931184
+PEEK
+PUSH 79690054
+PUSH -612261523
+PUSH -845773961
+PUSH 915933539
+PUSH -419522271
+PUSH -819188129
+SIZE
+PUSH 711196276
+POP
+PUSH 36311211
+PUSH -573151553
+PUSH 781701080
+POP
+PEEK
+PUSH 892143296
+SIZE
+PUSH 348914171
+POP
+POP
+PUSH -539791617
+PEEK
+PUSH -822214440
+POP
+PUSH 558606601
+PUSH 883281883
+SIZE
+PEEK
+POP
+SIZE
+POP
+SIZE
+POP
+POP
+PUSH 816069705
+POP
+PUSH 384645092
+PUSH -36619706
+PUSH 219170898
+POP
+POP
+PUSH -159130130
+PUSH 766679790
+PUSH 773565965
+PEEK
+PUSH 736388858
+POP
+PEEK
+POP
+POP
+PUSH 407162638
+PUSH 942893656
+SIZE
+PUSH -312621456
+PUSH -939275764
+PUSH -299610257
+PUSH -350912497
+PUSH 363865268
+PEEK
+PUSH -102643525
+PUSH 663809273
+POP
+POP
+POP
+PEEK
+PEEK
+POP
+PEEK
+POP
+SIZE
+PUSH 235555667
+SIZE
+PUSH -165205893
+POP
+PUSH -436946401
+POP
+POP
+PUSH 724414168
+PUSH 55437094
+SIZE
+PEEK
+PUSH -271187935
+PUSH 78546495
+SIZE
+POP
+PUSH 487774779
+PEEK
+SIZE
+PUSH 793796251
+PEEK
+PUSH -35420707
+PUSH -972745128
+POP
+PUSH -441391168
+PUSH -127841090
+PUSH -231341416
+SIZE
+PEEK
+PEEK
+PEEK
+PEEK
+SIZE
+POP
+SIZE
+PUSH -628899889
+PUSH -901546748
+PUSH -135733306
+PUSH 856752031
+PEEK
+POP
+POP
+SIZE
+POP
+PUSH 611490545
+PUSH -922720340
+PEEK
+POP
+PUSH 545193904
+POP
+PUSH -276602357
+POP
+PEEK
+SIZE
+PUSH -672558558
+POP
+PEEK
+PEEK
+PEEK
+PEEK
+PUSH 453447223
+POP
+PUSH -222787644
+PUSH -879598605
+PEEK
+POP
+SIZE
+PUSH 722220037
+POP
+PUSH -941640249
+PUSH -896447749
+POP
+PUSH -289243471
+PUSH -748946334
+SIZE
+SIZE
+PUSH -91736280
+PUSH -920265873
+PUSH 997896673
+SIZE
+PEEK
+POP
+',
+                            'expected_output' => 'empty
+0
+2
+2
+2
+-624600209
+1
+-522145515
+-522145515
+727281663
+2
+2
+727281663
+817070185
+-545161426
+-59790231
+-545161426
+638243686
+2
+2
+238589912
+2
+532090967
+2
+238589912
+817070185
+empty
+0
+empty
+2
+-233168294
+3
+6
+-41372061
+-960755574
+-389129812
+11
+11
+856595230
+625107100
+969162875
+10
+218237400
+272438113
+11
+-448505914
+-448505914
+11
+327410569
+13
+465646141
+98703576
+-612569173
+19
+19
+37073108
+470088879
+18
+470088879
+80820163
+98703576
+98703576
+15
+5596808
+388186025
+111192070
+111192070
+489696039
+407894717
+20
+407894717
+10936738
+-979647723
+18
+-320634816
+17
+17
+647920642
+210124975
+16
+-921010327
+21
+23
+24
+24
+25
+72884893
+781878213
+23
+-665526940
+23
+24
+-29272867
+321943530
+-29272867
+621263513
+29
+705591816
+705591816
+30
+514138452
+32
+415696014
+-193263846
+298864891
+34
+324725343
+-376302878
+242135950
+-981410300
+33
+35
+-561888784
+38
+92367121
+92367121
+92367121
+92367121
+38
+-942542903
+37
+-13227392
+-841772445
+38
+-246053022
+-643243109
+37
+37
+778163379
+778163379
+37
+37
+778163379
+778163379
+-81404409
+-834188348
+-815643247
+-690449257
+-850326230
+405445332
+405445332
+43
+107313585
+107313585
+43
+-728904988
+-198611573
+258106471
+258106471
+47
+-845253624
+486821734
+46
+110910923
+-728904988
+769720481
+528493751
+-703943990
+48
+390802424
+967790935
+511673183
+168919450
+50
+50
+-522482902
+51
+-89746405
+937501364
+669608986
+49
+441743999
+613056282
+53
+54
+54
+54
+-629248793
+-2670624
+53
+53
+611943536
+55
+611943536
+661369959
+55
+501603540
+-311087260
+667793077
+728621168
+-607159326
+802468456
+-359221816
+844416618
+620886511
+318259246
+293026899
+689931184
+74
+711196276
+781701080
+-573151553
+77
+348914171
+892143296
+-539791617
+-822214440
+79
+883281883
+883281883
+78
+558606601
+77
+-539791617
+-573151553
+816069705
+219170898
+-36619706
+773565965
+736388858
+773565965
+773565965
+766679790
+79
+363865268
+663809273
+-102643525
+363865268
+-350912497
+-350912497
+-350912497
+-299610257
+-299610257
+81
+82
+-165205893
+-436946401
+235555667
+83
+55437094
+85
+78546495
+487774779
+85
+793796251
+-972745128
+90
+-231341416
+-231341416
+-231341416
+-231341416
+90
+-231341416
+89
+856752031
+856752031
+-135733306
+91
+-901546748
+-922720340
+-922720340
+545193904
+-276602357
+611490545
+91
+-672558558
+611490545
+611490545
+611490545
+611490545
+453447223
+-879598605
+-879598605
+92
+722220037
+-896447749
+95
+95
+98
+997896673
+997896673',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'shapes',
+                'title' => 'Shapes',
+                'problem' => [
+                    'title' => 'Shapes',
+                    'description' => 'Read n shapes and print the area of each one, then the total. Write a Shape base class with an area method, and Circle, Rectangle and Square classes that override it, with Square extending Rectangle.
+- circle r: a circle with radius r, area pi * r * r. Use your language pi constant (math.pi, Math.PI or M_PI), not 3.14.
+- rect w h: a rectangle w wide and h high, area w * h.
+- square s: a square with side s, area s * s.
+
+Input
+Line 1: n, the number of shapes.
+Next n lines: one shape each.
+
+Output
+n lines with the areas in input order, each rounded to exactly 2 decimals. Then one line: total and the sum of the unrounded areas, rounded to exactly 2 decimals.
+
+Constraints
+1 <= n <= 100
+1 <= r, w, h, s <= 1000, all whole numbers',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '3
+circle 1
+rect 2 3
+square 4
+',
+                            'expected_output' => '3.14
+6.00
+16.00
+total 25.14',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '2
+rect 5 2
+circle 3
+',
+                            'expected_output' => '10.00
+28.27
+total 38.27',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '3
+square 7
+circle 10
+rect 12 30
+',
+                            'expected_output' => '49.00
+314.16
+360.00
+total 723.16',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '4
+square 1
+square 9
+square 250
+square 1000
+',
+                            'expected_output' => '1.00
+81.00
+62500.00
+1000000.00
+total 1062582.00',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '100
+circle 815
+rect 83 657
+rect 257 959
+square 294
+circle 413
+square 182
+circle 783
+rect 170 250
+circle 572
+circle 665
+square 264
+square 577
+square 475
+rect 64 301
+circle 83
+rect 385 511
+rect 978 657
+square 490
+rect 122 54
+rect 398 819
+square 501
+circle 461
+rect 341 513
+circle 832
+rect 375 986
+square 732
+square 145
+square 580
+circle 238
+circle 299
+circle 923
+square 771
+rect 409 540
+square 649
+circle 794
+square 387
+rect 307 643
+square 178
+circle 88
+circle 334
+rect 720 27
+square 963
+square 489
+circle 95
+circle 766
+circle 411
+rect 537 504
+circle 612
+circle 147
+circle 64
+circle 300
+square 779
+rect 312 999
+circle 201
+circle 349
+circle 673
+rect 105 178
+rect 459 304
+circle 384
+circle 471
+circle 297
+square 886
+square 478
+circle 287
+rect 427 986
+rect 947 821
+rect 113 524
+square 853
+rect 523 365
+circle 380
+square 975
+circle 552
+square 926
+rect 884 502
+circle 344
+rect 689 541
+circle 962
+circle 881
+square 618
+square 695
+circle 867
+square 477
+square 788
+rect 928 436
+square 929
+circle 30
+rect 350 974
+circle 327
+square 74
+rect 881 346
+square 846
+square 799
+rect 351 583
+square 862
+rect 320 1000
+rect 78 16
+square 72
+circle 520
+circle 174
+circle 578
+',
+                            'expected_output' => '2086724.38
+54531.00
+246463.00
+86436.00
+535858.32
+33124.00
+1926075.90
+42500.00
+1027878.85
+1389290.81
+69696.00
+332929.00
+225625.00
+19264.00
+21642.43
+196735.00
+642546.00
+240100.00
+6588.00
+325962.00
+251001.00
+667654.41
+174933.00
+2174685.83
+369750.00
+535824.00
+21025.00
+336400.00
+177952.37
+280861.52
+2676413.89
+594441.00
+220860.00
+421201.00
+1980573.11
+149769.00
+197401.00
+31684.00
+24328.49
+350463.51
+19440.00
+927369.00
+239121.00
+28352.87
+1843348.34
+530680.97
+270648.00
+1176664.68
+67886.68
+12867.96
+282743.34
+606841.00
+311688.00
+126923.48
+382649.13
+1422918.42
+18690.00
+139536.00
+463246.69
+696934.06
+277116.75
+784996.00
+228484.00
+258769.85
+421022.00
+777487.00
+59212.00
+727609.00
+190895.00
+453645.98
+950625.00
+957255.85
+857476.00
+443768.00
+371763.51
+372749.00
+2907368.07
+2438381.70
+381924.00
+483025.00
+2361500.64
+227529.00
+620944.00
+404608.00
+863041.00
+2827.43
+340900.00
+335927.36
+5476.00
+304826.00
+715716.00
+638401.00
+204633.00
+743044.00
+320000.00
+1248.00
+5184.00
+849486.65
+95114.86
+1049555.84
+total 55149277.93',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3
+circle 1000
+rect 1000 1000
+square 1000
+',
+                            'expected_output' => '3141592.65
+1000000.00
+1000000.00
+total 5141592.65',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'fee-calculator',
+                'title' => 'Fee calculator',
+                'problem' => [
+                    'title' => 'Fee calculator',
+                    'description' => 'Print the fee for each payment, then the total. Define one interface or abstract class for the fee, and one class for each payment method.
+- card: 2% of the amount, rounded down: amount * 2 / 100 with integer division.
+- cash: no fee, 0.
+- transfer: a flat fee of 5.
+
+Input
+Line 1: n, the number of payments.
+Next n lines: a method (card, cash or transfer) and an amount, separated by a space.
+
+Output
+n lines with the fees in input order, then one line: total and the sum of the fees.
+
+Constraints
+1 <= n <= 1000
+1 <= amount <= 1000000',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '3
+card 100
+cash 50
+transfer 10
+',
+                            'expected_output' => '2
+0
+5
+total 7',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '2
+card 49
+card 50
+',
+                            'expected_output' => '0
+1
+total 1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '6
+card 1
+card 49
+card 50
+card 99
+card 100
+card 101
+',
+                            'expected_output' => '0
+0
+1
+1
+2
+2
+total 6',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3
+cash 1
+cash 999999
+cash 1000000
+',
+                            'expected_output' => '0
+0
+0
+total 0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3
+transfer 1
+transfer 70
+transfer 1000000
+',
+                            'expected_output' => '5
+5
+5
+total 15',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3
+card 1000000
+cash 1000000
+transfer 1000000
+',
+                            'expected_output' => '20000
+0
+5
+total 20005',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '200
+transfer 463
+card 281
+cash 962
+card 202
+card 484
+transfer 461
+cash 943
+transfer 593556
+transfer 47676
+transfer 572
+card 58
+card 228776
+transfer 890
+cash 981890
+cash 782
+card 193014
+transfer 932
+transfer 326
+transfer 984
+transfer 260
+card 774
+transfer 88557
+transfer 789
+transfer 609
+card 105
+card 106
+cash 792513
+cash 124
+cash 716
+cash 654
+cash 209
+transfer 648
+cash 295131
+transfer 816
+cash 235
+card 186976
+cash 45952
+transfer 363711
+cash 204207
+transfer 49
+transfer 914844
+cash 259
+transfer 395861
+card 109
+card 935917
+cash 46
+card 547403
+transfer 753232
+card 482092
+cash 167846
+cash 996
+transfer 758
+transfer 646889
+cash 298077
+cash 909
+transfer 527924
+cash 460
+transfer 262410
+card 321
+transfer 410178
+cash 224
+card 961811
+card 212
+card 105
+transfer 668
+cash 441479
+card 562
+transfer 584
+card 560
+transfer 252969
+card 580431
+card 172349
+cash 752050
+transfer 771
+transfer 730600
+cash 589220
+cash 516863
+cash 795
+cash 15
+cash 395373
+transfer 458686
+card 735943
+cash 458626
+transfer 594
+transfer 981751
+transfer 639
+cash 105701
+cash 405597
+card 56
+transfer 531
+transfer 138
+transfer 411
+cash 313
+transfer 220949
+transfer 168612
+card 709
+cash 418
+transfer 687307
+cash 654354
+transfer 890
+cash 373
+cash 957022
+transfer 779
+transfer 584
+transfer 504197
+transfer 786
+card 574776
+card 325
+cash 454
+cash 948
+card 660
+cash 985
+transfer 516
+card 688603
+transfer 241484
+transfer 616
+transfer 346
+cash 920135
+card 583
+cash 919
+transfer 440
+card 262
+cash 14586
+transfer 6977
+card 667
+card 664147
+cash 480
+transfer 23656
+transfer 864603
+cash 922573
+cash 718
+card 796733
+card 482
+card 722440
+transfer 513
+card 943218
+transfer 883
+card 506
+transfer 993
+cash 569
+cash 69
+card 585517
+cash 287
+transfer 103549
+transfer 845430
+card 54429
+card 568
+cash 221706
+transfer 736
+cash 328734
+cash 730
+transfer 602753
+card 477958
+card 747292
+card 200745
+transfer 336
+cash 654112
+cash 285
+transfer 923298
+transfer 6
+cash 764428
+cash 962
+cash 411420
+transfer 675
+card 193
+card 289148
+cash 213645
+card 981
+card 953
+cash 129
+card 212192
+cash 722428
+transfer 230038
+cash 422591
+cash 636
+cash 931234
+cash 408695
+transfer 52
+cash 731022
+transfer 663582
+cash 274
+cash 53
+cash 527602
+card 51
+cash 668
+card 723
+cash 905
+cash 338
+card 222286
+cash 958140
+transfer 202
+cash 806339
+card 147801
+card 252656
+transfer 490106
+cash 706
+transfer 548268
+card 507543
+cash 260974
+cash 755
+',
+                            'expected_output' => '5
+5
+0
+4
+9
+5
+0
+5
+5
+5
+1
+4575
+5
+0
+0
+3860
+5
+5
+5
+5
+15
+5
+5
+5
+2
+2
+0
+0
+0
+0
+0
+5
+0
+5
+0
+3739
+0
+5
+0
+5
+5
+0
+5
+2
+18718
+0
+10948
+5
+9641
+0
+0
+5
+5
+0
+0
+5
+0
+5
+6
+5
+0
+19236
+4
+2
+5
+0
+11
+5
+11
+5
+11608
+3446
+0
+5
+5
+0
+0
+0
+0
+0
+5
+14718
+0
+5
+5
+5
+0
+0
+1
+5
+5
+5
+0
+5
+5
+14
+0
+5
+0
+5
+0
+0
+5
+5
+5
+5
+11495
+6
+0
+0
+13
+0
+5
+13772
+5
+5
+5
+0
+11
+0
+5
+5
+0
+5
+13
+13282
+0
+5
+5
+0
+0
+15934
+9
+14448
+5
+18864
+5
+10
+5
+0
+0
+11710
+0
+5
+5
+1088
+11
+0
+5
+0
+0
+5
+9559
+14945
+4014
+5
+0
+0
+5
+5
+0
+0
+0
+5
+3
+5782
+0
+19
+19
+0
+4243
+0
+5
+0
+0
+0
+0
+5
+0
+5
+0
+0
+0
+1
+0
+14
+0
+0
+4445
+0
+5
+0
+2956
+5053
+5
+0
+5
+10150
+0
+0
+total 262802',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
         'slug' => 'arrays-and-strings',
         'title' => 'Arrays and strings',
         'track' => 'data-structures',
