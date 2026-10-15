@@ -546,6 +546,92 @@ Space: O(n).
 The grader only compares the preorder, so it can't see whether you moved pointers. Move them anyway.
 TEXT,
 
+    'binary-strings' => <<<'TEXT'
+A recursive function calls itself on a smaller version of the same problem, and needs a base case: one small enough to answer without another call. Without it, the calls never stop.
+
+Backtracking builds an answer one choice at a time: choose an option, explore by calling yourself for the remaining choices, then undo the choice so the next option starts from the same state. Choose, explore, undo.
+
+Here each step chooses the next character, 0 or 1, and the base case is a string of length n: print it.
+
+## Example
+Take n = 2, starting from the empty string.
+Choose 0: "0". Explore: choose 0 again, and "00" has length 2: print it. Undo to "0", choose 1, print "01", undo to "0".
+Undo the first 0. Choose 1, and the same steps print "10" and "11".
+The output is 00, 01, 10, 11.
+
+The calls form a tree, the call tree: the empty string at the root, two children per call (0 and 1), and the 2^n finished strings as leaves. For n = 2 that is 1 + 2 + 4 = 7 calls.
+
+## How to think about it
+Keep the chosen characters in a list, cur. If it holds n characters, print them and return. Otherwise, for 0 and then 1: append it (choose), call yourself (explore), and pop it (undo). Trying 0 before 1 puts the lines in increasing order.
+
+Passing cur + bit as a new string needs no undo, since each call gets a copy, but the next two lessons need the list version.
+
+## Complexity
+Time: O(2^n * n): 2^n strings of n characters, from 2^(n+1) - 1 calls.
+Space: O(n) for cur and the call stack, plus the output.
+
+## Watch out for
+- Leading zeros. 001 is a string of length 3; printing the number 1 loses them.
+- Forgetting the undo. Without the pop, the second branch starts from the wrong string.
+
+Printing 0 to 2^n - 1 in binary with n digits also passes; the grader only sees the lines. Write the recursion anyway.
+TEXT,
+
+    'permutations' => <<<'TEXT'
+A permutation of 1 to n uses every number exactly once. Build it one position at a time with the choose, explore, undo pattern, plus two things: the partial answer, cur, holding the numbers placed so far, and a used marker per number, so a number already in cur is skipped.
+
+## Example
+Take n = 3, with cur empty and nothing used.
+Choose 1: cur = [1]. Choose 2: [1, 2]. Choose 3: [1, 2, 3] has length 3, so print 1 2 3.
+Undo 3, then undo 2: back to [1], with 2 and 3 free again. Choose 3: [1, 3]. Choose 2: print 1 3 2.
+Undo back to an empty cur. Starting with 2 gives 2 1 3 and 2 3 1, then 3 1 2 and 3 2 1: 3! = 6 in all.
+
+## How to think about it
+If cur holds n numbers, print it: that is the base case. Otherwise loop v from 1 to n, and skip v if it is used. If not, mark it used and append it (choose), call yourself (explore), then pop it and clear its mark (undo).
+
+The undo lets one cur and one used array serve the whole call tree. Skip clearing the mark and numbers stay used after you go back: for n = 3, only 1 2 3 is printed.
+
+The order you try the options decides the output order. Trying 1 to n at every position gives lexicographic order: all permutations starting with 1, then 2, and so on. Swapping cur[i] with each later position also makes all n!, but prints 3 2 1 before 3 1 2.
+
+## Complexity
+Time: O(n! * n), 720 lines at n = 6.
+Space: O(n), plus the output.
+
+## Watch out for
+- Numbering. Make used n + 1 long if you index it by value.
+- Spaces. Separate the numbers with single spaces, with none at the end of a line.
+
+itertools.permutations in Python and next_permutation in C++ also print the right lines; the grader can't tell. Write the backtracking: N-Queens builds on it.
+TEXT,
+
+    'n-queens' => <<<'TEXT'
+A queen attacks along its row, column and both diagonals. Place one queen per row, trying the columns 1 to n, and allow a column only if no queen above shares it or a diagonal.
+
+That check is pruning: an attacked column is skipped, with every board below it. When no column works, return: the row above undoes its queen and tries its next column. That is the backtrack.
+
+Along a down-right diagonal row - col is constant; along a down-left one, row + col is. Keep sets of used columns, row - col and row + col: each check is three lookups.
+
+## Example
+Take n = 4. Row 1: column 1. Row 2: columns 1 and 2 are attacked, so column 3.
+Row 3: columns 1 and 3 are taken, 2 shares row + col = 5 with row 2, and 4 shares row - col = -1. Dead end: back to row 2.
+Row 2: column 4. Row 3: column 2. Row 4: all attacked, another dead end. Rows 3 and 2 have no columns left: back to row 1.
+Row 1: column 2. Then columns 4, 1 and 3: 2 4 1 3, the first solution.
+It also finds 3 1 4 2: print 2, then 2 4 1 3.
+
+## How to think about it
+place(row): if every row has a queen, count the solution and save it if it is the first. Otherwise, for each free column, add col, row - col and row + col (choose), call place(row + 1) (explore), then remove all three (undo). Trying columns from 1 up makes the first solution found the one to print.
+
+## Complexity
+Time: far below the n^n boards: 35,538 placements at n = 10.
+Space: O(n).
+
+## Watch out for
+- Undo all three marks, or later rows see false attacks.
+- n = 2 and n = 3 have no solution: print 0, then none.
+
+With only ten inputs, a table of the known answers passes every test. The grader can't stop that, but it skips the whole point.
+TEXT,
+
     'count-connected-components' => <<<'TEXT'
 A graph is a set of nodes joined by edges. Here edges are undirected: u v works both ways. Store it as an adjacency list, one list of neighbours per node: edge u v adds v to the list of u and u to the list of v.
 
