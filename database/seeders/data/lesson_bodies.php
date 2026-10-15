@@ -236,6 +236,225 @@ Space: O(1) for the loop, O(n) for the recursion's calls.
 The grader can't tell whether you wrote a function, a loop or recursion, and a table of the 21 answers would also pass. Write the function: the next lessons build on it.
 TEXT,
 
+    'caesar-cipher' => <<<'TEXT'
+A string is a sequence of characters, each with a position starting at 0 and a number code: a is 97, A is 65, and each alphabet follows in order.
+
+In Python, Java and JavaScript, strings are immutable: every change makes a new string. Build a result by joining collected pieces once, or with a builder. C++ strings can change, so += appends.
+
+## Example
+Take k = 3 and Hello, World!. H moves 3 letters on to K, e to h, l to o. The comma, the space and the ! stay. Print Khoor, Zruog!.
+With k = 1, z wraps around to a and Z to A. With k = 1000, only 1000 % 26 = 12 matters, so z becomes l.
+
+## How to think about it
+For a lower- or upper-case letter, turn it into a number from 0 to 25, add k, take the remainder by 26, and turn it back: (c - 'a' + k) % 26 + 'a'. The remainder wraps z to a, and the right base, 'a' or 'A', keeps the case. Copy everything else unchanged.
+
+## Python
+    s = "Hello, World"
+    print(s[0:5], s.lower())         # Hello hello, world
+    print("-".join(s.split(", ")))   # Hello-World
+    out = []
+    for ch in s:
+        out.append(chr(ord(ch) + 1) if ch.isalpha() else ch)
+    print("".join(out))              # Ifmmp, Xpsme
+
+## Java
+    String s = "Hello, World";
+    System.out.println(s.substring(0, 5) + " " + s.toLowerCase());  // Hello hello, world
+    System.out.println(String.join("-", s.split(", ")));            // Hello-World
+    StringBuilder out = new StringBuilder();
+    for (char ch : s.toCharArray()) out.append(Character.isLetter(ch) ? (char) (ch + 1) : ch);
+    System.out.println(out);                                        // Ifmmp, Xpsme
+
+## JavaScript
+    const s = 'Hello, World'
+    console.log(s.slice(0, 5), s.toLowerCase())  // Hello hello, world
+    console.log(s.split(', ').join('-'))         // Hello-World
+    let out = ''
+    for (const ch of s) out += /[a-z]/i.test(ch) ? String.fromCharCode(ch.charCodeAt(0) + 1) : ch
+    console.log(out)                             // Ifmmp, Xpsme
+
+## C++
+    string s = "Hello, World";
+    cout << s.substr(0, 5) << "\n";  // Hello (substr takes a start and a length)
+    string out;
+    for (char ch : s) out += isalpha(ch) ? char(ch + 1) : ch;
+    cout << out << "\n";             // Ifmmp, Xpsme
+
+C++ has no split; use a stringstream.
+
+## Complexity
+Time: O(length of the text), one step per character.
+Space: O(length of the text) for the result.
+
+## Watch out for
+- Reduce k first. Adding 1000 to a character code goes far past z.
+- Reading the text. It can be empty and contains spaces, so read the whole second line.
+- s += ch in a Java loop copies the string each time. A StringBuilder doesn't.
+
+The grader only sees the output, so a shifted copy of the alphabet used as a lookup table also passes.
+TEXT,
+
+    'diagonal-sums' => <<<'TEXT'
+A list holds values in order, each at an index from 0; Java, C++ and JavaScript call it an array. A 2D list is a list of rows: grid[r][c] is the value in row r, column c.
+
+## Example
+With n = 3:
+    1 2 3
+    4 5 6
+    7 8 9
+Main diagonal, top-left to bottom-right: grid[0][0] + grid[1][1] + grid[2][2] = 1 + 5 + 9 = 15.
+Anti-diagonal, top-right to bottom-left: grid[0][2] + grid[1][1] + grid[2][0] = 3 + 5 + 7 = 15.
+The centre, 5, counts in both. Print 15 15.
+
+## How to think about it
+Read n, then each row into its own list. Nested loops visit every cell: an outer loop over rows, an inner one over columns. The diagonals need one loop: row i meets the main diagonal at column i and the anti-diagonal at column n - 1 - i.
+
+With values up to 1,000,000,000 in size and n up to 50, a sum can reach 50,000,000,000. Use long in Java and long long in C++.
+
+## Python
+    n = 3
+    grid = [[0] * n for _ in range(n)]  # n separate rows
+    trap = [[0] * n] * n                # n references to ONE row
+    grid[0][0] = 1
+    trap[0][0] = 1
+    print(grid)  # [[1, 0, 0], [0, 0, 0], [0, 0, 0]]
+    print(trap)  # [[1, 0, 0], [1, 0, 0], [1, 0, 0]]
+
+## Java
+    int n = 3;
+    long[][] grid = new long[n][n];   // every cell starts at 0
+    for (int r = 0; r < n; r++)
+        for (int c = 0; c < n; c++)
+            grid[r][c] = r * n + c + 1;  // 1 to 9, row by row
+    System.out.println(grid[1][2]);   // 6
+
+## JavaScript
+    const n = 3
+    const grid = Array.from({ length: n }, () => new Array(n).fill(0))  // n rows
+    const trap = new Array(n).fill(new Array(n).fill(0))                // one shared row
+    grid[0][0] = 1
+    trap[0][0] = 1
+    console.log(grid[1][0], trap[1][0])  // 0 1
+
+## C++
+    int n = 3;
+    vector<vector<long long>> grid(n, vector<long long>(n, 0));  // n copies of a row
+    grid[0][0] = 1;
+    cout << grid[1][0] << "\n";  // 0
+
+## Complexity
+Time: O(n^2) to read the grid, then O(n) for the sums.
+Space: O(n^2) for the grid.
+
+## Watch out for
+- The shared row. [[0] * n] * n in Python and fill in JavaScript put one row in every slot, so changing a cell changes its whole column. C++ copies the row.
+- The centre for odd n belongs to both diagonals; don't subtract it.
+- 32-bit sums wrap around with the largest values.
+
+Summing while reading, without storing the grid, also passes; the grader only sees two numbers.
+TEXT,
+
+    'word-frequency' => <<<'TEXT'
+A dictionary, or map, stores pairs: each key leads to a value. Here the key is a word and the value is how many times it appears. Python calls it a dict, Java a HashMap, JavaScript a Map, and C++ a map or unordered_map. Looking up a key in a hash map takes O(1) time on average.
+
+## Example
+Take the cat and the hat.
+the is not in the map yet, so it gets 1. Then cat 1, and 1, the again 2, hat 1.
+Sort by count, highest first, and alphabetically within a count:
+the 2, and 1, cat 1, hat 1.
+
+## How to think about it
+Counting needs a lookup with a default: a word you haven't seen yet counts as 0. Add 1 and store it back. Then iterate over the entries, copy them into a list and sort it.
+
+Don't print the map in its own order. Python dicts and JavaScript Maps keep the order keys were added, a Java HashMap has no useful order, and a C++ map is sorted by key. None of those is most frequent first.
+
+## Python
+    counts = {}
+    for w in "the cat and the hat".split():
+        counts[w] = counts.get(w, 0) + 1  # get with a default
+    for w, c in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+        print(w, c)  # the 2, and 1, cat 1, hat 1
+
+## Java
+    Map<String, Integer> counts = new HashMap<>();
+    for (String w : "the cat and the hat".split(" "))
+        counts.put(w, counts.getOrDefault(w, 0) + 1);
+    System.out.println(counts.get("the"));  // 2
+    for (Map.Entry<String, Integer> e : counts.entrySet())
+        System.out.println(e.getKey() + " " + e.getValue());  // no useful order
+
+## JavaScript
+    const counts = new Map()
+    for (const w of 'the cat and the hat'.split(' '))
+      counts.set(w, (counts.get(w) ?? 0) + 1)  // get gives undefined, ?? turns it into 0
+    for (const [w, c] of counts) console.log(w, c)  // the 2, cat 1, and 1, hat 1
+
+## C++
+    map<string, int> counts;
+    istringstream words("the cat and the hat");
+    string w;
+    while (words >> w) counts[w]++;  // a missing key starts at 0
+    for (const auto& [word, c] : counts) cout << word << " " << c << "\n";  // and, cat, hat, the
+
+## Complexity
+Time: O(w) to count w words, plus O(d log d) to sort the d distinct words.
+Space: O(d) for the map.
+
+## Watch out for
+- Reading in C++. counts["dog"] adds dog with 0 even if you only meant to look. Use counts.count(w) to check.
+- Ties. Within a count, words go in alphabetical order.
+
+Sorting all the words and counting runs of equal words also passes; the grader can't tell whether you used a map.
+TEXT,
+
+    'sort-the-leaderboard' => <<<'TEXT'
+Sorting with a key means comparing something computed from each item instead of the whole item. With several keys, compare by the first; only when it is equal, look at the second. For descending order, reverse that one key, not the others.
+
+A sort is stable when items that compare equal keep their current order. Python's sort, Java's List.sort and JavaScript's sort are stable; C++ sort is not, but stable_sort is.
+
+## Example
+alice 50, bob 70, carol 50, dave 70.
+By score, highest first, the 70s come before the 50s. Within 70, bob comes before dave; within 50, alice before carol.
+Print bob 70, dave 70, alice 50, carol 50.
+
+## How to think about it
+One way is a single comparison that checks the score, highest first, and then the name. Another is two passes with a stable sort: sort by name, then stably by score, highest first. The names stay in order within each score.
+
+In Python, reverse=True reverses the whole key, names included. Negate the number instead: (-score, name).
+
+A comparator takes two items a and b and says which goes first: in Java and JavaScript a negative number means a, positive means b, 0 means equal. In C++ it returns true when a must go strictly before b.
+
+## Python
+    players = [("alice", 50), ("bob", 70), ("carol", 50), ("dave", 70)]
+    players.sort(key=lambda p: (-p[1], p[0]))
+    print(players)  # [('bob', 70), ('dave', 70), ('alice', 50), ('carol', 50)]
+
+## Java
+    record Player(String name, int score) {}
+    players.sort(Comparator.comparingInt(Player::score).reversed()
+            .thenComparing(Player::name));
+
+## JavaScript
+    players.sort((a, b) => b.score - a.score || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+
+## C++
+    sort(players.begin(), players.end(), [](const Player& a, const Player& b) {
+        if (a.score != b.score) return a.score > b.score;  // higher score first
+        return a.name < b.name;
+    });
+
+## Complexity
+Time: O(n log n) comparisons.
+Space: O(n) for the list.
+
+## Watch out for
+- Sorting numbers in JavaScript without a comparator: [10, 9, 1].sort() compares them as text and gives 1, 10, 9.
+- Returning a.score >= b.score in a C++ comparator. It must be false for equal items, or sort can misbehave.
+- Two passes in C++ need stable_sort.
+
+The grader only sees the final order, so it can't tell one comparison from two passes.
+TEXT,
+
     'reverse-a-string' => <<<'TEXT'
 A string is a sequence of characters, so you can treat it like an array. Reversing it puts the last character first and the first character last.
 
