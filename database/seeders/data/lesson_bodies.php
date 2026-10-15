@@ -456,6 +456,96 @@ Space: O(n) for the map.
 Use the map in the problem below, and try 0 0 0 with k = 0 first.
 TEXT,
 
+    'height-of-a-bst' => <<<'TEXT'
+A binary tree is made of nodes, each with a value and two child pointers, left and right (nothing if missing). The top node is the root.
+
+A binary search tree (BST) keeps one rule at every node: smaller values go in its left subtree, larger ones in its right. To insert v, start at the root and go left if v is smaller than the node, right if it is larger, until that pointer is nothing. Put the new node there.
+
+Nothing rebalances the tree, so its shape depends on the insertion order: 1 2 3 4 5 6 7 gives a chain of 7 nodes.
+
+## Example
+Insert 4 2 6 1 3 5 7. 4 is the root, 2 and 6 its children, 1 and 3 under 2, 5 and 7 under 6. Every path from the root down, such as 4 2 1, has 3 nodes, so the height is 3.
+Insert 1 5 2 4 3 instead: each value lands one level deeper, so the height is 5.
+
+## How to think about it
+The height of a tree is 1 + the larger height of its two subtrees, and an empty tree has height 0: a three-line recursive function.
+
+Without recursion, push (root, 1) on a stack. Pop a pair, keep the largest depth seen, and push each child with depth + 1. A queue, one level at a time, also works.
+
+1,000 sorted values give a chain 1,000 deep. A recursive insert or height then nests about 1,000 calls, past Python's default recursion limit of 1000, and stops with RecursionError. Insert with a loop and use the stack, or call sys.setrecursionlimit(10000) first.
+
+## Complexity
+Time: O(n * h) to build, where h is the height: O(n^2) for sorted input. O(n) for the height.
+Space: O(n).
+
+## Watch out for
+- Count nodes, not edges. One node has height 1, an empty tree 0.
+- n = 0. There is no second line and no root.
+
+The grader only sees the number, so it can't tell the stack from a raised limit.
+TEXT,
+
+    'lowest-common-ancestor-of-a-bst' => <<<'TEXT'
+In a BST, values smaller than a node are in its left subtree and larger ones in its right, so each node tells you which side a value is on.
+
+The lowest common ancestor (LCA) of p and q is the deepest node with both in its subtree. A node counts as its own ancestor: if p is above q, or p = q, the answer is p.
+
+## Example
+Insert 6 2 8 0 4 7 9 3 5. 6 is the root with 2 and 8 below it; 0 and 4 hang under 2, 3 and 5 under 4, 7 and 9 under 8.
+p = 2, q = 8: 2 is smaller than 6 and 8 is larger, so they split at the root. Print 6.
+p = 2, q = 5: at 6 both are smaller, go left. At 2, p is the node itself. Print 2.
+p = 5, q = 3: at 6 go left; at 2 both are larger, go right. At 4, 5 is larger and 3 is smaller. Print 4.
+
+## How to think about it
+Walk down from the root. If p and q are both smaller than the node, go left; if both are larger, go right. Otherwise this node is the split point: they lie on different sides, or one is the node. Print it.
+
+Comparing both values at every step handles p = q and either order, with no recursion or parent pointers. In an ordinary binary tree, without the BST rule, you would search both subtrees.
+
+## Complexity
+Time: O(n * h) to build, where h is the height, then O(h) to walk.
+Space: O(n) for the nodes, O(1) for the walk.
+
+## Watch out for
+- Order. Don't assume p < q.
+- Equality. A node equal to p or q is the split point.
+- Deep trees. Sorted input gives a chain 1,000 deep, past Python's default recursion limit of 1000, so insert with a loop.
+
+The grader only sees the value, so comparing the root-to-p and root-to-q paths also passes. Write the walk.
+TEXT,
+
+    'delete-from-a-bst' => <<<'TEXT'
+Deleting must keep the BST rule. Find the node with value x and its parent, then:
+- No children: set the parent's link to nothing.
+- One child: point the parent's link at that child.
+- Two children: find the successor, the smallest value in the right subtree: step right once, then left while you can. Copy its value into the node, then remove the successor node. It has no left child, so one of the first two cases removes it.
+
+The root has no parent: deleting it makes its child, or nothing, the new root.
+
+## Example
+Insert 50 30 70 20 40 60 80 65, then delete 50, the root, which has two children.
+Step right to 70, then left to 60. 60 has no left child, so it is the successor.
+Copy 60 into the root. The old 60 node has one child, 65, so 70's left link now points at 65.
+Preorder prints the root, then the left subtree, then the right: 60 30 20 40 70 65 80.
+Deleting 20, a leaf, instead gives 50 30 40 70 60 65 80.
+
+## How to think about it
+Keep parent and cur while you search, and the successor's parent too. If the successor is cur's own right child, set cur.right to the successor's right child; otherwise set the successor parent's left to it.
+
+For preorder, use a stack: pop a node, print it, push its right child, then its left.
+
+## Complexity
+Time: O(n * h) to build, where h is the height, O(h) to delete and O(n) to print.
+Space: O(n).
+
+## Watch out for
+- The rule. The largest value in the left subtree also leaves a valid BST, but a different one, and fails here.
+- Copying the successor without removing it leaves its value twice.
+- Deleting the only node. Print an empty line.
+- Deep trees. Sorted input gives a chain 1,000 deep, past Python's default recursion limit.
+
+The grader only compares the preorder, so it can't see whether you moved pointers. Move them anyway.
+TEXT,
+
     'count-connected-components' => <<<'TEXT'
 A graph is a set of nodes joined by edges. Here edges are undirected: u v works both ways. Store it as an adjacency list, one list of neighbours per node: edge u v adds v to the list of u and u to the list of v.
 
