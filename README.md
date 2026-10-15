@@ -68,7 +68,7 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson with its problems and their visible test cases |
 | POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
-| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points}]`, users with points > 0 (limit max 100) |
+| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 
 Hidden test cases are never returned. In a submit response they only show `{"passed": bool}`.
