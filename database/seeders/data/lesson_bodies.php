@@ -456,6 +456,99 @@ Space: O(n) for the map.
 Use the map in the problem below, and try 0 0 0 with k = 0 first.
 TEXT,
 
+    'count-connected-components' => <<<'TEXT'
+A graph is a set of nodes joined by edges. Here edges are undirected: u v works both ways. Store it as an adjacency list, one list of neighbours per node: edge u v adds v to the list of u and u to the list of v.
+
+A connected component is a group of nodes that can all reach each other. Count the walks: start one from each node not yet visited, and mark what it reaches in a visited set.
+
+## Example
+Take n = 5 with edges 1 2, 2 3 and 4 5. The lists are 1: [2], 2: [1, 3], 3: [2], 4: [5], 5: [4].
+Node 1 is not visited: count = 1. The walk visits 1, 2 and 3.
+Skip 2 and 3: they are visited.
+Node 4 is not visited: count = 2. The walk visits 4 and 5.
+Skip 5. Print 2.
+
+## How to think about it
+Loop over the nodes 1 to n. For one that is not visited, add 1 to count, mark it and push it on a stack. Then pop nodes until the stack is empty, pushing and marking each neighbour not visited yet, so no node goes on twice. That is depth-first search (DFS); a queue instead of a stack gives breadth-first search (BFS). Both reach the same nodes.
+
+Union-find, which merges groups edge by edge, also passes; the grader only sees the number.
+
+## Complexity
+Time: O(n + m): each node is pushed once and each edge read twice.
+Space: O(n + m) for the lists and marks.
+
+## Watch out for
+- Nodes with no edges. Each is a component of its own: 4 nodes and no edges give 4.
+- Duplicate edges and self-loops. 1 2 twice, or 3 3, are harmless when you check visited.
+- Deep recursion. A recursive DFS on the path 1-2-...-1000 nests 1000 calls, past Python's default limit. Use the stack.
+- Numbering. Nodes run from 1 to n, so make the lists n + 1 long.
+
+Count the walks in the problem below.
+TEXT,
+
+    'number-of-islands' => <<<'TEXT'
+A grid is a graph you never have to build. Each cell is a node; its neighbours are the cells up, down, left and right. Keep the four moves as offsets, (-1, 0), (1, 0), (0, -1) and (0, 1), added to the row and column. A move counts only if the new cell is inside the grid: 0 <= row < r and 0 <= col < c.
+
+An island is a group of connected 1 cells, so counting islands is counting components.
+
+## Example
+Take this 4 by 5 grid:
+    11000
+    11000
+    00100
+    00011
+Scan row by row. (0, 0) is an unvisited 1: count = 1. The search marks (0, 0), (0, 1), (1, 0) and (1, 1).
+(2, 2) is an unvisited 1 with no 1 neighbours: count = 2.
+(3, 3) is an unvisited 1: count = 3. The search marks (3, 3) and (3, 4).
+Print 3.
+
+## How to think about it
+Loop over every cell. At a 1 not yet visited, add 1 to count and search from it with a stack or a queue, marking each 1 you reach: in a visited grid, or by changing it to 0.
+
+A recursive DFS is shorter, but on a 50 by 50 grid of 1s it nests about 2,500 calls. Python's default recursion limit is 1000, so it stops with RecursionError. Use an explicit stack or a queue, or raise the limit with sys.setrecursionlimit. In this grader, Java, JavaScript and C++ coped with 2,500 nested calls, but the stack is safe everywhere.
+
+## Complexity
+Time: O(r * c): each cell is handled a few times.
+Space: O(r * c) for the marks and the stack.
+
+## Watch out for
+- Bounds. Check them before reading a cell.
+- Diagonals are not neighbours. In the grid 101, 010, 101 the 1s touch only at corners, so the answer is 5.
+- Mark when you push, or a cell can go on the stack more than once.
+
+The grader only checks the count. Try a full grid of 1s before you submit.
+TEXT,
+
+    'shortest-path-in-a-grid' => <<<'TEXT'
+Breadth-first search (BFS) explores in rings: the start, then every cell 1 move away, then 2 moves away, and so on. A queue does this: cells come out in the order they went in. So the first time BFS reaches a cell, it has used the fewest moves. Store that number in dist, a grid that starts at -1.
+
+## Example
+Take this 4 by 5 grid, where 1 is a wall:
+    00000
+    00000
+    00001
+    00100
+dist[0][0] = 0. Ring by ring, (2, 3) gets 5, (3, 3) gets 6 and the end, (3, 4), gets 7. Print 7.
+A DFS that tries up, down, left, right in that order runs down column 0, up column 1, down column 2, and first reaches the end after 13 moves.
+
+## How to think about it
+If the start or the end is a wall, print -1. Otherwise set the start's dist to 0 and queue it. Take cells from the front; for each neighbour that is inside the grid, open and still -1, set its dist to the current dist + 1 and add it to the back. When the queue is empty, print dist of the end; it stays -1 if no path exists.
+
+DFS follows one path as deep as it can, so it can reach the end by a detour, and the cells it marked block the shorter routes. Trying every path finds the minimum, but there are exponentially many.
+
+Use collections.deque in Python, ArrayDeque in Java, std::queue in C++, and an array with a head index in JavaScript. At 2,500 cells, list.pop(0) and shift() also pass; the grader can't see which queue you used.
+
+## Complexity
+Time: O(r * c): each cell enters the queue at most once.
+Space: O(r * c) for dist and the queue.
+
+## Watch out for
+- A 1 by 1 open grid. The start is the end, so the answer is 0.
+- Mark cells when you add them, not when you take them out.
+
+Write the queue and the dist grid in the problem below.
+TEXT,
+
     'sort-an-array' => <<<'TEXT'
 Sorting puts numbers in order, smallest first. The three methods here are the same three as in the visualization section on this page; watch each one there on a small array before you code it.
 
