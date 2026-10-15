@@ -13,15 +13,15 @@ class ContentSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeds_six_modules_and_eighteen_problems_with_enough_tests(): void
+    public function test_seeds_seven_modules_and_twenty_one_problems_with_enough_tests(): void
     {
         $this->seed(ContentSeeder::class);
 
         $this->assertSame(
-            ['basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'sorting-and-searching'],
+            ['basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'graphs', 'sorting-and-searching'],
             Module::orderBy('sort_order')->pluck('slug')->all(),
         );
-        $this->assertSame(18, Problem::count());
+        $this->assertSame(21, Problem::count());
 
         foreach (Problem::with('testCases')->get() as $problem) {
             $this->assertGreaterThanOrEqual(2, $problem->testCases->where('is_hidden', false)->count(), $problem->title);
@@ -34,7 +34,7 @@ class ContentSeederTest extends TestCase
     {
         $this->seed(ContentSeeder::class);
 
-        $this->assertSame(18, Lesson::count());
+        $this->assertSame(21, Lesson::count());
 
         foreach (Lesson::all() as $lesson) {
             $words = count(preg_split('/\s+/', trim((string) $lesson->body), -1, PREG_SPLIT_NO_EMPTY));
