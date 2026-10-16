@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -25,8 +27,13 @@ Artisan::command('user:make-admin {email} {--owner : Make the user an owner} {--
     }
 
     $role = $this->option('remove') ? 'user' : ($this->option('owner') ? 'owner' : 'admin');
-    $user->role = $role;
-    $user->save();
+    // Audited like an admin action, with "console" as the actor.
+    DB::transaction(function () use ($user, $role) {
+        $old = $user->role;
+        $user->role = $role;
+        $user->save();
+        AdminAuditLog::record(null, 'user.role_change', $user, $user->email, ['old' => $old, 'new' => $role]);
+    });
 
     $this->info(match ($role) {
         'user' => "$email is now a normal user.",

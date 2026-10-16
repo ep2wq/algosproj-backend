@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminAuditLog;
 use App\Models\Completion;
 use App\Models\Lesson;
 use App\Models\Module;
@@ -77,11 +78,15 @@ class AdminTest extends TestCase
         $this->flushHeaders();
         $this->app['auth']->forgetGuards();
         if ($as) {
-            $this->withToken($as->createToken('api')->plainTextToken);
+            $this->issuedTokens[] = $token = $as->createToken('api')->plainTextToken;
+            $this->withToken($token);
         }
 
         return $this->json($method, $uri, $data);
     }
+
+    // Every token send() created, to check that none ends up in a log.
+    private array $issuedTokens = [];
 
     private function asAdmin(string $method, string $uri, array $data = []): TestResponse
     {
@@ -125,6 +130,7 @@ class AdminTest extends TestCase
             ['POST', "/api/admin/users/$u/points", ['amount' => 5, 'reason' => 'Bonus'], 403, 200],
             ['POST', "/api/admin/users/$u/reset-progress", [], 403, 200],
             ['DELETE', "/api/admin/users/$u", ['confirm_email' => $this->target->email], 403, 204],
+            ['GET', '/api/admin/audit-log', [], 403, 200],
         ];
     }
 
@@ -144,10 +150,158 @@ class AdminTest extends TestCase
             ->sort()->values()->all();
 
         $tested = collect($this->routes())
-            ->map(fn ($route) => $route[0].' '.preg_replace(['/modules\/\d+/', '/lessons\/\d+/', '/problems\/\d+/', '/test-cases\/\d+/', '/users\/\d+/'], ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}'], $route[1]))
+            ->map(fn ($route) => $this->pattern($route[0], $route[1]))
             ->sort()->values()->all();
 
         $this->assertSame($registered, $tested);
+    }
+
+    // "PUT /api/admin/modules/5" -> "PUT /api/admin/modules/{module}", as the router names it.
+    private function pattern(string $method, string $uri): string
+    {
+        return $method.' '.preg_replace(
+            ['/modules\/\d+/', '/lessons\/\d+/', '/problems\/\d+/', '/test-cases\/\d+/', '/users\/\d+/'],
+            ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}'],
+            $uri,
+        );
+    }
+
+    // The audit action every write route must log. A new write route fails the test below until
+    // it is added here, and then fails the one after it until it writes that row.
+    private const AUDIT_ACTIONS = [
+        'POST /api/admin/modules' => 'module.create',
+        'PUT /api/admin/modules/{module}' => 'module.update',
+        'DELETE /api/admin/modules/{module}' => 'module.delete',
+        'POST /api/admin/lessons' => 'lesson.create',
+        'PUT /api/admin/lessons/{lesson}' => 'lesson.update',
+        'DELETE /api/admin/lessons/{lesson}' => 'lesson.delete',
+        'POST /api/admin/problems' => 'problem.create',
+        'PUT /api/admin/problems/{problem}' => 'problem.update',
+        'DELETE /api/admin/problems/{problem}' => 'problem.delete',
+        'POST /api/admin/problems/{problem}/test-cases' => 'test_case.create',
+        'PUT /api/admin/problems/{problem}/test-cases/{testCase}' => 'test_case.update',
+        'DELETE /api/admin/problems/{problem}/test-cases/{testCase}' => 'test_case.delete',
+        'POST /api/admin/users/{user}/ban' => 'user.ban',
+        'POST /api/admin/users/{user}/unban' => 'user.unban',
+        'POST /api/admin/users/{user}/logout-everywhere' => 'user.logout_everywhere',
+        'PUT /api/admin/users/{user}/role' => 'user.role_change',
+        'POST /api/admin/users/{user}/points' => 'user.points_adjust',
+        'POST /api/admin/users/{user}/reset-progress' => 'user.reset_progress',
+        'DELETE /api/admin/users/{user}' => 'user.delete',
+    ];
+
+    public function test_every_admin_write_route_has_an_audit_action(): void
+    {
+        $writeRoutes = collect(Route::getRoutes()->getRoutes())
+            ->filter(fn ($route) => str_starts_with($route->uri(), 'api/admin') && $route->methods()[0] !== 'GET')
+            ->map(fn ($route) => $route->methods()[0].' /'.$route->uri())
+            ->sort()->values()->all();
+
+        $this->assertSame($writeRoutes, collect(self::AUDIT_ACTIONS)->keys()->sort()->values()->all());
+    }
+
+    public function test_every_successful_admin_write_logs_one_row_with_its_action_and_actor(): void
+    {
+        foreach ($this->routes() as $i => $ignored) {
+            [$method, $uri, $data, $adminStatus, $ownerStatus] = $this->routes()[$i];
+            if ($method === 'GET') {
+                continue;
+            }
+            // Admins where they are allowed, otherwise the owner.
+            [$actor, $status] = $adminStatus === 403 ? [$this->owner, $ownerStatus] : [$this->admin, $adminStatus];
+            $before = AdminAuditLog::max('id') ?? 0;
+
+            $this->send($method, $uri, $data, $actor)->assertStatus($status);
+
+            $rows = AdminAuditLog::where('id', '>', $before)->get();
+            $this->assertCount(1, $rows, "$method $uri");
+            $this->assertSame(self::AUDIT_ACTIONS[$this->pattern($method, $uri)], $rows[0]->action, "$method $uri");
+            $this->assertSame($actor->id, $rows[0]->actor_id);
+            $this->assertSame($actor->email, $rows[0]->actor_email);
+            $this->assertSame('127.0.0.1', $rows[0]->ip);
+            $this->assertNotNull($rows[0]->target_id);
+            $this->assertNotNull($rows[0]->target_label);
+
+            $this->refreshContent();
+        }
+
+        // No row holds a password, a password hash, a token, a lesson body, a test or the delete confirmation field.
+        $all = AdminAuditLog::all()->toJson();
+        foreach (['password', $this->owner->password, 'Old text', 'New text', 'VISIBLE-IN', 'confirm_email'] as $secret) {
+            $this->assertStringNotContainsString($secret, $all);
+        }
+        $this->assertNotEmpty($this->issuedTokens);
+        foreach ($this->issuedTokens as $token) {
+            $this->assertStringNotContainsString(explode('|', $token)[1], $all);
+            $this->assertStringNotContainsString(hash('sha256', explode('|', $token)[1]), $all);
+        }
+    }
+
+    public function test_rejected_admin_writes_log_nothing(): void
+    {
+        $otherAdmin = User::factory()->create(['role' => 'admin']);
+
+        $this->send('POST', "/api/admin/users/{$otherAdmin->id}/ban", ['reason' => 'x'], $this->admin)->assertForbidden();
+        $this->send('POST', "/api/admin/users/{$this->target->id}/points", ['amount' => 5, 'reason' => 'x'], $this->admin)->assertForbidden();
+        $this->send('POST', "/api/admin/users/{$this->owner->id}/ban", ['reason' => 'x'], $this->owner)->assertForbidden();
+        $this->send('POST', "/api/admin/users/{$this->bannedTarget->id}/ban", ['reason' => 'x'], $this->admin)->assertStatus(409);
+        $this->asAdmin('DELETE', "/api/admin/modules/{$this->module->id}")->assertStatus(409);
+        $this->asAdmin('POST', '/api/admin/modules', [])->assertUnprocessable();
+        $this->send('POST', "/api/admin/users/{$this->target->id}/points", ['amount' => -999, 'reason' => 'x'], $this->owner)->assertUnprocessable();
+        $this->send('DELETE', "/api/admin/users/{$this->target->id}", ['confirm_email' => 'wrong@example.com'], $this->owner)->assertUnprocessable();
+        $this->send('POST', '/api/admin/modules', ['title' => 'X', 'slug' => 'x', 'sort_order' => 1], $this->user)->assertForbidden();
+
+        $this->assertSame(0, AdminAuditLog::count());
+    }
+
+    public function test_an_update_logs_which_fields_changed_with_short_values_and_never_the_content(): void
+    {
+        $longTitle = str_repeat('t', 255);
+        $this->asAdmin('PUT', "/api/admin/lessons/{$this->lesson->id}", ['module_id' => $this->module->id, 'title' => $longTitle, 'slug' => 'warm-up', 'body' => 'SECRET BODY', 'sort_order' => 1])->assertOk();
+        $this->asAdmin('PUT', "/api/admin/problems/{$this->problem->id}/test-cases/{$this->testCase->id}", ['input' => 'SECRET-IN', 'expected_output' => 'SECRET-OUT', 'is_hidden' => true])->assertOk();
+
+        [$lessonRow, $testRow] = AdminAuditLog::orderBy('id')->get();
+        $this->assertSame(['title' => ['old' => 'Warm-up', 'new' => str_repeat('t', 200)], 'body' => 'changed'], $lessonRow->details['changes']);
+        $this->assertSame($longTitle, $lessonRow->target_label);
+        $this->assertSame(['input' => 'changed', 'expected_output' => 'changed', 'is_hidden' => ['old' => false, 'new' => true]], $testRow->details['changes']);
+        $this->assertStringNotContainsString('SECRET', AdminAuditLog::all()->toJson());
+    }
+
+    public function test_the_artisan_command_logs_a_console_row(): void
+    {
+        $this->artisan('user:make-admin', ['email' => $this->user->email])->assertExitCode(0);
+
+        $row = AdminAuditLog::sole();
+        $this->assertNull($row->actor_id);
+        $this->assertSame('console', $row->actor_email);
+        $this->assertSame('user.role_change', $row->action);
+        $this->assertSame(['old' => 'user', 'new' => 'admin'], $row->details);
+        $this->assertSame($this->user->email, $row->target_label);
+    }
+
+    public function test_the_audit_log_is_newest_first_filtered_paginated_and_read_only(): void
+    {
+        $this->asAdmin('POST', '/api/admin/modules', ['title' => 'A', 'slug' => 'a', 'sort_order' => 1])->assertCreated();
+        $this->send('POST', "/api/admin/users/{$this->target->id}/points", ['amount' => 5, 'reason' => 'x'], $this->owner)->assertOk();
+        $this->artisan('user:make-admin', ['email' => $this->user->email])->assertExitCode(0);
+
+        $get = fn (string $query = '') => $this->send('GET', "/api/admin/audit-log$query", [], $this->owner)->assertOk();
+        $this->assertSame(['user.role_change', 'user.points_adjust', 'module.create'], array_column($get()->json('data'), 'action'));
+        $this->assertSame(['module.create'], array_column($get('?action=module.create')->json('data'), 'action'));
+        $this->assertSame(['user.points_adjust'], array_column($get("?actor={$this->owner->email}")->json('data'), 'action'));
+        $this->assertSame(['module.create'], array_column($get("?actor={$this->admin->id}")->json('data'), 'action'));
+        $this->assertSame(['user.role_change'], array_column($get('?actor=console')->json('data'), 'action'));
+        $today = now()->format('Y-m-d');
+        $this->assertCount(3, $get("?from=$today&to=$today")->json('data'));
+        $this->assertCount(0, $get('?to=2000-01-01')->json('data'));
+        $this->send('GET', '/api/admin/audit-log?from=2026-02-01&to=2026-01-01', [], $this->owner)->assertUnprocessable()->assertJsonValidationErrors('to');
+
+        AdminAuditLog::insert(array_fill(0, 60, ['actor_email' => 'console', 'action' => 'x', 'created_at' => now()]));
+        $get()->assertJsonPath('per_page', 50)->assertJsonPath('total', 63)->assertJsonCount(50, 'data');
+
+        // Nothing but GET touches the audit log.
+        $methods = collect(Route::getRoutes()->getRoutes())->filter(fn ($route) => str_contains($route->uri(), 'audit'))->flatMap->methods()->unique()->values()->all();
+        $this->assertSame(['GET', 'HEAD'], $methods);
     }
 
     public function test_every_admin_route_is_401_for_guests_403_for_users_and_works_for_admins_and_owners(): void

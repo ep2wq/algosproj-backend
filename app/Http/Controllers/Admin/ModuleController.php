@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ModuleController extends Controller
@@ -24,25 +26,39 @@ class ModuleController extends Controller
     public function store(Request $request)
     {
         // New modules join the Algorithms track; the admin area does not edit tracks.
-        $module = Module::create($this->validated($request) + ['track' => 'algorithms']);
+        $data = $this->validated($request) + ['track' => 'algorithms'];
+        $module = DB::transaction(function () use ($request, $data) {
+            $module = Module::create($data);
+            AdminAuditLog::record($request->user(), 'module.create', $module, $module->title);
+
+            return $module;
+        });
 
         return response()->json($module, 201);
     }
 
     public function update(Request $request, Module $module)
     {
-        $module->update($this->validated($request, $module));
+        $module->fill($this->validated($request, $module));
+        $changes = AdminAuditLog::changes($module);
+        DB::transaction(function () use ($request, $module, $changes) {
+            $module->save();
+            AdminAuditLog::record($request->user(), 'module.update', $module, $module->title, ['changes' => $changes]);
+        });
 
         return response()->json($module);
     }
 
-    public function destroy(Module $module)
+    public function destroy(Request $request, Module $module)
     {
         if ($module->lessons()->exists()) {
             return response()->json(['message' => 'This module has lessons. Move or delete its lessons first.'], 409);
         }
 
-        $module->delete();
+        DB::transaction(function () use ($request, $module) {
+            $module->delete();
+            AdminAuditLog::record($request->user(), 'module.delete', $module, $module->title);
+        });
 
         return response()->noContent();
     }

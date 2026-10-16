@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\Problem;
 use App\Models\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class TestCaseController extends Controller
@@ -35,7 +37,14 @@ class TestCaseController extends Controller
         }
         $this->checkTotalBytes($problem, $data);
 
-        return response()->json($problem->testCases()->create($data), 201);
+        $testCase = DB::transaction(function () use ($request, $problem, $data) {
+            $testCase = $problem->testCases()->create($data);
+            AdminAuditLog::record($request->user(), 'test_case.create', $testCase, $this->label($problem, $testCase));
+
+            return $testCase;
+        });
+
+        return response()->json($testCase, 201);
     }
 
     // Scoped binding (see routes/api.php): a test case of another problem is a 404.
@@ -44,16 +53,30 @@ class TestCaseController extends Controller
         $data = $this->validated($request);
         $this->checkTotalBytes($problem, $data, $testCase);
 
-        $testCase->update($data);
+        $testCase->fill($data);
+        // Input and expected output are not logged, only that they changed.
+        $changes = AdminAuditLog::changes($testCase, ['input', 'expected_output']);
+        DB::transaction(function () use ($request, $problem, $testCase, $changes) {
+            $testCase->save();
+            AdminAuditLog::record($request->user(), 'test_case.update', $testCase, $this->label($problem, $testCase), ['changes' => $changes]);
+        });
 
         return response()->json($testCase);
     }
 
-    public function destroy(Problem $problem, TestCase $testCase)
+    public function destroy(Request $request, Problem $problem, TestCase $testCase)
     {
-        $testCase->delete();
+        DB::transaction(function () use ($request, $problem, $testCase) {
+            $testCase->delete();
+            AdminAuditLog::record($request->user(), 'test_case.delete', $testCase, $this->label($problem, $testCase));
+        });
 
         return response()->noContent();
+    }
+
+    private function label(Problem $problem, TestCase $testCase): string
+    {
+        return "Test case {$testCase->id} of {$problem->title}";
     }
 
     private function validated(Request $request): array

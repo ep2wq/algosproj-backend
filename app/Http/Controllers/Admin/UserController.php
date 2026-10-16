@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,9 +82,10 @@ class UserController extends Controller
             return response()->json(['message' => 'This user is already banned.'], 409);
         }
 
-        DB::transaction(function () use ($user, $data) {
+        DB::transaction(function () use ($request, $user, $data) {
             $user->forceFill(['banned_at' => now(), 'ban_reason' => $data['reason']])->save();
             $user->tokens()->delete();
+            AdminAuditLog::record($request->user(), 'user.ban', $user, $user->email, ['reason' => AdminAuditLog::short($data['reason'])]);
         });
 
         return $this->rowResponse($user);
@@ -97,8 +99,10 @@ class UserController extends Controller
             return response()->json(['message' => 'This user is not banned.'], 409);
         }
 
-        DB::transaction(function () use ($user) {
+        DB::transaction(function () use ($request, $user) {
+            $reason = $user->ban_reason;
             $user->forceFill(['banned_at' => null, 'ban_reason' => null])->save();
+            AdminAuditLog::record($request->user(), 'user.unban', $user, $user->email, ['ban_reason' => AdminAuditLog::short($reason)]);
         });
 
         return $this->rowResponse($user);
@@ -108,8 +112,9 @@ class UserController extends Controller
     {
         $this->checkTarget($request, $user);
 
-        DB::transaction(function () use ($user) {
-            $user->tokens()->delete();
+        DB::transaction(function () use ($request, $user) {
+            $deleted = $user->tokens()->delete();
+            AdminAuditLog::record($request->user(), 'user.logout_everywhere', $user, $user->email, ['tokens_deleted' => $deleted]);
         });
 
         return $this->rowResponse($user);
@@ -121,9 +126,11 @@ class UserController extends Controller
         $this->checkTarget($request, $user);
         $data = $request->validate(['role' => ['required', Rule::in(['user', 'admin'])]]);
 
-        DB::transaction(function () use ($user, $data) {
+        DB::transaction(function () use ($request, $user, $data) {
+            $old = $user->role;
             $user->role = $data['role'];
             $user->save();
+            AdminAuditLog::record($request->user(), 'user.role_change', $user, $user->email, ['old' => $old, 'new' => $user->role]);
         });
 
         return $this->rowResponse($user);
@@ -138,7 +145,7 @@ class UserController extends Controller
             'reason' => ['required', 'string', 'max:255'],
         ], ['amount.not_in' => 'The amount may not be zero.']);
 
-        DB::transaction(function () use ($user, $data) {
+        DB::transaction(function () use ($request, $user, $data) {
             // Locked, so a submission awarding points at the same moment can't be lost.
             $locked = User::lockForUpdate()->findOrFail($user->id);
             if ($locked->points + $data['amount'] < 0) {
@@ -146,8 +153,15 @@ class UserController extends Controller
                     'amount' => "Points can't go below 0. This user has {$locked->points}.",
                 ]);
             }
+            $old = $locked->points;
             $locked->points += $data['amount'];
             $locked->save();
+            AdminAuditLog::record($request->user(), 'user.points_adjust', $locked, $locked->email, [
+                'amount' => $data['amount'],
+                'reason' => AdminAuditLog::short($data['reason']),
+                'old' => $old,
+                'new' => $locked->points,
+            ]);
         });
 
         return $this->rowResponse($user->refresh());
@@ -158,10 +172,12 @@ class UserController extends Controller
     {
         $this->checkTarget($request, $user);
 
-        DB::transaction(function () use ($user) {
-            $user->completions()->delete();
+        DB::transaction(function () use ($request, $user) {
+            $old = $user->points;
+            $deleted = $user->completions()->delete();
             $user->points = 0;
             $user->save();
+            AdminAuditLog::record($request->user(), 'user.reset_progress', $user, $user->email, ['old_points' => $old, 'completions_deleted' => $deleted]);
         });
 
         return $this->rowResponse($user);
@@ -178,9 +194,11 @@ class UserController extends Controller
             throw ValidationException::withMessages(['confirm_email' => "Type the user's exact email to confirm."]);
         }
 
-        DB::transaction(function () use ($user) {
+        // The confirmation is not logged; the label is the deleted account's email.
+        DB::transaction(function () use ($request, $user) {
             $user->tokens()->delete();
             $user->delete();
+            AdminAuditLog::record($request->user(), 'user.delete', $user, $user->email, ['name' => AdminAuditLog::short($user->name), 'points' => $user->points]);
         });
 
         return response()->noContent();

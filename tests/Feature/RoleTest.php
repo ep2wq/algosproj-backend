@@ -97,10 +97,11 @@ class RoleTest extends TestCase
 
     public function test_public_responses_never_include_a_role(): void
     {
-        $admin = User::factory()->create(['points' => 30]);
+        // Fixed names: a random one such as "Carole" contains "role".
+        $admin = User::factory()->create(['name' => 'Ada', 'points' => 30]);
         $admin->role = 'admin';
         $admin->save();
-        User::factory()->create(['points' => 10]);
+        User::factory()->create(['name' => 'Bob', 'points' => 10]);
         $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'track' => 'basics', 'sort_order' => 1]);
         $lesson = $module->lessons()->create(['slug' => 'warm-up', 'title' => 'Warm-up', 'body' => 'Text', 'sort_order' => 1]);
         $lesson->problems()->create(['slug' => 'warm-up', 'title' => 'Double', 'description' => 'Double it', 'difficulty' => 'easy', 'points' => 10]);

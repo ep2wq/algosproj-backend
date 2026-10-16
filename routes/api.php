@@ -69,5 +69,6 @@ Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->gro
         Route::post('/users/{user}/points', [Admin\UserController::class, 'adjustPoints']);
         Route::post('/users/{user}/reset-progress', [Admin\UserController::class, 'resetProgress']);
         Route::delete('/users/{user}', [Admin\UserController::class, 'destroy']);
+        Route::get('/audit-log', [Admin\AuditLogController::class, 'index']);
     });
 });

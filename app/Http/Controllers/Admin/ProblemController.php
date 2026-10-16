@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\Problem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProblemController extends Controller
@@ -29,24 +31,40 @@ class ProblemController extends Controller
 
     public function store(Request $request)
     {
-        return response()->json(Problem::create($this->validated($request)), 201);
+        $data = $this->validated($request);
+        $problem = DB::transaction(function () use ($request, $data) {
+            $problem = Problem::create($data);
+            AdminAuditLog::record($request->user(), 'problem.create', $problem, $problem->title);
+
+            return $problem;
+        });
+
+        return response()->json($problem, 201);
     }
 
     public function update(Request $request, Problem $problem)
     {
-        $problem->update($this->validated($request, $problem));
+        $problem->fill($this->validated($request, $problem));
+        $changes = AdminAuditLog::changes($problem);
+        DB::transaction(function () use ($request, $problem, $changes) {
+            $problem->save();
+            AdminAuditLog::record($request->user(), 'problem.update', $problem, $problem->title, ['changes' => $changes]);
+        });
 
         return response()->json($problem);
     }
 
-    public function destroy(Problem $problem)
+    public function destroy(Request $request, Problem $problem)
     {
         if ($problem->completions()->exists()) {
             return response()->json(['message' => 'Users have already solved this problem, so it cannot be deleted. Edit it instead.'], 409);
         }
 
         // Its test cases and submissions are deleted with it (foreign keys cascade).
-        $problem->delete();
+        DB::transaction(function () use ($request, $problem) {
+            $problem->delete();
+            AdminAuditLog::record($request->user(), 'problem.delete', $problem, $problem->title);
+        });
 
         return response()->noContent();
     }
