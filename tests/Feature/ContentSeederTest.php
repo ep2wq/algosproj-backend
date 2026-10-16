@@ -13,15 +13,15 @@ class ContentSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeds_eighteen_modules_and_sixty_one_problems_with_enough_tests(): void
+    public function test_seeds_nineteen_modules_and_sixty_five_problems_with_enough_tests(): void
     {
         $this->seed(ContentSeeder::class);
 
         $this->assertSame(
-            ['basics', 'programming-basics', 'core-programming', 'oop', 'algorithm-basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'trees-and-bsts', 'heaps', 'recursion-and-backtracking', 'graphs', 'tries-union-find', 'sorting-and-searching', 'greedy', 'dp-basics', 'dp-tables'],
+            ['basics', 'programming-basics', 'core-programming', 'oop', 'algorithm-basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'trees-and-bsts', 'heaps', 'recursion-and-backtracking', 'graphs', 'tries-union-find', 'sorting-and-searching', 'greedy', 'dp-basics', 'dp-tables', 'bits-math'],
             Module::orderBy('sort_order')->pluck('slug')->all(),
         );
-        $this->assertSame(61, Problem::count());
+        $this->assertSame(65, Problem::count());
 
         foreach (Problem::with('testCases')->get() as $problem) {
             $this->assertGreaterThanOrEqual(2, $problem->testCases->where('is_hidden', false)->count(), $problem->title);
@@ -34,7 +34,7 @@ class ContentSeederTest extends TestCase
     {
         $this->seed(ContentSeeder::class);
 
-        $this->assertSame(61, Lesson::count());
+        $this->assertSame(65, Lesson::count());
 
         foreach (Lesson::all() as $lesson) {
             $words = count(preg_split('/\s+/', trim((string) $lesson->body), -1, PREG_SPLIT_NO_EMPTY));
