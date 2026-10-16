@@ -1398,6 +1398,204 @@ Space: O(n).
 The grader only compares the preorder, so it can't see whether you moved pointers. Move them anyway.
 TEXT,
 
+    'last-stone-weight' => <<<'TEXT'
+A heap is an array where every parent beats its children, so a[0] is the largest (max-heap) or smallest (min-heap) item. a[i] has children a[2i + 1] and a[2i + 2] and parent a[(i - 1) / 2], rounded down.
+
+## Example
+Max-heap, push 2 7 4 8:
+[2 7] becomes [7 2].
+[7 2 4 8]: 8 beats 2, then 7: [8 7 4 2].
+Pop 8: [2 7 4] becomes [7 2 4].
+
+## How to think about it
+Push appends and sifts up: swap with the parent while it wins. Pop takes a[0], moves the last item up and sifts down: swap with the better child while that wins.
+
+## Python
+    h = []
+    for x in [2, 7, 4]:
+        heapq.heappush(h, -x)
+    print(-heapq.heappop(h))
+
+## Java
+    PriorityQueue<Integer> h = new PriorityQueue<>(Collections.reverseOrder());
+    h.addAll(List.of(2, 7, 4));
+    System.out.println(h.poll());
+
+## JavaScript
+    class Heap {
+      constructor(less) { this.less = less; this.a = [] }
+      push(x) {
+        const a = this.a
+        let i = a.push(x) - 1
+        for (let p; i > 0 && this.less(x, a[p = (i - 1) >> 1]); i = p) a[i] = a[p]
+        a[i] = x
+      }
+      pop() {
+        const a = this.a, top = a[0], x = a.pop()
+        let i = 0
+        for (let c; (c = 2 * i + 1) < a.length; i = c) {
+          if (c + 1 < a.length && this.less(a[c + 1], a[c])) c++
+          if (!this.less(a[c], x)) break
+          a[i] = a[c]
+        }
+        if (a.length) a[i] = x
+        return top
+      }
+    }
+    const h = new Heap((x, y) => x > y)  // max-heap
+    for (const x of [2, 7, 4]) h.push(x)
+    console.log(h.pop())
+
+## C++
+    priority_queue<int> h;
+    for (int x : {2, 7, 4}) h.push(x);
+    cout << h.top();
+
+## Complexity
+Push and pop cost O(log n): one swap per level, about log2 n levels. Peek costs O(1).
+
+## Watch out for
+- Python's heapq is a min-heap only: push -x.
+- Java's PriorityQueue is a min-heap: use Collections.reverseOrder(). b - a comparators can overflow (see Running median).
+- C++ priority_queue is a max-heap.
+- JavaScript has no heap: use this class.
+TEXT,
+
+    'merge-k-sorted-lists' => <<<'TEXT'
+Keep each list's front in a min-heap: the smallest number left is always a front. Pop it, output it, push the next number of its list.
+
+## Example
+A = 1 4 5, B = 1 3 4, C = 2 6. Start: 1 1 2.
+Pop 1, push A's 4. Pop 1, push B's 3. Pop 2, push C's 6.
+Pop 3, push B's 4. Pop 4, push A's 5. Pop 4; B is done. Then 5, 6.
+Output: 1 1 2 3 4 4 5 6.
+
+## How to think about it
+An entry (value, list index, position) points to the next number. Empty lists never enter.
+
+## Python
+    heap = [(l[0], i, 0) for i, l in enumerate(lists) if l]
+    heapq.heapify(heap)
+    while heap:
+        v, i, j = heapq.heappop(heap)
+        out.append(v)
+        if j + 1 < len(lists[i]):
+            heapq.heappush(heap, (lists[i][j + 1], i, j + 1))
+
+## Java
+    PriorityQueue<int[]> h = new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0]));
+    for (int i = 0; i < k; i++)
+        if (lists[i].length > 0) h.add(new int[] {lists[i][0], i, 0});
+    while (!h.isEmpty()) {
+        int[] t = h.poll();
+        out.add("" + t[0]);
+        int i = t[1], j = t[2] + 1;
+        if (j < lists[i].length) h.add(new int[] {lists[i][j], i, j});
+    }
+
+## JavaScript
+    const h = new Heap((x, y) => x[0] < y[0])  // Last stone weight's class
+    lists.forEach((l, i) => l.length && h.push([l[0], i, 0]))
+    while (h.a.length) {
+      const [v, i, j] = h.pop()
+      out.push(v)
+      if (j + 1 < lists[i].length) h.push([lists[i][j + 1], i, j + 1])
+    }
+
+## C++
+    priority_queue<array<int, 3>, vector<array<int, 3>>, greater<>> h;
+    for (int i = 0; i < k; i++)
+        if (!lists[i].empty()) h.push({lists[i][0], i, 0});
+    while (!h.empty()) {
+        auto [v, i, j] = h.top();
+        h.pop();
+        out.push_back(v);
+        if (j + 1 < (int)lists[i].size()) h.push({lists[i][j + 1], i, j + 1});
+    }
+
+## Complexity
+With at most k entries, push and pop cost O(log k); peek costs O(1). N numbers: O(N log k).
+
+## Watch out for
+- Python: a tie on (value, list) compares the second items; an iterator or node there crashes. Push (value, list index, position).
+TEXT,
+
+    'running-median' => <<<'TEXT'
+Keep the smaller half in lo, a max-heap, and the larger half in hi, a min-heap; lo has the same size as hi or one more. The median is lo's top for an odd count, otherwise the average of both tops.
+
+## Example
+Add 2 7 -4 3 10 (lo | hi: median):
+2 | (empty): 2
+2 | 7: 4.5
+2 -4 | 7: 2
+2 -4 | 3 7: 2.5
+3 2 -4 | 7 10: 3
+
+## How to think about it
+To add x, push it into lo and move lo's top to hi; if hi is bigger, move hi's top back.
+
+## Python
+    def add(x):  # lo holds -x
+        heapq.heappush(lo, -x)
+        heapq.heappush(hi, -heapq.heappop(lo))
+        if len(hi) > len(lo):
+            heapq.heappush(lo, -heapq.heappop(hi))
+
+    def median():
+        if len(lo) > len(hi):
+            return str(-lo[0])
+        return str((hi[0] - lo[0]) / 2).removesuffix(".0")
+
+## Java
+    static void add(int x) {
+        lo.add(x);
+        hi.add(lo.poll());
+        if (hi.size() > lo.size()) lo.add(hi.poll());
+    }
+
+    static String median() {
+        if (lo.size() > hi.size()) return "" + lo.peek();
+        long s = (long) lo.peek() + hi.peek();
+        return new BigDecimal(s).divide(BigDecimal.valueOf(2)).toPlainString();
+    }
+
+## JavaScript
+    function add(x) {
+      lo.push(x)
+      hi.push(lo.pop())
+      if (hi.a.length > lo.a.length) lo.push(hi.pop())
+    }
+
+    function median() {
+      if (lo.a.length > hi.a.length) return String(lo.a[0])
+      return String((lo.a[0] + hi.a[0]) / 2)
+    }
+
+## C++
+    void add(long long x) {
+        lo.push(x);
+        hi.push(lo.top());
+        lo.pop();
+        if (hi.size() > lo.size()) {
+            lo.push(hi.top());
+            hi.pop();
+        }
+    }
+
+    string median() {
+        if (lo.size() > hi.size()) return to_string(lo.top());
+        long long s = lo.top() + hi.top();
+        return (s < 0 ? "-" : "") + to_string(llabs(s) / 2) + (s % 2 ? ".5" : "");
+    }
+
+## Complexity
+Each number costs O(log n): a few pushes and pops at O(log n) each, then a peek at the tops, O(1).
+
+## Watch out for
+- Even counts can give .5, and integer division rounds negatives wrong: (-3 + -2) / 2 is -2.5, not -2 (Java, C++) or -3 (Python's //). With the sum s, print the sign, |s| / 2, and .5 if s is odd.
+- 32-bit ints overflow: 2147483647 + 2147483646, and b - a for 2147483647 and -2147483648. Use long and reverseOrder().
+TEXT,
+
     'binary-strings' => <<<'TEXT'
 A recursive function calls itself on a smaller version of the same problem, and needs a base case: one small enough to answer without another call. Without it, the calls never stop.
 
