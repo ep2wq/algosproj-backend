@@ -96,12 +96,14 @@ TEXT,
 To find the largest number you only need to remember one thing as you go: the biggest value seen so far. Each new number either beats it or doesn't.
 
 ## Example
-The input is 3 1 4 2.
+The input is 3 1 4 1 5 2.
 Start with best = 3, the first number.
 1 is not bigger than 3, so best stays 3.
 4 is bigger than 3, so best becomes 4.
-2 is not bigger than 4, so best stays 4.
-Print 4.
+1 is not bigger than 4, so best stays 4.
+5 is bigger than 4, so best becomes 5.
+2 is not bigger than 5, so best stays 5.
+Print 5.
 
 ## How to think about it
 Take the first number as your starting best, then compare every other number with it once. Replace best only when a number is bigger. With equal values it makes no difference which one you keep, because you print the value, not the position. Like the sum, this is a single pass, so you can compare each number as you read it and never store the array. Sorting the array and taking the last element also gives the right answer, but it does far more work than needed.
@@ -1317,7 +1319,7 @@ Nothing rebalances the tree, so its shape depends on the insertion order: 1 2 3 
 
 ## Example
 Insert 4 2 6 1 3 5 7. 4 is the root, 2 and 6 its children, 1 and 3 under 2, 5 and 7 under 6. Every path from the root down, such as 4 2 1, has 3 nodes, so the height is 3.
-Insert 1 5 2 4 3 instead: each value lands one level deeper, so the height is 5.
+Insert 5 3 8 1 4 7 9 2: the longest path, 5 3 1 2, gives height 4.
 
 ## How to think about it
 The height of a tree is 1 + the larger height of its two subtrees, and an empty tree has height 0: a three-line recursive function.
