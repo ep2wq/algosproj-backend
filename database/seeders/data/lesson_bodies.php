@@ -1860,4 +1860,178 @@ Merge sort: O(n log n) time, because counting adds O(1) to each merge step; O(n)
 
 Start the problem below with the brute force, then use it to test a merge sort version on random arrays.
 TEXT,
+
+    'make-change' => <<<'TEXT'
+A greedy algorithm builds its answer step by step: it takes the choice that looks best right now and never undoes it. That is fast, but only correct when the best-looking choice always belongs to some best answer.
+
+For change, the greedy choice is the largest coin that fits. With coins of 1, 5, 10, 25 and 100 cents that is always optimal, so the problem below takes as many of each coin as fit, largest first.
+
+## Example
+99 cents: 100 doesn't fit. 3 x 25 leaves 24, 2 x 10 leaves 4, no 5, then 4 x 1. That is 3 + 2 + 4 = 9 coins.
+
+## How to think about it
+Greedy can fail. With coins 4, 3 and 1, amount 6 gets 4 + 1 + 1, 3 coins, but 3 + 3 needs only 2; countCoins(6, [4, 3, 1]) returns 3. Coin systems like that need dynamic programming, a later module. Before trusting greedy, look for a counter-example.
+
+## Python
+    def count_coins(amount, coins):  # largest coin first
+        count = 0
+        for c in coins:
+            count += amount // c
+            amount %= c
+        return count
+
+## Java
+    static long countCoins(long amount, long[] coins) {
+        long count = 0;
+        for (long c : coins) {
+            count += amount / c;
+            amount %= c;
+        }
+        return count;
+    }
+
+## JavaScript
+    function countCoins(amount, coins) {
+      let count = 0
+      for (const c of coins) {
+        count += Math.floor(amount / c)
+        amount %= c
+      }
+      return count
+    }
+
+## C++
+    long long countCoins(long long amount, const vector<long long>& coins) {
+        long long count = 0;
+        for (long long c : coins) {
+            count += amount / c;
+            amount %= c;
+        }
+        return count;
+    }
+
+## Complexity
+O(k) for k coin types: one division per coin, however large the amount.
+
+## Watch out for
+- 10^12 cents takes 10^10 coins, more than a 32-bit int holds: use long in Java and long long in C++. JavaScript numbers are exact up to 2^53.
+- The coins must go from largest to smallest.
+- 0 cents needs 0 coins.
+TEXT,
+
+    'maximum-meetings' => <<<'TEXT'
+To attend the most meetings, sort them by end time and take every meeting that starts at or after the end of the last one you took. The meeting that ends first leaves the most time for the rest, so swapping it into any best plan never makes the plan worse.
+
+## Example
+[1, 4) [3, 5) [0, 6) [5, 7) [8, 11) [12, 16), already by end time.
+Take [1, 4); end = 4. [3, 5) and [0, 6) start too early.
+Take [5, 7); end = 7. Take [8, 11), then [12, 16). 4 meetings.
+
+## How to think about it
+Two greedy rules that look fine are wrong.
+By start time: [0, 10) [1, 2) [2, 3) [3, 4) takes [0, 10) first and gets 1; the best is 3.
+By shortest length: [0, 5) [4, 6) [5, 10) takes [4, 6), which blocks both others, and gets 1; the best is 2.
+
+## Python
+    meetings.sort(key=lambda m: m[1])  # by end time
+    count, end = 0, 0
+    for s, e in meetings:
+        if s >= end:
+            count += 1
+            end = e
+
+## Java
+    Arrays.sort(meetings, (a, b) -> Integer.compare(a[1], b[1]));
+    int count = 0, end = 0;
+    for (int[] m : meetings)
+        if (m[0] >= end) {
+            count++;
+            end = m[1];
+        }
+
+## JavaScript
+    meetings.sort((a, b) => a[1] - b[1])
+    let count = 0, end = 0
+    for (const [s, e] of meetings)
+      if (s >= end) {
+        count++
+        end = e
+      }
+
+## C++
+    sort(meetings.begin(), meetings.end(), [](auto& a, auto& b) { return a[1] < b[1]; });
+    int count = 0, end = 0;
+    for (auto& [s, e] : meetings)
+        if (s >= end) {
+            count++;
+            end = e;
+        }
+
+## Complexity
+O(n log n) for the sort, then one O(n) pass.
+
+## Watch out for
+- Touching meetings don't overlap: [1, 3) ends when [3, 5) starts, so both count. Compare with >=, not >.
+- Sort by the end, not the start.
+TEXT,
+
+    'connect-ropes' => <<<'TEXT'
+A join costs the sum of the two lengths, and the new rope is joined again later, so each length is paid once per join above it. So always join the two shortest ropes, using a min-heap. Huffman coding uses the same idea, merging the two rarest symbols first.
+
+## Example
+4 3 2 6. Join 2 + 3 = 5, cost 5; ropes 4 5 6.
+Join 4 + 5 = 9, cost 14; ropes 6 9.
+Join 6 + 9 = 15, cost 29. Input order would cost 7 + 9 + 15 = 31.
+
+## How to think about it
+Sorting once and chaining fails too: 1 1 1 1 costs 2 + 3 + 4 = 9 that way, but 2 + 2 + 4 = 8. A joined rope must go back among the others; the heap does that.
+
+## Python
+    heapq.heapify(ropes)
+    total = 0
+    while len(ropes) > 1:
+        a = heapq.heappop(ropes)
+        b = heapq.heappop(ropes)
+        total += a + b
+        heapq.heappush(ropes, a + b)
+
+## Java
+    PriorityQueue<Long> h = new PriorityQueue<>();
+    for (long x : ropes) h.add(x);
+    long total = 0;
+    while (h.size() > 1) {
+        long a = h.poll(), b = h.poll();
+        total += a + b;
+        h.add(a + b);
+    }
+
+## JavaScript
+    const h = new Heap((x, y) => x < y)  // Last stone weight's class
+    for (const x of ropes) h.push(x)
+    let total = 0
+    while (h.a.length > 1) {
+      const a = h.pop(), b = h.pop()
+      total += a + b
+      h.push(a + b)
+    }
+
+## C++
+    priority_queue<long long, vector<long long>, greater<>> h(ropes.begin(), ropes.end());
+    long long total = 0;
+    while (h.size() > 1) {
+        long long a = h.top();
+        h.pop();
+        long long b = h.top();
+        h.pop();
+        total += a + b;
+        h.push(a + b);
+    }
+
+## Complexity
+n - 1 joins of O(log n) each: O(n log n).
+
+## Watch out for
+- Six ropes of 10^9 cost 16 x 10^9, past 32 bits: use long (long long in C++) for the total and the heap.
+- n = 1 needs no join: the cost is 0.
+TEXT,
 ];
