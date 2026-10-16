@@ -2246,4 +2246,212 @@ O(n^2): about 2 million comparisons for 2000 numbers. O(n) space. An O(n log n) 
 - Strictly increasing: equal values don't extend, so use <, not <=. 7 7 7 has answer 1.
 - Not contiguous: the example's longest rising run is 3 (3 7 101); the answer is 4.
 TEXT,
+
+    'grid-paths' => <<<'TEXT'
+Cell [r][c] is the number of paths from the start to that cell. You enter a cell from above or from the left, so paths(r, c) = paths(r - 1, c) + paths(r, c - 1), and a blocked cell has 0.
+
+## Example
+3 x 3, centre blocked, filled row by row:
+
+    . . .    1 1 1
+    . # .    1 0 1
+    . . .    1 1 2
+
+Top row and left column: 1 each. Centre: blocked, 0. Its right neighbour: 1 from above + 0 from the left. Goal: 1 + 1 = 2.
+
+## How to think about it
+The table has an extra row and column of zeros, and p[0][1] = 1 seeds the start: 1 path if it is free, 0 if blocked.
+
+## Python
+    p = [[0] * (c+1) for _ in range(r+1)]
+    p[0][1] = 1  # seeds the start
+    for i in range(1, r+1):
+        for j in range(1, c+1):
+            if g[i-1][j-1] == '.':
+                p[i][j] = p[i-1][j] + p[i][j-1]
+
+## Java
+    long[][] p = new long[r+1][c+1];
+    p[0][1] = 1;
+    for (int i = 1; i <= r; i++)
+        for (int j = 1; j <= c; j++)
+            if (g[i-1].charAt(j-1) == '.') p[i][j] = p[i-1][j] + p[i][j-1];
+
+## JavaScript
+    const p = Array.from({ length: r+1 }, () => Array(c+1).fill(0n))
+    p[0][1] = 1n
+    for (let i = 1; i <= r; i++)
+      for (let j = 1; j <= c; j++)
+        if (g[i-1][j-1] === '.') p[i][j] = p[i-1][j] + p[i][j-1]
+
+## C++
+    vector<vector<long long>> p(r+1, vector<long long>(c+1, 0));
+    p[0][1] = 1;
+    for (int i = 1; i <= r; i++)
+        for (int j = 1; j <= c; j++)
+            if (g[i-1][j-1] == '.') p[i][j] = p[i-1][j] + p[i][j-1];
+
+## Complexity
+One addition per cell: O(r x c) time and space, 900 additions for 30 x 30.
+
+## Watch out for
+- A blocked start or goal gives 0.
+- A free 30 x 30 grid has C(58, 29), about 3 x 10^16 paths: past 2^31, so use long (long long in C++), and past 2^53, where JavaScript Numbers can round: use BigInt.
+TEXT,
+
+    'knapsack' => <<<'TEXT'
+Cell [i][w] is the best value using only the first i items with capacity w. Item i, weight wt and value val, is left out, best(i - 1, w), or taken if it fits, val + best(i - 1, w - wt). Keep the larger.
+
+## Example
+A (1, 15), B (3, 20), C (4, 30) as (weight, value), capacity 4:
+
+    w:  0  1  2  3  4
+    -   0  0  0  0  0
+    A   0 15 15 15 15
+    B   0 15 15 20 35
+    C   0 15 15 20 35
+
+Row B, w = 4: without B 15, with B 20 + row A at w = 1 = 35. Row C, w = 4: 30 < 35. Answer: 35.
+
+## How to think about it
+Each row reads only the row above, so one row is enough if w runs downward: best[w - wt] still holds the previous row. Upward, an item can be taken again: a different problem, the unbounded knapsack.
+
+## Python
+    best = [0] * (W+1)
+    for wt, val in items:
+        for w in range(W, wt-1, -1):  # downward
+            best[w] = max(best[w], best[w-wt] + val)
+
+## Java
+    long[] best = new long[W+1];
+    for (int[] it : items)
+        for (int w = W; w >= it[0]; w--)
+            best[w] = Math.max(best[w], best[w - it[0]] + it[1]);
+
+## JavaScript
+    const best = Array(W+1).fill(0)
+    for (const [wt, val] of items)
+      for (let w = W; w >= wt; w--)
+        best[w] = Math.max(best[w], best[w-wt] + val)
+
+## C++
+    vector<long long> best(W+1, 0);
+    for (auto [wt, val] : items)
+        for (int w = W; w >= wt; w--)
+            best[w] = max(best[w], best[w-wt] + val);
+
+## Complexity
+O(n x W): a million steps for 100 items and capacity 10,000. O(W) space.
+
+## Watch out for
+- Direction: one item (2, 3), capacity 4: upward gives 6 (taken twice), downward 3.
+- 100 values near 10^9 pass 2^31: use long (long long in C++).
+- Greedy by value per weight fails: (3, 5), (2, 3), (2, 3), capacity 4, takes (3, 5) for 5; the two (2, 3) give 6.
+TEXT,
+
+    'longest-common-subsequence' => <<<'TEXT'
+Cell [i][j] is the LCS length of the first i letters of A and the first j of B. Equal letters A[i] and B[j] extend the diagonal: L(i - 1, j - 1) + 1. Otherwise take the larger of up, L(i - 1, j), and left, L(i, j - 1). Row 0 and column 0 are 0.
+
+## Example
+A = acb, B = abc, filled row by row:
+
+        -  a  b  c
+    -   0  0  0  0
+    a   0  1  1  1
+    c   0  1  1  2
+    b   0  1  2  2
+
+Row c, column c: equal, diagonal 1 + 1 = 2. Row b, column b: equal, 1 + 1 = 2. Row b, column c: the larger of 2 and 2. Length 2: ab or ac.
+
+## How to think about it
+A cell needs only up, left and the diagonal, so row by row works. The answer is L[n][m].
+
+## Python
+    L = [[0] * (m+1) for _ in range(n+1)]
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            if a[i-1] == b[j-1]:
+                L[i][j] = L[i-1][j-1]+1
+            else:
+                L[i][j] = max(L[i-1][j], L[i][j-1])
+
+## Java
+    int[][] L = new int[n+1][m+1];
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            L[i][j] = a.charAt(i-1) == b.charAt(j-1)
+                ? L[i-1][j-1]+1 : Math.max(L[i-1][j], L[i][j-1]);
+
+## JavaScript
+    const L = Array.from({ length: n+1 }, () => Array(m+1).fill(0))
+    for (let i = 1; i <= n; i++)
+      for (let j = 1; j <= m; j++)
+        L[i][j] = a[i-1] === b[j-1]
+          ? L[i-1][j-1]+1 : Math.max(L[i-1][j], L[i][j-1])
+
+## C++
+    vector<vector<int>> L(n+1, vector<int>(m+1, 0));
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            L[i][j] = a[i-1] == b[j-1]
+                ? L[i-1][j-1]+1 : max(L[i-1][j], L[i][j-1]);
+
+## Complexity
+O(n x m) time and space: a million cells for two strings of 1000 letters.
+
+## Watch out for
+- Not a substring: abcbdab and bdcaba have an LCS of 4 (bcba) but share no run longer than 2.
+- Empty strings give 0. Read the empty line as an empty string.
+TEXT,
+
+    'edit-distance' => <<<'TEXT'
+Cell [i][j] is the fewest operations turning the first i letters of A into the first j of B. Row 0 and column 0 are the base cases: i deletes or j inserts. Otherwise take the smallest of diagonal (replace, free for equal letters), up + 1 (delete) and left + 1 (insert).
+
+## Example
+A = ab, B = acd:
+
+        -  a  c  d
+    -   0  1  2  3
+    a   1  0  1  2
+    b   2  1  1  2
+
+Row a, column a: equal, 0. Row b, column c: replace, 0 + 1. Row b, column d: insert, 1 + 1.
+
+## How to think about it
+kitten to sitting takes 3: replace k, replace e, insert g.
+
+## Python
+    D = [[i + j for j in range(m+1)] for i in range(n+1)]
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            D[i][j] = min(D[i-1][j-1] + (a[i-1] != b[j-1]), D[i-1][j]+1, D[i][j-1]+1)
+
+## Java
+    int[][] D = new int[n+1][m+1];
+    for (int i = 0; i <= n; i++)
+        for (int j = 0; j <= m; j++)
+            D[i][j] = i == 0 || j == 0 ? i + j : Math.min(D[i-1][j-1] + (a.charAt(i-1) == b.charAt(j-1) ? 0 : 1),
+                Math.min(D[i-1][j], D[i][j-1])+1);
+
+## JavaScript
+    const D = Array.from({ length: n+1 }, () => Array(m+1).fill(0))
+    for (let i = 0; i <= n; i++)
+      for (let j = 0; j <= m; j++)
+        D[i][j] = i === 0 || j === 0 ? i + j
+          : Math.min(D[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1), D[i-1][j]+1, D[i][j-1]+1)
+
+## C++
+    vector<vector<int>> D(n+1, vector<int>(m+1, 0));
+    for (int i = 0; i <= n; i++)
+        for (int j = 0; j <= m; j++)
+            D[i][j] = i == 0 || j == 0 ? i + j
+                : min({D[i-1][j-1] + (a[i-1] != b[j-1]), D[i-1][j]+1, D[i][j-1]+1});
+
+## Complexity
+O(n x m) time and space: 250,000 cells for 500 letters each.
+
+## Watch out for
+- Base cases: "" to abcde is 5, not 0.
+- Without replace, each change costs a delete plus an insert: horse to ros gives 4, not 3.
+TEXT,
 ];
