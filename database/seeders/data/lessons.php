@@ -18745,4 +18745,508 @@ Constraints
             ],
         ],
     ],
+    [
+        'slug' => 'dp-tables',
+        'title' => 'Dynamic programming: tables',
+        'track' => 'algorithms',
+        'lessons' => [
+            [
+                'slug' => 'grid-paths',
+                'title' => 'Grid paths',
+                'problem' => [
+                    'title' => 'Grid paths',
+                    'description' => 'You start in the top-left cell of an r x c grid and may move only right or down, one cell at a time. Cells marked # are blocked and cannot be entered. Print the number of different paths to the bottom-right cell. If the start or the goal is blocked, the answer is 0.
+
+Input
+Line 1: r and c, separated by a space.
+Then r lines of c characters each: . for a free cell and # for a blocked one.
+
+Output
+One line with the number of paths.
+
+Constraints
+1 <= r, c <= 30
+The answer fits in a signed 64-bit integer.',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '4 5
+....#
+.#...
+...#.
+#....
+',
+                            'expected_output' => '5',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '1 1
+.
+',
+                            'expected_output' => '1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '1 1
+#
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '1 6
+#.....
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '6 1
+.
+.
+.
+.
+.
+#
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '5 5
+....#
+...#.
+..#..
+.#...
+#....
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '30 30
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+',
+                            'expected_output' => '30067266499541040',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '30 30
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..............................
+..........................#...
+..............................
+..............................
+..............................
+.............................#
+..............................
+..............................
+..............................
+...........#..................
+..............................
+..............................
+..............................
+..............................
+..............................
+...................#..........
+..............................
+..............................
+..........................#...
+',
+                            'expected_output' => '25854339398024253',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'knapsack',
+                'title' => 'Knapsack',
+                'problem' => [
+                    'title' => 'Knapsack',
+                    'description' => 'There are n items, each with a weight and a value, and a bag that holds a total weight of at most W. Take each item at most once. Print the largest total value of items that fit in the bag together.
+
+Input
+Line 1: n and W, separated by a space.
+Then n lines, one per item: its weight and value, separated by a space.
+
+Output
+One line with the largest total value.
+
+Constraints
+1 <= n <= 100
+1 <= W <= 10000
+1 <= each weight <= 10000
+0 <= each value <= 1000000000',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '3 4
+1 15
+3 20
+4 30
+',
+                            'expected_output' => '35',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '3 4
+3 5
+2 3
+2 3
+',
+                            'expected_output' => '6',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '1 10
+10 7
+',
+                            'expected_output' => '7',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '1 5
+6 100
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '6 100
+5 10
+20 0
+1 1
+30 45
+7 0
+12 13
+',
+                            'expected_output' => '69',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3 2
+3 9
+5 20
+10 30
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '2 4
+2 3
+3 4
+',
+                            'expected_output' => '4',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '100 10000
+2387 999481850
+7454 999997948
+2864 999739784
+6440 999767514
+5731 999454572
+8305 999838882
+1802 999558787
+1988 999084047
+7471 999276212
+785 999690818
+3351 999351640
+3764 999324435
+3341 999187129
+2308 999197756
+5686 999388038
+6713 999875423
+3455 999422646
+7555 999582378
+4519 999944926
+6146 999168214
+2034 999189422
+93 999632041
+6481 999154774
+9276 999170435
+3157 999175127
+429 999958164
+3887 999469963
+6352 999132765
+9076 999793626
+860 999638687
+4049 999752147
+8309 999748623
+4749 999723266
+9673 999355168
+8654 999714932
+5625 999568831
+5948 999507053
+6583 999798492
+1015 999853350
+1661 999933711
+4914 999683154
+7119 999264799
+3929 999888534
+7167 999804213
+8415 999840023
+8086 999945479
+9547 999266558
+2412 999061047
+9591 999903181
+5354 999172705
+895 999790497
+4509 999740485
+1983 999752671
+832 999820064
+9755 999929455
+3591 999928955
+5077 999549995
+3547 999682445
+9310 999374576
+5469 999477825
+206 999723059
+1869 999498615
+3160 999861998
+8607 999124870
+9760 999219305
+720 999408782
+1705 999420069
+2483 999648527
+7811 999980153
+8931 999040761
+7295 999168953
+809 999837554
+7764 999915277
+772 999207745
+4077 999165118
+1546 999040948
+2294 999222010
+1478 999128985
+4123 999070045
+6587 999038646
+8857 999447036
+7769 999472389
+5631 999729247
+7442 999549053
+3182 999635920
+9499 999898488
+4116 999438057
+2382 999866586
+3420 999868596
+6763 999081174
+9796 999282053
+6567 999890001
+4268 999882604
+1556 999199731
+3730 999049649
+6399 999284591
+47 999284451
+4989 999039580
+428 999862619
+9150 999308824
+',
+                            'expected_output' => '13995641542',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'longest-common-subsequence',
+                'title' => 'Longest common subsequence',
+                'problem' => [
+                    'title' => 'Longest common subsequence',
+                    'description' => 'Print the length of the longest common subsequence of the two strings: the longest sequence of letters that appears in both strings in the same order, though not necessarily next to each other.
+
+Input
+Line 1: the first string.
+Line 2: the second string.
+Either line can be empty.
+
+Output
+One line with the length.
+
+Constraints
+0 <= length of each string <= 1000
+The strings contain only lower-case letters a to z.',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => 'abcde
+ace
+',
+                            'expected_output' => '3',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => 'abcbdab
+bdcaba
+',
+                            'expected_output' => '4',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '
+
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'algorithm
+
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'dynamic
+dynamic
+',
+                            'expected_output' => '7',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'abcdef
+ghijkl
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'aaaa
+aa
+',
+                            'expected_output' => '2',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'dadcadbdbbbcdbcbdbadbddbadbbacbcaacaccabcdcbbcdacddcdcdcaabdabcacbbbccccdbdabbccdcabadddddacaabbacbbaabcbcababbcbadcbbcaabbdbdbcdaadadadcbadacbcbcbabbaddbbddbbcaccdcddbbbcdcacbddbdbccacabbddbbbddacaadbdcdddadcdcbbaaacbaabdbdccbaddcbbabbdddaccbbcabdadbcaddbbcaadcdacdabddbbbaccaccbadddcadbabcbacdcbbcbdacbbbcbcbdbbcccbdaccbccbcbcdcaacbcbdbdcbcbbcbacabbadcaaddabbadbadadbdcdbccaadadcdcdbdbbabbadbaddbdccbbbabbdccbbcadadcdbcddadaaaaaaaccbadaacbbddcbacaccdcaccadbccbdbabbdccaadadcaadddccbcaabbdddaaacabbcbaabcaddacdadcabcbbacdccccaacccccbdddacddadcabacbbccacdcbbabcbcbadcddcaccccccbdbdccaddbcddbbbcaabddcddaabbabaddddacdbabdaccaadabdaaacacdbbaabdcccacddadbbbbaacdadadacbcdbdabddbccabdadbacdaaabddacacddaadbbbbadadaddabcadcdbaccbccbcaabcaacbcdaccdbccbcccdccabadcdbdbddcccbbbdbdabbaadbabdcdabdacdcddcddaaacacccddaacdabcabbddadbacaddabcbabbadbcbabccaacdcacbaacacabbcdccbdbadbcbcdccbbbcadcddbddcdadbadbdcccddddbcdacacbaaccbcbaadbdacddbadabcdaadcccadbdccbcbacbbbbaccbaabbaaabccdaddabdccdbdcbaccddddcbbadacccad
+daadbaddbabbcadbbdddadcdaacaaaccbcbadcabbccbbdadacabbacacaabdbccbadcaacabdabdccccaaddbabddbdbdaacaabdbddadadddadcdbdacdaacccbcbbdaabddbdbadaadbbcbcadaacdbbdaacdacdcabaddcbdbdbabcccdadadadadbbaccaddacabbddbddbbabbcbcdcadddcbbaaaaadadccaabccbbbdaddccabdcdbacacdcbcacacbbbcddabcabcbdbadcaabcdcdbabbcdcdbbbdbdadbadbbbbbcdaadaccbdaddacbdaaaabcadbddbabcbdaabacccbbadddccbbaadacbacbcadadddccbadccaaacdbbbdcbdcbcadbdbbabdbbbdcbacadbdbbaddbdbaddcacbdbaaacaccccabdddbaddcddbcbddbcacaabbbdbabbadabacbcdabadacdaacdcaddbbcbbdbdddbccbbccabddababadbdababcddcbacdccaacdddccbdddbbbcaabbcdbabdddbdcbabbbcbabdcaacbabacddbbccbabbbdadabcdbddcdbacccdaabbaacdadcbbcadadacdccbadbaaccaabbbcddbbddaacababdcbbddbacdbacbdccccabdabcddbadabbdccabacadcbadddbadaddcbdccacbcabaaddadddccbacadabbdddbcbbbcbbdadddabacbcdacaaacaacddbadbdcacdacdcacacaaaaccbbdaddbcdcdbabaccdcbcaaccaaccdacccbddaaadbbbbacabbcbbadbcbdcbadbbcbbabbaaccbddababccdaccdaadbbcbadcccabbabdacdccbaddbabdcbdacddacabcddbdcadbabccdbdbddbbacdbbbcadbdcbabbdbcbcabbabcbdb
+',
+                            'expected_output' => '652',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'edit-distance',
+                'title' => 'Edit distance',
+                'problem' => [
+                    'title' => 'Edit distance',
+                    'description' => 'Print the edit distance from string A to string B: the smallest number of single-character operations that turn A into B. An operation inserts one character, deletes one character, or replaces one character with another.
+
+Input
+Line 1: A.
+Line 2: B.
+Either line can be empty.
+
+Output
+One line with the distance.
+
+Constraints
+0 <= length of each string <= 500
+The strings contain only lower-case letters a to z.',
+                    'difficulty' => 'hard',
+                    'test_cases' => [
+                        [
+                            'input' => 'kitten
+sitting
+',
+                            'expected_output' => '3',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => 'cat
+cut
+',
+                            'expected_output' => '1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '
+
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '
+abcde
+',
+                            'expected_output' => '5',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'matrix
+matrix
+',
+                            'expected_output' => '0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'abc
+bca
+',
+                            'expected_output' => '2',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'horse
+ros
+',
+                            'expected_output' => '3',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => 'deedcdbaceaabcbdcaacdeccbdabcebcccdbeaeabddbeddedbeedceceeadccccaacecedbecdaeccaaaaabdeadbbcedcddbedeaabaeedaccdbccaeddbaeaeeeaccccdaaeddedeeebbcacaaacdacbbebdacccabcbaedededdeaecbcdadcebeaedcdccccbcaedbeeeaedadebdbbabeababcdedbeacacbdaabacbaeaacdeecceaceccbeecacecdbabecbcdcdaeaebccaaabebaccbcebdcebdecccaedacdcbedccdcedbbdddedbcddcabcbebcaecaebdebbcadeddccababecacebeaaeadacdacdebbdaadbeeaabeedcebbecaaeadbaebaddbbedbeccaeabccebcebdebedcbaecabeceedeaadbdccddbeddabcbdaeccacdbdedcbeceaecdddbaeeddbec
+dadecdceeaabcdabcacaabadbdbaaebedecbabaeebcbbbabacbdeedcccadcbacaebecabdabedecbceecacecdaabdabbdbcdbbcbadeededcdbabcceadceeedcbedddaeccdbaddabecaedcdadbceaeebebceaddadeecdccbeddeebdcecdecdbbbcbccbeeaebcedeadeeecacbbbdbceccadddaddccccdebbdcddcdabadbcbaeeeaeedadceddcdbdbaadedacebeaebbcbdaadacacedccdbecceabbbeadabddecadcdaeddcecbacaecadceadbbaebcbcaaeadbabddaabcabbdedeaceddddaecdbaaddbabbcccbccbebcacedeabbdbebdccaedddddddcceeeccecbbdeacbcacabcbcccdcbbecbecdeeaadbccaccabeedeeeebebdedbcdcdbcddcebcbde
+',
+                            'expected_output' => '304',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
