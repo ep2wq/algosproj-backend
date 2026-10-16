@@ -19,7 +19,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    // role ('user' or 'admin') is not fillable: only `php artisan user:make-admin` changes it.
+    // role ('user', 'admin' or 'owner') is not fillable. An owner changes admins through the API;
+    // owners only change through `php artisan user:make-admin`.
     protected $attributes = [
         'points' => 0,
         'role' => 'user',

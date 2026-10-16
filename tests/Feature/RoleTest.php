@@ -59,11 +59,40 @@ class RoleTest extends TestCase
         $this->assertSame('user', $user->refresh()->role);
     }
 
+    public function test_make_admin_command_makes_an_owner_and_back(): void
+    {
+        $user = User::factory()->create(['email' => 'ada@example.com']);
+
+        $this->artisan('user:make-admin', ['email' => 'ada@example.com', '--owner' => true])
+            ->expectsOutput('ada@example.com is now an owner.')
+            ->assertExitCode(0);
+        $this->assertSame('owner', $user->refresh()->role);
+
+        $this->artisan('user:make-admin', ['email' => 'ada@example.com'])
+            ->expectsOutput('ada@example.com is now an admin.')
+            ->assertExitCode(0);
+        $this->assertSame('admin', $user->refresh()->role);
+
+        $this->artisan('user:make-admin', ['email' => 'ada@example.com', '--owner' => true, '--remove' => true])
+            ->expectsOutput('Use either --owner or --remove, not both.')
+            ->assertExitCode(1);
+        $this->assertSame('admin', $user->refresh()->role);
+    }
+
     public function test_make_admin_command_rejects_an_unknown_email(): void
     {
-        $this->artisan('user:make-admin', ['email' => 'nobody@example.com'])
-            ->expectsOutput('No user has the email nobody@example.com.')
-            ->assertExitCode(1);
+        foreach ([[], ['--owner' => true], ['--remove' => true]] as $options) {
+            $this->artisan('user:make-admin', ['email' => 'nobody@example.com'] + $options)
+                ->expectsOutput('No user has the email nobody@example.com.')
+                ->assertExitCode(1);
+        }
+    }
+
+    public function test_an_owner_passes_the_admin_middleware(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($owner)->getJson('/api/admin/modules')->assertOk();
     }
 
     public function test_public_responses_never_include_a_role(): void
