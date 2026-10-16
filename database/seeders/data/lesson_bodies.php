@@ -2034,4 +2034,216 @@ n - 1 joins of O(log n) each: O(n log n).
 - Six ropes of 10^9 cost 16 x 10^9, past 32 bits: use long (long long in C++) for the total and the heap.
 - n = 1 needs no join: the cost is 0.
 TEXT,
+
+    'climbing-stairs' => <<<'TEXT'
+Dynamic programming (DP) builds an answer from answers to smaller versions of the problem, each worked out once.
+
+Your last move to step n was 1 step, from n - 1, or 2 steps, from n - 2. So ways(n) = ways(n - 1) + ways(n - 2), with ways(0) = ways(1) = 1.
+
+## Example
+n:    0 1 2 3 4 5 6
+ways: 1 1 2 3 5 8 13
+For n = 4: 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2.
+
+## How to think about it
+Plain recursion repeats work: for n = 30 it makes 2692537 calls.
+Top-down: keep the recursion and memoize each answer: 31 calls. Natural when the recursion is easy to write or only some subproblems are needed.
+Bottom-up: fill the table from ways[0] up. Natural when the order is clear or recursion would go deep.
+Python below is top-down; the rest, and later lessons, use the table.
+
+## Python
+    @cache  # top-down: from functools import cache
+    def ways(n):
+        return 1 if n <= 1 else ways(n - 1) + ways(n - 2)
+
+## Java
+    static long ways(int n) {
+        long[] w = new long[n + 1];
+        w[0] = w[1] = 1;
+        for (int i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2];
+        return w[n];
+    }
+
+## JavaScript
+    function ways(n) {
+      const w = [1n, 1n]  // BigInt
+      for (let i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2]
+      return w[n]
+    }
+
+## C++
+    long long ways(int n) {
+        vector<long long> w(n + 1, 1);
+        for (int i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2];
+        return w[n];
+    }
+
+## Complexity
+Both styles: O(n) time and space. Plain recursion grows like 1.6^n.
+
+## Watch out for
+- Plain recursion is exponential: n = 50 already times out.
+- ways(90) is about 4.7 x 10^18. 32-bit ints overflow from n = 46: use long (long long in C++). JavaScript Numbers go wrong from n = 78 (past 2^53): use BigInt, printed with String().
+TEXT,
+
+    'coin-change' => <<<'TEXT'
+best[x] is the fewest coins making amount x. The last coin is some c <= x, so best[x] = 1 + the smallest best[x - c]; best[0] = 0.
+
+## Example
+Coins 1 3 4, amount 6:
+x:    0 1 2 3 4 5 6
+best: 0 1 2 1 1 2 2
+best[6] = 1 + best[3] = 2 (3 + 3); greedy, from the Greedy lesson, takes 4 + 1 + 1.
+
+## How to think about it
+Some amounts can't be made (coins 2 and 4, amount 7): print -1.
+
+## Python
+    INF = amount + 1
+    best = [0] + [INF] * amount
+    for x in range(1, amount + 1):
+        for c in coins:
+            if c <= x:
+                best[x] = min(best[x], best[x - c] + 1)
+    print(best[amount] if best[amount] < INF else -1)
+
+## Java
+    int INF = amount + 1;
+    int[] best = new int[amount + 1];
+    Arrays.fill(best, INF);
+    best[0] = 0;
+    for (int x = 1; x <= amount; x++)
+        for (int c : coins)
+            if (c <= x) best[x] = Math.min(best[x], best[x - c] + 1);
+    System.out.println(best[amount] < INF ? best[amount] : -1);
+
+## JavaScript
+    const INF = amount + 1
+    const best = Array(amount + 1).fill(INF)
+    best[0] = 0
+    for (let x = 1; x <= amount; x++)
+      for (const c of coins)
+        if (c <= x) best[x] = Math.min(best[x], best[x - c] + 1)
+    console.log(best[amount] < INF ? best[amount] : -1)
+
+## C++
+    int INF = amount + 1;
+    vector<int> best(amount + 1, INF);
+    best[0] = 0;
+    for (int x = 1; x <= amount; x++)
+        for (int c : coins)
+            if (c <= x) best[x] = min(best[x], best[x - c] + 1);
+    cout << (best[amount] < INF ? best[amount] : -1) << "\n";
+
+## Complexity
+O(amount x k) for k coins: 120000 steps for 10,000 and 12 coins.
+
+## Watch out for
+- Infinity: Integer.MAX_VALUE + 1 wraps negative and wins every min. Use amount + 1, more than any answer.
+- Top-down in Python: 10,000 with a 3-cent coin recurses 3334 calls deep, past the limit of 1000.
+TEXT,
+
+    'house-robber' => <<<'TEXT'
+Choose houses so that no two chosen houses are neighbours and the sum is largest.
+
+The state, in words: best[i] is the largest total using only the first i houses. For house i there are two choices: skip it, keeping best[i - 1], or take it, adding its value to best[i - 2], since its neighbour must be skipped. best[i] is the larger one.
+
+## Example
+5 1 1 5:
+i:    0 1 2 3 4
+best: 0 5 5 6 10
+best[4] = max(6, 5 + 5) = 10: the two 5s, skipping two houses in between.
+
+## How to think about it
+Shortcuts fail. Every other house gives 5 + 1 = 6 here. Always grabbing the biggest fails on 2 3 2: it takes 3, but 2 + 2 = 4.
+
+## Python
+    best = [0] * (n + 1)  # best[i]: first i houses
+    best[1] = v[0]
+    for i in range(2, n + 1):
+        best[i] = max(best[i - 1], best[i - 2] + v[i - 1])
+    print(best[n])
+
+## Java
+    long[] best = new long[n + 1];
+    best[1] = v[0];
+    for (int i = 2; i <= n; i++)
+        best[i] = Math.max(best[i - 1], best[i - 2] + v[i - 1]);
+    System.out.println(best[n]);
+
+## JavaScript
+    const best = Array(n + 1).fill(0)
+    best[1] = v[0]
+    for (let i = 2; i <= n; i++)
+      best[i] = Math.max(best[i - 1], best[i - 2] + v[i - 1])
+    console.log(best[n])
+
+## C++
+    vector<long long> best(n + 1, 0);
+    best[1] = v[0];
+    for (int i = 2; i <= n; i++)
+        best[i] = max(best[i - 1], best[i - 2] + v[i - 1]);
+    cout << best[n] << "\n";
+
+## Complexity
+O(n) time, one max per house. O(n) space, or O(1) with two variables.
+
+## Watch out for
+- 1000 houses near 10^9 sum to about 5 x 10^11, past 32 bits: use long (long long in C++).
+- best[0] = 0 and best[1] = the first house: n = 1 needs no loop.
+TEXT,
+
+    'longest-increasing-subsequence' => <<<'TEXT'
+A subsequence keeps elements in their order but may skip some: 2 3 7 is one of 10 9 2 5 3 7. Find the length of the longest strictly increasing one.
+
+best[i] is the longest increasing subsequence that ends at element i. It is 1 + the largest best[j] over earlier j with a[j] < a[i], or 1 if there is none. The answer is the largest best[i].
+
+## Example
+a:    10 9 2 5 3 7 101 18
+best:  1 1 1 2 2 3   4  4
+For 7: 2, 5 and 3 are smaller; best[3] = 2, so best[5] = 3. Answer 4: 2 5 7 101.
+
+## How to think about it
+Each element looks back at every earlier one, so the table fills left to right.
+
+## Python
+    best = [1] * n  # best[i]: longest ending at i
+    for i in range(n):
+        for j in range(i):
+            if a[j] < a[i]:
+                best[i] = max(best[i], best[j] + 1)
+    print(max(best))
+
+## Java
+    int[] best = new int[n];
+    int answer = 0;
+    for (int i = 0; i < n; i++) {
+        best[i] = 1;
+        for (int j = 0; j < i; j++)
+            if (a[j] < a[i]) best[i] = Math.max(best[i], best[j] + 1);
+        answer = Math.max(answer, best[i]);
+    }
+    System.out.println(answer);
+
+## JavaScript
+    const best = Array(n).fill(1)
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < i; j++)
+        if (a[j] < a[i]) best[i] = Math.max(best[i], best[j] + 1)
+    console.log(Math.max(...best))
+
+## C++
+    vector<int> best(n, 1);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < i; j++)
+            if (a[j] < a[i]) best[i] = max(best[i], best[j] + 1);
+    cout << *max_element(best.begin(), best.end()) << "\n";
+
+## Complexity
+O(n^2): about 2 million comparisons for 2000 numbers. O(n) space. An O(n log n) method also exists (binary search over tails).
+
+## Watch out for
+- Strictly increasing: equal values don't extend, so use <, not <=. 7 7 7 has answer 1.
+- Not contiguous: the example's longest rising run is 3 (3 7 101); the answer is 4.
+TEXT,
 ];
