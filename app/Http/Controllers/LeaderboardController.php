@@ -11,7 +11,9 @@ class LeaderboardController extends Controller
     {
         $limit = min(max((int) $request->query('limit', 50), 1), 100);
 
+        // Banned users are left out of the list and of every rank.
         $users = User::where('points', '>', 0)
+            ->whereNull('banned_at')
             ->orderByDesc('points')
             ->orderBy('created_at')
             ->orderBy('id')
@@ -40,7 +42,7 @@ class LeaderboardController extends Controller
         $points = $request->user()->points;
 
         return response()->json([
-            'rank' => 1 + User::where('points', '>', $points)->count(),
+            'rank' => 1 + User::where('points', '>', $points)->whereNull('banned_at')->count(),
             'points' => $points,
         ]);
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\EnsureUserIsOwner;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,8 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['admin' => EnsureUserIsAdmin::class, 'owner' => EnsureUserIsOwner::class]);
-        // Check the role before route model binding, so a non-admin gets 403 for any id, never 404.
+        $middleware->alias([
+            'admin' => EnsureUserIsAdmin::class,
+            'owner' => EnsureUserIsOwner::class,
+            'not-banned' => EnsureUserIsNotBanned::class,
+        ]);
+        // Check the ban and the role before route model binding, so a banned user or a non-admin gets
+        // 403 for any id, never 404.
+        $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsNotBanned::class);
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsAdmin::class);
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsOwner::class);
         // Test case text is stored exactly as sent: leading and trailing whitespace can matter.

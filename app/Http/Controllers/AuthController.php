@@ -37,6 +37,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        // Checked after the password, so the ban (and its reason) is only shown to the account holder.
+        if ($user->banned_at !== null) {
+            return response()->json(['message' => 'This account is banned.', 'reason' => $user->ban_reason], 403);
+        }
+
         return response()->json([
             'token' => $user->createToken('api')->plainTextToken,
             'user' => $user,

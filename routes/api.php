@@ -18,7 +18,8 @@ Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 Route::get('/challenges', [ChallengeController::class, 'index']);
 Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// not-banned refuses a banned user's token (banning deletes their tokens; this catches any left).
+Route::middleware(['auth:sanctum', 'not-banned'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/leaderboard/me', [LeaderboardController::class, 'me']);
@@ -29,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Content editing. Guests get 401, users who are not admins 403 (the admin middleware).
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->group(function () {
     Route::get('/modules', [Admin\ModuleController::class, 'index']);
     Route::post('/modules', [Admin\ModuleController::class, 'store']);
     Route::put('/modules/{module}', [Admin\ModuleController::class, 'update']);
