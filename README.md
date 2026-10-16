@@ -105,8 +105,20 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
 | GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
+| GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
+| GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
 
 Hidden test cases are never returned. In a submit response they only show `{"passed": bool}`.
+
+Challenges are the problems themselves, so a problem solved from `/challenges` or from its
+lesson is the same completion and earns points once. `topic` is `{slug, title}` of the
+problem's module. `solved` is true only for the requester (a token is optional, as on the
+leaderboard) and always false for guests. `problems.lesson_id` is nullable: a problem with no
+lesson is a standalone challenge, with `topic` and `lesson_slug` null; submit works the same
+for it. `problems.slug` is unique and nullable; the migration that added it filled it with the
+lesson slug (a second problem in the same lesson would get `-<id>` appended), and the seeder
+sets it the same way. A standalone problem needs its own slug to appear at
+`/challenges/{slug}`.
 
 ```bash
 # Register (or log in with POST /api/login and the same email and password)
