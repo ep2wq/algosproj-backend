@@ -15955,6 +15955,13480 @@ In a 1 by 1 grid the start is the end, so the answer is 0 if that cell is open.'
         ],
     ],
     [
+        'slug' => 'tries-union-find',
+        'title' => 'Tries and union-find',
+        'track' => 'algorithms',
+        'lessons' => [
+            [
+                'slug' => 'prefix-count',
+                'title' => 'Prefix count',
+                'problem' => [
+                    'title' => 'Prefix count',
+                    'description' => 'Run commands on a set of words.
+- ADD word: store the word. If it is already stored, nothing changes. Prints nothing.
+- COUNT prefix: print how many different stored words start with prefix. A word is its own prefix.
+
+Input
+Line 1: n, the number of commands.
+Next n lines: one command each.
+
+Output
+One line for each COUNT, in order.
+
+Constraints
+1 <= n <= 2000
+Words and prefixes use lower-case letters only and have 1 to 20 letters.
+There is at least one COUNT.',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '9
+ADD apple
+ADD app
+COUNT ap
+ADD apple
+COUNT app
+COUNT apple
+ADD bat
+COUNT b
+COUNT c
+',
+                            'expected_output' => '2
+2
+1
+1
+0',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '3
+COUNT a
+ADD a
+COUNT a
+',
+                            'expected_output' => '0
+1',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '16
+COUNT a
+COUNT abc
+ADD abc
+ADD ab
+ADD a
+ADD ab
+COUNT a
+COUNT ab
+COUNT abc
+COUNT abcd
+ADD abc
+COUNT a
+COUNT b
+ADD b
+COUNT b
+COUNT ba
+',
+                            'expected_output' => '0
+0
+3
+2
+1
+0
+3
+0
+1
+0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '14
+ADD abcdefghijklmnopqrst
+COUNT abcdefghijklmnopqrst
+ADD abcdefghijklmnopqrst
+COUNT abcdefghijklmnopqrst
+COUNT abcdefghijklmnopqrs
+COUNT a
+ADD abcdefghij
+COUNT abcdefghij
+COUNT abcdefghijk
+COUNT abcdefghijklmnopqrsu
+ADD zzzzzzzzzzzzzzzzzzzz
+COUNT zzzzzzzzzzzzzzzzzzzz
+COUNT zzzzzzzzzzzzzzzzzzz
+COUNT z
+',
+                            'expected_output' => '1
+1
+1
+1
+2
+1
+0
+1
+1
+1',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '125
+ADD transportationcaaacc
+ADD transportationabaaaa
+ADD transportationc
+ADD transportationab
+ADD transportationcabc
+ADD transportationab
+ADD transportationccba
+ADD transportationcacaac
+COUNT t
+COUNT transportationabaaa
+ADD transportationbbcac
+ADD transportationcb
+ADD transportationc
+ADD transportationabc
+ADD transportationaccbac
+ADD transportationcacac
+ADD transportationcaaab
+ADD transportationa
+COUNT transportat
+COUNT transportationa
+ADD transportationbca
+ADD transportationcaaab
+ADD transportationcbb
+ADD transportationc
+ADD transportationac
+ADD transportationb
+ADD transportationbcbbb
+ADD transportationaabab
+COUNT transpor
+COUNT transportationcb
+ADD transportationc
+ADD transportationbbcac
+ADD transportationcaaacc
+ADD transportationaabab
+ADD transportationa
+ADD transportationbc
+ADD transportationbc
+ADD transportationb
+COUNT trans
+COUNT transportationacbc
+ADD transportationcacc
+ADD transportationcacac
+ADD transportationcc
+ADD transportationbc
+ADD transportationaacc
+ADD transportationaacc
+ADD transportationcaaab
+ADD transportationc
+COUNT trans
+COUNT transportation
+ADD transportationcbb
+ADD transportationbaaba
+ADD transportationcacbab
+ADD transportationb
+ADD transportationcb
+ADD transportationbcbbb
+ADD transportationacbcbb
+ADD transportationcacbab
+COUNT transp
+COUNT transportation
+ADD transportationbaaba
+ADD transportationa
+ADD transportationcbbb
+ADD transportationba
+ADD transportationb
+ADD transportationcabc
+ADD transportationb
+ADD transportationc
+COUNT tra
+COUNT transportationbaaba
+ADD transportationab
+ADD transportationcb
+ADD transportationba
+ADD transportationcaaacc
+ADD transportationabaaaa
+ADD transportationc
+ADD transportationaacc
+ADD transportationaabab
+COUNT transpor
+COUNT transportationbc
+ADD transportationbab
+ADD transportationa
+ADD transportationcaac
+ADD transportationbab
+ADD transportationcb
+ADD transportationb
+ADD transportationcaaab
+ADD transportationbab
+COUNT transpo
+COUNT transportationc
+ADD transportationcacac
+ADD transportationccba
+ADD transportationacbcbb
+ADD transportationcaaab
+ADD transportationcc
+ADD transportationbc
+ADD transportationcbcb
+ADD transportationcbb
+COUNT transp
+COUNT transportationa
+ADD transportationbcb
+ADD transportationa
+ADD transportationcbb
+ADD transportationbbb
+ADD transportationa
+ADD transportationc
+ADD transportationac
+ADD transportationc
+COUNT transportatio
+COUNT transportation
+ADD transportationb
+ADD transportationbca
+ADD transportationc
+ADD transportationcb
+ADD transportationba
+ADD transportationa
+ADD transportationcacbab
+ADD transportationbcb
+COUNT tra
+COUNT transportationcbc
+COUNT transportation
+COUNT t
+COUNT transportationabcabc
+COUNT transportationx
+COUNT u
+',
+                            'expected_output' => '7
+1
+14
+5
+20
+2
+21
+0
+24
+24
+27
+27
+29
+1
+29
+3
+31
+14
+32
+9
+34
+34
+34
+1
+34
+34
+0
+0
+0',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '2000
+COUNT bc
+COUNT c
+COUNT bc
+COUNT a
+ADD b
+COUNT aca
+COUNT cba
+COUNT cab
+COUNT baa
+ADD bcaa
+ADD abbb
+COUNT abb
+ADD a
+COUNT bbb
+COUNT b
+COUNT acb
+COUNT cba
+ADD c
+ADD babc
+COUNT baa
+ADD acc
+ADD ca
+COUNT a
+ADD caba
+ADD babc
+ADD bcc
+COUNT cbb
+COUNT bab
+COUNT a
+COUNT ba
+COUNT cac
+ADD abcb
+ADD bcc
+ADD c
+COUNT bac
+ADD bc
+COUNT cc
+COUNT ac
+ADD cba
+ADD c
+COUNT abb
+COUNT abc
+ADD bc
+COUNT a
+COUNT b
+ADD bb
+COUNT c
+ADD bbab
+COUNT b
+ADD caac
+COUNT c
+ADD a
+COUNT aac
+COUNT ca
+ADD ccbb
+COUNT bc
+COUNT ba
+COUNT cab
+ADD acbc
+ADD bcc
+ADD bc
+ADD a
+ADD aa
+COUNT acb
+ADD a
+ADD c
+COUNT bbb
+COUNT a
+ADD bac
+COUNT ca
+COUNT cbc
+ADD cbc
+ADD acca
+ADD b
+COUNT a
+COUNT cbb
+COUNT b
+ADD c
+ADD a
+ADD cac
+COUNT ccb
+ADD ab
+ADD b
+COUNT b
+COUNT c
+COUNT c
+ADD bb
+COUNT bb
+ADD bbb
+ADD c
+COUNT a
+COUNT a
+ADD bb
+COUNT ac
+ADD cca
+COUNT aa
+ADD cab
+ADD b
+ADD abc
+COUNT b
+ADD bcb
+COUNT bab
+COUNT b
+ADD aa
+ADD b
+ADD aaca
+ADD b
+COUNT bb
+ADD acaa
+ADD acab
+ADD a
+COUNT bcc
+ADD cbcc
+COUNT abc
+COUNT aaa
+ADD cbaa
+ADD b
+ADD cb
+COUNT b
+COUNT ac
+ADD b
+COUNT ab
+ADD cb
+COUNT bb
+COUNT b
+ADD cba
+COUNT a
+ADD c
+COUNT bba
+COUNT c
+COUNT acb
+ADD cb
+ADD cc
+COUNT ba
+COUNT ba
+ADD cbb
+ADD ab
+ADD bb
+ADD b
+ADD ccb
+COUNT a
+COUNT c
+ADD bbac
+COUNT ccb
+COUNT cc
+ADD b
+COUNT b
+COUNT b
+ADD c
+ADD cca
+COUNT ab
+ADD ba
+COUNT a
+COUNT b
+ADD ba
+ADD caab
+ADD cba
+COUNT b
+ADD acac
+ADD b
+COUNT ac
+COUNT cb
+ADD b
+ADD c
+ADD bc
+ADD bca
+ADD bbbc
+COUNT a
+ADD b
+COUNT ab
+COUNT a
+COUNT ba
+COUNT b
+COUNT ccc
+COUNT b
+ADD ac
+ADD b
+COUNT aac
+ADD a
+ADD ac
+COUNT abb
+ADD cb
+ADD abcb
+COUNT b
+ADD a
+COUNT b
+COUNT ab
+ADD a
+COUNT cb
+ADD bacb
+ADD bab
+COUNT ca
+COUNT b
+ADD ccbc
+ADD bbbc
+COUNT bac
+ADD ba
+ADD cc
+COUNT c
+COUNT cc
+ADD ba
+ADD c
+ADD bac
+COUNT ba
+COUNT ac
+ADD acb
+COUNT aca
+COUNT a
+ADD b
+ADD b
+ADD ba
+ADD ca
+COUNT ac
+COUNT caa
+ADD acc
+COUNT aba
+ADD ccab
+COUNT a
+COUNT bb
+ADD cc
+ADD ccab
+ADD a
+ADD c
+COUNT ba
+ADD b
+COUNT b
+ADD abac
+ADD a
+COUNT b
+COUNT cc
+ADD cba
+COUNT cc
+COUNT bc
+ADD a
+ADD cba
+ADD cbac
+COUNT a
+COUNT b
+COUNT b
+ADD aa
+ADD cba
+ADD c
+COUNT bc
+COUNT baa
+COUNT cab
+COUNT cac
+COUNT b
+COUNT cb
+COUNT cbc
+COUNT bcc
+ADD ac
+ADD aa
+COUNT b
+ADD ccbc
+COUNT b
+ADD ab
+ADD caba
+ADD cb
+ADD ccba
+COUNT c
+ADD ccba
+COUNT aa
+ADD c
+ADD accc
+ADD aac
+COUNT a
+ADD cac
+ADD b
+COUNT cbb
+COUNT ca
+COUNT ca
+ADD a
+COUNT abb
+COUNT c
+COUNT aca
+COUNT ca
+ADD b
+ADD bc
+ADD b
+ADD bbb
+ADD cab
+COUNT bb
+COUNT cb
+COUNT aa
+ADD cbcc
+COUNT bbc
+ADD b
+COUNT b
+COUNT cba
+ADD aab
+COUNT cac
+COUNT cbc
+COUNT aca
+ADD cab
+COUNT bc
+ADD bc
+ADD abbc
+ADD a
+COUNT a
+ADD c
+ADD bb
+ADD bbc
+ADD bba
+ADD aa
+COUNT aa
+ADD abb
+COUNT c
+ADD bb
+COUNT a
+COUNT ca
+COUNT cb
+COUNT a
+COUNT b
+COUNT abc
+COUNT bb
+ADD c
+ADD bac
+COUNT c
+COUNT c
+ADD c
+ADD aca
+ADD ca
+ADD b
+COUNT ab
+ADD bab
+COUNT bac
+ADD ba
+ADD ab
+ADD bca
+COUNT abc
+ADD bacb
+ADD b
+COUNT c
+ADD baca
+ADD acb
+ADD c
+ADD aaa
+ADD aab
+COUNT bab
+COUNT a
+COUNT cbb
+ADD acbc
+COUNT acb
+ADD abc
+COUNT c
+ADD cc
+COUNT bc
+ADD a
+ADD b
+COUNT bbb
+COUNT aa
+COUNT baa
+ADD ac
+ADD bca
+ADD ab
+COUNT aaa
+ADD c
+COUNT c
+COUNT a
+COUNT cac
+COUNT ab
+ADD cabb
+COUNT c
+ADD bcc
+ADD caca
+ADD b
+COUNT b
+ADD cab
+ADD a
+ADD ca
+ADD cca
+COUNT bc
+COUNT ba
+COUNT aca
+COUNT bc
+COUNT cc
+ADD baaa
+ADD bb
+ADD cac
+COUNT ab
+ADD cc
+ADD ab
+ADD bbb
+COUNT cc
+ADD bbb
+COUNT b
+ADD bca
+ADD abb
+ADD cbba
+COUNT cab
+ADD abac
+ADD bc
+ADD bab
+ADD baaa
+COUNT caa
+ADD cab
+ADD caa
+ADD bca
+COUNT b
+ADD c
+ADD bbac
+COUNT cbb
+COUNT a
+COUNT ba
+COUNT bc
+ADD bcba
+COUNT c
+COUNT baa
+COUNT ab
+ADD c
+COUNT b
+ADD baab
+ADD bb
+ADD caab
+ADD accb
+ADD bca
+COUNT cb
+ADD cb
+COUNT a
+COUNT cc
+COUNT ca
+COUNT aa
+COUNT c
+ADD abca
+ADD baca
+ADD ccac
+ADD bbb
+COUNT cb
+COUNT ccc
+COUNT c
+COUNT bc
+COUNT ac
+ADD aaaa
+ADD cb
+ADD cc
+COUNT c
+COUNT cac
+ADD baca
+ADD cbbc
+ADD a
+ADD c
+COUNT a
+COUNT ca
+ADD ccb
+COUNT cb
+ADD ccba
+ADD bab
+COUNT ca
+COUNT cc
+ADD bbca
+COUNT bb
+COUNT acb
+COUNT cb
+ADD aa
+ADD cbcc
+COUNT aab
+ADD cbb
+COUNT b
+COUNT b
+COUNT c
+ADD bc
+ADD ccb
+ADD c
+ADD c
+ADD caab
+ADD abcb
+COUNT bc
+COUNT bba
+ADD cca
+ADD c
+COUNT c
+ADD a
+COUNT c
+ADD bbbc
+COUNT cc
+COUNT acb
+COUNT c
+COUNT cac
+COUNT ba
+COUNT ca
+ADD bca
+ADD cc
+COUNT b
+COUNT bbc
+ADD ccc
+ADD bc
+COUNT ba
+ADD acb
+COUNT b
+COUNT bba
+ADD a
+ADD aaab
+ADD cba
+ADD bbc
+ADD cabc
+ADD acc
+COUNT bbb
+COUNT ab
+ADD bbab
+ADD aab
+ADD cbb
+ADD bbb
+ADD c
+COUNT bb
+ADD cc
+COUNT a
+COUNT bbb
+ADD a
+COUNT bba
+ADD cc
+ADD bc
+COUNT bc
+COUNT a
+COUNT ba
+ADD b
+COUNT bba
+COUNT bab
+ADD aca
+COUNT b
+ADD cbca
+ADD a
+ADD bacc
+ADD ca
+ADD b
+COUNT bcb
+COUNT ab
+ADD baa
+ADD a
+COUNT cca
+COUNT aa
+ADD c
+ADD accc
+COUNT b
+ADD ccc
+COUNT a
+COUNT bb
+COUNT bbb
+ADD bac
+COUNT ba
+COUNT aab
+ADD a
+COUNT a
+COUNT cba
+COUNT bb
+ADD bc
+ADD baba
+ADD c
+COUNT bca
+ADD ccaa
+ADD c
+ADD aa
+COUNT a
+ADD ba
+ADD c
+ADD a
+ADD aaca
+COUNT bc
+ADD accb
+COUNT a
+COUNT c
+ADD babb
+COUNT a
+COUNT ccb
+ADD cacb
+COUNT bbc
+ADD ba
+COUNT ac
+ADD bc
+ADD b
+ADD aa
+COUNT a
+ADD cacb
+ADD aba
+ADD b
+COUNT ba
+ADD baa
+ADD ac
+ADD bc
+ADD aa
+COUNT ac
+ADD ca
+COUNT aac
+COUNT cbc
+COUNT bb
+ADD c
+ADD ba
+ADD ccab
+COUNT bc
+ADD acb
+COUNT b
+COUNT cb
+COUNT aaa
+COUNT a
+ADD cbb
+ADD c
+COUNT b
+ADD bccc
+ADD c
+ADD abaa
+ADD abaa
+COUNT abc
+COUNT a
+ADD a
+COUNT b
+ADD acac
+ADD bbaa
+ADD cbaa
+ADD ba
+COUNT bab
+COUNT ac
+COUNT bb
+COUNT bba
+COUNT b
+ADD b
+COUNT b
+COUNT cab
+COUNT c
+ADD ba
+ADD b
+COUNT a
+ADD ba
+ADD cab
+ADD b
+COUNT ca
+ADD bc
+ADD acaa
+COUNT ab
+COUNT ccb
+ADD caba
+ADD ba
+COUNT b
+ADD b
+COUNT c
+ADD abb
+ADD c
+ADD b
+COUNT bbc
+COUNT c
+ADD bab
+COUNT c
+ADD ba
+COUNT b
+COUNT ba
+ADD cb
+COUNT bc
+COUNT a
+COUNT cc
+COUNT a
+COUNT aba
+COUNT c
+COUNT ac
+COUNT aaa
+ADD ca
+ADD b
+COUNT c
+COUNT cac
+COUNT ccc
+COUNT a
+ADD ccbc
+ADD aabb
+ADD a
+COUNT bc
+ADD c
+ADD b
+ADD ab
+COUNT bca
+ADD ba
+COUNT aa
+ADD cbb
+ADD ccb
+COUNT ca
+ADD ba
+COUNT ab
+COUNT a
+COUNT ca
+COUNT ba
+ADD baba
+COUNT c
+ADD cc
+COUNT c
+ADD bbab
+ADD b
+COUNT a
+COUNT aa
+COUNT bb
+COUNT baa
+COUNT a
+ADD cc
+ADD cbaa
+COUNT caa
+COUNT aaa
+COUNT c
+ADD b
+ADD c
+ADD caba
+ADD abcb
+COUNT aca
+COUNT cb
+COUNT b
+COUNT bc
+COUNT a
+ADD cbcb
+COUNT ba
+ADD aaca
+ADD bab
+ADD abca
+COUNT abb
+COUNT a
+COUNT a
+ADD cbc
+ADD a
+ADD accc
+ADD c
+COUNT a
+ADD abb
+ADD cc
+COUNT a
+COUNT bb
+ADD aba
+ADD bbca
+ADD c
+ADD ac
+ADD bac
+ADD bcab
+COUNT c
+ADD abba
+ADD ba
+COUNT a
+COUNT a
+COUNT b
+COUNT b
+ADD cb
+COUNT cb
+ADD bccc
+ADD a
+COUNT ac
+ADD bac
+COUNT c
+COUNT abc
+ADD a
+ADD c
+COUNT cb
+COUNT ba
+COUNT bba
+COUNT b
+COUNT c
+ADD aa
+COUNT a
+COUNT aa
+ADD cbcc
+COUNT b
+ADD aba
+ADD b
+ADD bc
+ADD aaa
+COUNT b
+COUNT ccb
+ADD b
+COUNT aba
+COUNT ba
+COUNT ccc
+COUNT ca
+COUNT cbc
+ADD bcb
+COUNT bc
+ADD ac
+COUNT c
+ADD abca
+COUNT cc
+COUNT ccc
+COUNT aba
+COUNT cba
+ADD bcba
+COUNT ac
+COUNT bb
+ADD cac
+COUNT a
+COUNT acb
+ADD bc
+COUNT b
+COUNT bca
+COUNT bba
+ADD baa
+COUNT a
+ADD b
+ADD ccc
+ADD aabb
+COUNT aba
+COUNT a
+ADD acca
+COUNT b
+COUNT a
+COUNT cbb
+ADD cb
+ADD bab
+ADD cacc
+ADD cbcc
+COUNT bb
+ADD caaa
+ADD bacc
+COUNT ba
+COUNT ac
+COUNT ccc
+COUNT bc
+ADD c
+ADD a
+ADD bbc
+ADD b
+COUNT c
+COUNT aaa
+COUNT aac
+COUNT bb
+ADD ccba
+ADD acba
+ADD b
+COUNT a
+COUNT a
+ADD cb
+ADD bbcb
+COUNT ba
+ADD acc
+ADD abba
+ADD cacb
+ADD b
+ADD cac
+COUNT cab
+ADD acca
+COUNT ccc
+COUNT bac
+COUNT aca
+COUNT a
+ADD aa
+COUNT a
+ADD bb
+ADD c
+ADD b
+COUNT bcb
+COUNT cbc
+ADD bba
+COUNT a
+COUNT aa
+ADD c
+COUNT cc
+COUNT cb
+COUNT bbc
+ADD c
+ADD ccba
+ADD a
+COUNT bb
+ADD aab
+COUNT cc
+ADD caa
+COUNT c
+ADD caba
+ADD abbc
+COUNT bb
+ADD bca
+ADD ab
+COUNT abc
+COUNT bba
+ADD bc
+ADD acac
+COUNT b
+COUNT ab
+COUNT bb
+COUNT aab
+COUNT a
+COUNT ba
+COUNT b
+ADD cbc
+ADD aba
+ADD acbb
+ADD c
+ADD bcbc
+COUNT b
+ADD a
+ADD c
+ADD b
+ADD ccbb
+ADD aa
+COUNT b
+ADD c
+COUNT b
+COUNT b
+ADD acb
+ADD aca
+COUNT ba
+ADD bcc
+ADD caab
+COUNT abb
+COUNT bbb
+COUNT cca
+COUNT a
+ADD a
+COUNT aaa
+COUNT c
+ADD a
+COUNT aa
+ADD bb
+COUNT cba
+COUNT a
+COUNT ccb
+ADD ac
+COUNT b
+ADD ccbc
+COUNT b
+COUNT cb
+ADD c
+ADD acb
+COUNT ba
+COUNT aab
+COUNT ac
+ADD acc
+ADD acbb
+ADD cab
+COUNT ac
+ADD ba
+ADD aa
+COUNT bbb
+COUNT ac
+ADD ccc
+COUNT cb
+ADD cb
+COUNT aac
+COUNT b
+COUNT abc
+ADD abb
+COUNT a
+COUNT bca
+COUNT bc
+ADD accb
+ADD c
+COUNT aa
+COUNT ac
+COUNT a
+COUNT bb
+COUNT b
+COUNT c
+COUNT a
+ADD babc
+COUNT c
+ADD c
+ADD b
+ADD bbba
+COUNT b
+COUNT cb
+ADD ca
+COUNT aa
+ADD cbb
+COUNT bbb
+ADD cc
+ADD cacb
+ADD bcb
+ADD abcc
+COUNT aab
+ADD acc
+ADD bca
+COUNT cb
+ADD cbca
+ADD bcbc
+ADD bcab
+COUNT a
+COUNT ba
+ADD bb
+COUNT cc
+COUNT ba
+ADD a
+ADD aaca
+COUNT aba
+COUNT caa
+ADD c
+ADD baba
+COUNT a
+ADD ba
+ADD bbb
+ADD ba
+COUNT cb
+COUNT bbc
+COUNT c
+ADD cac
+COUNT c
+COUNT bc
+ADD b
+ADD c
+ADD bcab
+COUNT cbc
+ADD a
+COUNT bc
+COUNT c
+ADD cccc
+COUNT c
+COUNT c
+ADD cb
+COUNT b
+ADD ba
+COUNT c
+ADD bc
+COUNT bb
+ADD cb
+ADD ccb
+COUNT cab
+ADD cccc
+COUNT b
+ADD c
+ADD baaa
+ADD bab
+COUNT b
+COUNT bba
+ADD aaa
+ADD ab
+COUNT a
+ADD ccba
+COUNT cb
+COUNT ab
+ADD ccaa
+ADD b
+COUNT abc
+COUNT caa
+ADD aab
+ADD bbcc
+COUNT acb
+ADD c
+COUNT bbc
+COUNT aa
+COUNT a
+ADD c
+ADD caa
+ADD aaaa
+ADD bbcb
+ADD cabb
+COUNT cb
+COUNT aaa
+ADD cb
+ADD ccc
+ADD caa
+ADD c
+ADD aaba
+COUNT c
+COUNT acc
+COUNT aa
+COUNT b
+COUNT aa
+COUNT ca
+COUNT bc
+ADD b
+ADD abca
+COUNT ca
+ADD bacb
+COUNT cbb
+ADD c
+ADD caab
+ADD aab
+COUNT ca
+ADD aaaa
+ADD c
+COUNT cc
+ADD a
+ADD aaab
+ADD bcb
+ADD aac
+COUNT b
+ADD cba
+ADD ccbc
+COUNT a
+COUNT bb
+ADD accb
+COUNT b
+ADD ab
+COUNT cac
+ADD a
+COUNT ac
+ADD c
+COUNT b
+ADD bcc
+COUNT abc
+ADD cab
+ADD b
+ADD bc
+COUNT aaa
+ADD b
+COUNT cac
+COUNT cb
+COUNT ba
+COUNT cab
+COUNT cac
+ADD b
+ADD abc
+ADD a
+ADD b
+ADD acbc
+ADD cb
+ADD acaa
+ADD ba
+ADD baa
+COUNT aaa
+COUNT c
+COUNT b
+ADD b
+COUNT ca
+ADD bcb
+ADD ca
+COUNT cc
+ADD cb
+ADD cb
+COUNT ca
+ADD cbac
+COUNT a
+COUNT ab
+COUNT c
+COUNT bac
+ADD abb
+ADD cab
+COUNT aa
+COUNT b
+ADD b
+ADD bab
+ADD bb
+ADD acbb
+COUNT ca
+ADD cc
+COUNT b
+COUNT ac
+ADD baac
+ADD abac
+COUNT a
+ADD acac
+COUNT bab
+ADD cbcc
+COUNT acc
+COUNT aa
+ADD b
+ADD bcc
+COUNT cbb
+ADD bba
+COUNT b
+COUNT bba
+ADD baaa
+ADD ba
+COUNT b
+ADD ca
+ADD ccca
+ADD ba
+COUNT bc
+ADD abcb
+ADD cc
+ADD bbc
+COUNT ba
+COUNT c
+ADD bbc
+ADD acac
+ADD aa
+ADD aba
+ADD b
+COUNT b
+COUNT cc
+COUNT aac
+COUNT ccc
+COUNT cb
+COUNT bba
+COUNT aba
+ADD bba
+COUNT aba
+COUNT ba
+ADD cc
+ADD b
+COUNT acc
+ADD cc
+COUNT cbb
+COUNT ccc
+COUNT ccc
+COUNT a
+COUNT bb
+COUNT b
+ADD ba
+ADD bcab
+ADD bbb
+ADD bb
+ADD cbbb
+ADD aac
+COUNT ab
+COUNT b
+COUNT bcc
+COUNT cca
+ADD abbc
+COUNT ab
+COUNT a
+COUNT ab
+ADD cabb
+COUNT cc
+ADD cbb
+ADD c
+COUNT a
+COUNT aa
+ADD bbaa
+COUNT a
+ADD c
+ADD a
+ADD b
+COUNT ca
+COUNT a
+ADD bb
+COUNT acc
+ADD aba
+COUNT cca
+COUNT a
+ADD aca
+ADD c
+COUNT b
+COUNT baa
+COUNT b
+ADD c
+ADD abab
+COUNT b
+ADD a
+COUNT a
+ADD a
+COUNT cba
+COUNT b
+COUNT cb
+ADD bb
+COUNT a
+COUNT cbc
+ADD abbb
+ADD ba
+COUNT b
+ADD bab
+COUNT a
+COUNT a
+COUNT ab
+ADD cbb
+COUNT cbb
+COUNT aba
+COUNT ca
+COUNT b
+ADD b
+COUNT a
+ADD cc
+COUNT b
+ADD abb
+ADD bbac
+COUNT b
+COUNT c
+ADD a
+ADD a
+COUNT aa
+ADD acaa
+COUNT abb
+COUNT ab
+COUNT cc
+COUNT bcb
+COUNT bcb
+COUNT ba
+COUNT aac
+ADD c
+ADD abaa
+ADD bc
+COUNT b
+COUNT c
+COUNT a
+COUNT bca
+ADD acc
+COUNT bca
+ADD ccc
+ADD accb
+ADD aaa
+COUNT bab
+COUNT aba
+COUNT aa
+COUNT bbc
+COUNT ab
+COUNT c
+ADD a
+ADD cca
+COUNT ac
+COUNT bc
+COUNT aac
+ADD c
+COUNT a
+COUNT ac
+ADD cc
+COUNT a
+ADD bb
+COUNT a
+COUNT bbc
+COUNT b
+COUNT a
+ADD aca
+ADD aa
+COUNT ca
+ADD cb
+ADD baca
+COUNT baa
+COUNT ca
+COUNT bba
+COUNT ccb
+ADD bbca
+COUNT a
+COUNT b
+ADD b
+ADD cccc
+ADD ba
+ADD bccb
+COUNT caa
+ADD ab
+COUNT ca
+COUNT cb
+COUNT bac
+ADD ac
+COUNT cb
+COUNT ba
+ADD bac
+ADD aca
+COUNT cb
+COUNT b
+ADD ac
+ADD aac
+COUNT ca
+COUNT c
+COUNT cc
+ADD cccb
+COUNT bc
+COUNT ab
+COUNT c
+ADD cbca
+COUNT aac
+ADD cca
+ADD baa
+COUNT a
+ADD b
+ADD bba
+COUNT c
+COUNT bb
+COUNT aab
+ADD ccac
+ADD ccbc
+COUNT aac
+ADD bbbc
+COUNT ac
+COUNT b
+COUNT acc
+COUNT cac
+ADD c
+ADD bba
+ADD ca
+COUNT bbc
+ADD abba
+COUNT bb
+COUNT a
+ADD bb
+ADD cab
+ADD ac
+COUNT a
+ADD cbc
+COUNT ccb
+COUNT abc
+COUNT ba
+COUNT c
+COUNT bcb
+COUNT ca
+ADD a
+ADD baa
+COUNT bba
+ADD bb
+COUNT bba
+ADD cbbc
+COUNT cba
+ADD ca
+COUNT cbc
+ADD bcc
+ADD cb
+ADD cacc
+COUNT bab
+COUNT bb
+COUNT c
+COUNT acb
+COUNT b
+ADD ccb
+ADD ccba
+COUNT bcc
+ADD b
+ADD cbba
+ADD ac
+COUNT c
+ADD a
+ADD a
+ADD ac
+ADD aa
+ADD caca
+COUNT c
+COUNT cb
+ADD bc
+COUNT c
+COUNT aaa
+ADD ccac
+ADD bcb
+COUNT aaa
+COUNT cab
+COUNT bc
+ADD b
+ADD cbaa
+COUNT b
+ADD bab
+ADD acaa
+ADD ccb
+ADD cbcb
+COUNT ca
+COUNT ba
+ADD bcaa
+ADD bac
+ADD c
+ADD bc
+ADD bc
+COUNT aa
+COUNT bca
+ADD ca
+COUNT ab
+ADD a
+COUNT b
+COUNT b
+COUNT cba
+COUNT a
+COUNT ab
+ADD b
+ADD bc
+ADD cbb
+COUNT bca
+ADD a
+COUNT ab
+ADD bb
+ADD ccab
+ADD acb
+COUNT bb
+COUNT bbb
+ADD cbb
+ADD bbb
+ADD abcc
+COUNT acb
+ADD ac
+ADD cbbc
+ADD a
+COUNT cb
+COUNT b
+COUNT b
+ADD aaba
+COUNT a
+COUNT cb
+COUNT bc
+COUNT b
+COUNT cba
+ADD b
+COUNT a
+COUNT bc
+COUNT cab
+ADD abcb
+COUNT a
+COUNT a
+ADD ab
+COUNT c
+ADD b
+COUNT ac
+COUNT bb
+COUNT b
+ADD cbaa
+COUNT aab
+COUNT aa
+COUNT bbb
+COUNT bab
+COUNT cba
+COUNT cba
+ADD bc
+COUNT aac
+COUNT a
+ADD ac
+COUNT cb
+COUNT bc
+COUNT cbb
+ADD bb
+ADD bab
+COUNT bc
+ADD acac
+COUNT aab
+ADD bbb
+COUNT cbc
+COUNT cba
+ADD baa
+COUNT abc
+ADD ca
+COUNT baa
+ADD ca
+COUNT abc
+COUNT ccc
+ADD bac
+COUNT aca
+ADD cbcb
+ADD abb
+COUNT c
+COUNT cc
+ADD acc
+COUNT bc
+ADD caca
+ADD ccaa
+ADD ba
+ADD ccaa
+ADD caa
+ADD aac
+COUNT b
+COUNT aa
+ADD ba
+COUNT cc
+ADD abaa
+COUNT aa
+ADD abbb
+COUNT cba
+COUNT ba
+ADD acc
+COUNT aaa
+ADD bc
+ADD a
+COUNT c
+ADD a
+COUNT ba
+COUNT b
+ADD ccb
+ADD bba
+COUNT aa
+ADD b
+COUNT bbb
+ADD b
+ADD bcca
+ADD caa
+COUNT aa
+ADD ba
+COUNT a
+ADD bcbc
+ADD a
+ADD bba
+COUNT ca
+COUNT aab
+ADD acbb
+COUNT a
+COUNT cab
+COUNT bac
+ADD cca
+COUNT cba
+ADD b
+ADD c
+ADD bac
+COUNT c
+COUNT ac
+COUNT c
+COUNT bb
+ADD c
+COUNT cbb
+ADD b
+ADD bbc
+ADD b
+ADD ccac
+COUNT aac
+COUNT aca
+COUNT ac
+ADD c
+ADD bcb
+COUNT cbc
+ADD cab
+COUNT ab
+ADD baaa
+ADD caac
+COUNT c
+COUNT ac
+COUNT aa
+COUNT ccc
+ADD b
+COUNT bc
+ADD a
+ADD cbca
+ADD cc
+ADD bbac
+ADD babb
+COUNT a
+COUNT aaa
+ADD b
+COUNT c
+COUNT cc
+ADD a
+ADD bcaa
+COUNT b
+COUNT c
+ADD b
+ADD cbaa
+COUNT b
+COUNT a
+ADD cab
+ADD bbbb
+ADD ca
+COUNT ca
+ADD aac
+COUNT aac
+COUNT c
+ADD a
+ADD c
+COUNT bbc
+COUNT c
+ADD abb
+COUNT bbc
+COUNT bbc
+ADD aac
+COUNT ca
+ADD caa
+ADD c
+COUNT b
+COUNT bab
+COUNT b
+COUNT ab
+ADD bac
+ADD cab
+COUNT caa
+COUNT ab
+COUNT ca
+ADD aabb
+ADD aab
+ADD aa
+ADD a
+ADD cbca
+COUNT ba
+ADD bab
+ADD c
+COUNT b
+COUNT cb
+ADD a
+ADD bbca
+COUNT cbc
+COUNT ba
+COUNT a
+COUNT bc
+ADD b
+ADD cb
+ADD a
+COUNT ca
+COUNT cac
+ADD c
+COUNT a
+COUNT b
+ADD aacc
+COUNT a
+ADD b
+COUNT a
+COUNT c
+COUNT ca
+COUNT acc
+ADD bb
+ADD a
+ADD c
+ADD b
+COUNT ac
+ADD babb
+COUNT b
+ADD bbc
+COUNT bca
+COUNT c
+ADD c
+ADD caa
+ADD cbbb
+ADD cba
+COUNT b
+COUNT baa
+COUNT a
+ADD caaa
+ADD abcb
+ADD bb
+COUNT bb
+COUNT aa
+COUNT aa
+COUNT cc
+COUNT aca
+ADD c
+ADD babc
+ADD bcab
+ADD ab
+COUNT cb
+COUNT c
+ADD cc
+ADD b
+COUNT aa
+COUNT bca
+ADD bba
+ADD b
+COUNT c
+COUNT bc
+ADD bbac
+ADD bbbc
+COUNT a
+COUNT cb
+COUNT c
+COUNT ac
+ADD b
+COUNT cc
+ADD c
+ADD b
+COUNT cac
+ADD bac
+ADD b
+ADD c
+ADD abbc
+ADD ca
+COUNT ca
+ADD cabb
+COUNT ba
+COUNT cab
+ADD abc
+ADD a
+ADD abc
+COUNT aa
+COUNT acc
+ADD acbb
+ADD abc
+COUNT ba
+COUNT ca
+COUNT cb
+ADD abb
+ADD bcab
+COUNT aca
+ADD cc
+ADD a
+COUNT ca
+COUNT ba
+ADD ab
+COUNT b
+ADD ac
+COUNT bab
+COUNT a
+ADD cb
+ADD baa
+ADD bcab
+ADD bcc
+ADD bbcc
+COUNT c
+COUNT cbb
+COUNT cbc
+COUNT acc
+COUNT c
+COUNT a
+COUNT ac
+ADD b
+ADD a
+ADD bcba
+COUNT cc
+COUNT c
+COUNT acb
+ADD aba
+COUNT b
+ADD c
+ADD aacb
+ADD bbcc
+COUNT bc
+COUNT cc
+ADD b
+ADD baa
+ADD aaab
+COUNT a
+COUNT c
+COUNT aa
+ADD bbab
+COUNT cc
+COUNT c
+ADD ca
+COUNT b
+ADD cbaa
+COUNT bab
+COUNT c
+COUNT ba
+COUNT cb
+COUNT cb
+COUNT cac
+COUNT baa
+COUNT ab
+ADD bbbb
+ADD bc
+ADD cb
+COUNT bbb
+COUNT a
+ADD b
+ADD ba
+ADD bcc
+ADD cb
+ADD cca
+ADD ccc
+ADD a
+COUNT bb
+ADD baa
+ADD cac
+COUNT aa
+ADD b
+COUNT bac
+ADD babb
+COUNT ba
+ADD bbab
+ADD a
+COUNT cc
+ADD bcba
+COUNT ccc
+ADD bc
+ADD bc
+ADD b
+ADD cac
+COUNT ac
+COUNT cb
+ADD ca
+ADD caa
+COUNT cbb
+COUNT a
+ADD cc
+ADD bcc
+COUNT ab
+ADD ab
+ADD ac
+ADD a
+COUNT b
+ADD a
+ADD b
+ADD ba
+ADD acb
+COUNT bac
+ADD b
+ADD bbc
+ADD b
+ADD bca
+ADD ba
+ADD cbaa
+COUNT aa
+COUNT ab
+ADD a
+ADD bcaa
+ADD ba
+ADD ccbc
+COUNT aa
+ADD bbb
+COUNT bc
+COUNT b
+ADD b
+COUNT aaa
+ADD aba
+COUNT ac
+ADD cba
+ADD aaab
+ADD cba
+COUNT abc
+ADD ba
+COUNT aa
+COUNT baa
+ADD c
+COUNT cab
+ADD a
+ADD baa
+COUNT a
+ADD cc
+COUNT abc
+COUNT bca
+COUNT b
+ADD cca
+COUNT aa
+COUNT bb
+COUNT cab
+COUNT aa
+COUNT b
+COUNT abb
+COUNT cba
+COUNT cb
+COUNT b
+COUNT cb
+ADD bcaa
+ADD bba
+ADD aaa
+ADD bb
+COUNT a
+COUNT bc
+ADD cb
+ADD aabb
+COUNT aac
+ADD aaca
+COUNT b
+ADD bb
+ADD cc
+ADD b
+COUNT c
+ADD c
+COUNT c
+ADD cbb
+ADD bab
+ADD a
+ADD baba
+COUNT a
+ADD cac
+ADD b
+COUNT b
+COUNT ccb
+ADD bbb
+COUNT b
+ADD c
+ADD bc
+ADD ccb
+COUNT bc
+ADD baac
+COUNT c
+ADD ac
+COUNT ac
+ADD cbac
+COUNT cb
+ADD abba
+ADD ca
+COUNT bb
+COUNT ca
+COUNT aaa
+COUNT ccc
+COUNT bc
+ADD abba
+ADD bcc
+ADD bc
+ADD acbc
+COUNT cca
+ADD a
+ADD ba
+COUNT a
+COUNT bb
+COUNT cac
+COUNT a
+ADD cac
+ADD a
+COUNT bb
+COUNT c
+ADD cc
+ADD ba
+COUNT bca
+ADD a
+ADD aa
+ADD caa
+COUNT ca
+ADD bb
+ADD aa
+COUNT acb
+ADD a
+COUNT acb
+COUNT b
+ADD b
+COUNT ca
+ADD c
+COUNT cb
+COUNT ba
+COUNT acb
+COUNT bac
+COUNT baa
+ADD cbc
+COUNT bba
+COUNT c
+COUNT aa
+ADD acc
+ADD cbbb
+ADD aa
+ADD cbc
+ADD c
+ADD cb
+ADD ca
+ADD a
+ADD bac
+ADD c
+COUNT c
+ADD ca
+COUNT bb
+ADD bcc
+COUNT c
+COUNT bbc
+COUNT a
+ADD b
+ADD cc
+ADD ccc
+COUNT cc
+COUNT cc
+ADD acbb
+ADD ab
+ADD c
+ADD ab
+ADD ac
+ADD ca
+COUNT aca
+COUNT a
+COUNT a
+ADD b
+COUNT aa
+COUNT cb
+ADD bbb
+COUNT c
+ADD aab
+ADD bca
+COUNT a
+ADD aa
+COUNT cc
+COUNT bb
+COUNT b
+ADD ccb
+COUNT acb
+COUNT ab
+',
+                            'expected_output' => '0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+2
+0
+0
+0
+3
+0
+1
+3
+1
+0
+0
+0
+1
+1
+1
+4
+5
+4
+7
+5
+0
+3
+3
+1
+1
+1
+0
+6
+3
+0
+7
+0
+8
+1
+8
+8
+8
+2
+8
+8
+3
+1
+9
+1
+10
+3
+1
+2
+0
+10
+5
+4
+3
+10
+12
+1
+13
+1
+2
+2
+12
+16
+2
+4
+11
+11
+4
+12
+12
+12
+6
+6
+13
+4
+13
+3
+14
+0
+14
+1
+1
+14
+14
+4
+6
+6
+16
+2
+18
+5
+5
+7
+3
+15
+8
+2
+0
+15
+5
+5
+16
+16
+6
+6
+5
+16
+16
+16
+5
+0
+2
+1
+16
+7
+2
+1
+16
+16
+21
+2
+18
+1
+6
+6
+1
+21
+3
+6
+5
+7
+3
+0
+16
+3
+1
+2
+3
+5
+20
+4
+21
+21
+6
+7
+21
+18
+2
+7
+21
+21
+7
+2
+2
+21
+2
+23
+1
+2
+21
+5
+2
+5
+0
+1
+21
+23
+1
+7
+22
+19
+5
+6
+4
+5
+7
+7
+7
+20
+3
+2
+20
+2
+23
+7
+5
+25
+1
+7
+21
+8
+24
+7
+9
+5
+25
+8
+0
+26
+6
+11
+26
+2
+26
+9
+9
+9
+8
+8
+2
+9
+1
+23
+23
+27
+6
+3
+27
+27
+8
+2
+27
+2
+8
+9
+23
+2
+8
+23
+3
+2
+8
+8
+27
+2
+3
+6
+27
+8
+3
+2
+23
+2
+8
+3
+7
+25
+27
+8
+2
+10
+1
+27
+3
+8
+2
+27
+6
+27
+31
+27
+4
+2
+11
+27
+12
+11
+2
+3
+8
+6
+27
+10
+3
+28
+27
+3
+29
+28
+4
+11
+9
+4
+29
+29
+4
+32
+29
+11
+10
+4
+29
+32
+2
+32
+32
+29
+12
+7
+29
+10
+29
+3
+32
+11
+3
+32
+3
+1
+29
+7
+2
+8
+11
+10
+30
+11
+12
+32
+32
+30
+8
+9
+3
+30
+3
+3
+32
+4
+10
+29
+7
+30
+12
+3
+30
+30
+30
+30
+9
+33
+31
+31
+30
+30
+11
+11
+33
+3
+11
+12
+4
+30
+33
+31
+8
+30
+30
+4
+3
+12
+1
+11
+4
+8
+33
+10
+1
+3
+3
+11
+9
+31
+2
+30
+3
+4
+31
+3
+31
+30
+31
+3
+9
+12
+11
+1
+8
+35
+3
+2
+9
+32
+32
+12
+4
+1
+4
+4
+32
+32
+2
+4
+32
+8
+10
+11
+3
+10
+10
+35
+10
+3
+4
+31
+11
+10
+2
+32
+12
+31
+32
+32
+32
+32
+12
+4
+2
+4
+33
+3
+35
+8
+3
+33
+4
+32
+32
+11
+12
+2
+13
+13
+2
+13
+11
+2
+32
+3
+33
+3
+9
+8
+13
+33
+10
+32
+35
+33
+35
+33
+11
+8
+3
+2
+11
+34
+12
+10
+12
+3
+4
+34
+11
+3
+35
+35
+9
+4
+9
+35
+36
+36
+33
+36
+11
+4
+33
+33
+4
+34
+11
+12
+4
+4
+4
+4
+8
+34
+11
+3
+36
+4
+9
+34
+9
+13
+9
+13
+3
+13
+11
+34
+35
+12
+34
+4
+13
+34
+4
+3
+4
+11
+12
+4
+4
+3
+36
+34
+13
+11
+13
+35
+12
+36
+4
+9
+34
+13
+34
+13
+35
+4
+4
+9
+3
+35
+4
+35
+9
+13
+37
+35
+12
+2
+3
+11
+4
+3
+3
+13
+4
+3
+3
+3
+35
+12
+35
+12
+35
+2
+4
+12
+35
+12
+12
+35
+9
+35
+13
+35
+4
+4
+35
+35
+4
+35
+35
+36
+3
+35
+12
+36
+4
+35
+36
+36
+13
+4
+4
+13
+35
+36
+35
+35
+38
+9
+4
+13
+12
+3
+3
+13
+2
+35
+38
+36
+3
+3
+4
+4
+9
+4
+13
+38
+13
+9
+2
+36
+13
+36
+36
+4
+35
+36
+13
+4
+13
+4
+4
+36
+35
+4
+13
+12
+4
+12
+13
+12
+36
+13
+38
+12
+10
+13
+39
+2
+36
+39
+12
+3
+2
+13
+36
+4
+4
+4
+12
+36
+36
+4
+4
+13
+39
+3
+13
+4
+4
+3
+4
+4
+12
+39
+4
+36
+3
+39
+39
+12
+39
+3
+3
+4
+10
+36
+13
+13
+9
+3
+13
+36
+36
+3
+36
+13
+3
+13
+12
+3
+4
+12
+36
+36
+36
+12
+10
+36
+3
+36
+10
+4
+36
+36
+39
+13
+12
+36
+3
+9
+3
+4
+3
+3
+2
+36
+12
+10
+4
+10
+3
+4
+3
+4
+4
+4
+4
+4
+39
+13
+10
+36
+9
+13
+9
+3
+13
+3
+39
+13
+36
+9
+3
+9
+36
+13
+3
+36
+4
+4
+3
+39
+13
+39
+12
+4
+2
+4
+13
+4
+13
+39
+13
+9
+4
+11
+36
+3
+39
+13
+37
+39
+37
+36
+13
+2
+39
+4
+39
+4
+4
+13
+38
+4
+38
+13
+4
+13
+13
+13
+38
+12
+4
+13
+36
+11
+13
+4
+36
+38
+37
+37
+39
+13
+4
+13
+38
+3
+39
+38
+4
+37
+13
+10
+10
+13
+4
+12
+39
+10
+3
+39
+11
+37
+12
+39
+13
+13
+4
+13
+13
+4
+10
+4
+13
+13
+12
+4
+13
+13
+38
+4
+37
+39
+4
+4
+4
+39
+37
+13
+13
+39
+4
+38
+11
+13
+38
+39
+11
+13
+39
+38
+4
+39
+13
+12
+12
+4
+4
+13
+4
+38
+13
+11
+4
+13
+13
+4
+13
+12
+4
+38
+13
+38
+4
+11
+13
+11
+11
+38
+3
+13
+4
+11
+4
+4
+38
+4
+3
+38
+11
+13
+4
+11
+38
+4
+3
+12
+38
+12
+38
+11
+4
+38
+39
+39
+38
+38
+4
+38
+11
+39
+13
+12
+13
+13
+3
+4
+11
+4
+38
+13
+4
+38
+13
+39
+3
+13
+4
+4
+38
+13
+12
+13
+4
+4
+4
+4
+39
+11
+39
+13
+39
+4
+38
+13
+13
+4
+38
+38
+11
+12
+39
+38
+13
+13
+38
+4
+13',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'dictionary-with-wildcards',
+                'title' => 'Dictionary with wildcards',
+                'problem' => [
+                    'title' => 'Dictionary with wildcards',
+                    'description' => 'Run commands on a dictionary.
+- ADD word: store the word. Prints nothing.
+- SEARCH pattern: print yes if some stored word matches the whole pattern, otherwise no. A word matches when it has the same length as the pattern and each of its letters equals the letter in the same position of the pattern, or the pattern has a . there. A . stands for exactly one letter.
+
+Input
+Line 1: n, the number of commands.
+Next n lines: one command each.
+
+Output
+One line for each SEARCH, in order.
+
+Constraints
+1 <= n <= 2000
+Words use lower-case letters only and have 1 to 20 letters.
+Patterns use lower-case letters and . and have 1 to 20 characters.
+There is at least one SEARCH.',
+                    'difficulty' => 'hard',
+                    'test_cases' => [
+                        [
+                            'input' => '8
+ADD bad
+ADD dad
+ADD mad
+SEARCH pad
+SEARCH bad
+SEARCH .ad
+SEARCH b..
+SEARCH b.
+',
+                            'expected_output' => 'no
+yes
+yes
+yes
+no',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '4
+SEARCH a
+ADD a
+SEARCH .
+SEARCH ..
+',
+                            'expected_output' => 'no
+yes
+no',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '14
+SEARCH .....
+ADD apple
+SEARCH .....
+SEARCH ....
+SEARCH ......
+SEARCH app
+SEARCH appl.
+SEARCH apple
+SEARCH apple.
+SEARCH .apple
+SEARCH applex
+SEARCH a....
+SEARCH ....e
+SEARCH ...
+',
+                            'expected_output' => 'no
+yes
+no
+no
+no
+yes
+yes
+no
+no
+no
+yes
+yes
+no',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '17
+ADD cat
+ADD cot
+ADD act
+ADD cute
+SEARCH .a.
+SEARCH .o.
+SEARCH .u.
+SEARCH c..
+SEARCH ..t
+SEARCH .ct
+SEARCH .x.
+SEARCH ...e
+SEARCH .ut.
+SEARCH c...
+SEARCH ..
+SEARCH a..
+SEARCH b..
+',
+                            'expected_output' => 'yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+no',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '14
+ADD abc
+SEARCH ab
+SEARCH a.
+SEARCH abc
+SEARCH .bc
+ADD ab
+SEARCH a.
+SEARCH ..
+SEARCH ...
+SEARCH ....
+SEARCH .
+ADD abcd
+SEARCH ....
+SEARCH ab.d
+',
+                            'expected_output' => 'no
+no
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '2000
+ADD bdba
+ADD ebe
+ADD hdhd
+ADD eeca
+ADD ccc
+ADD bgd
+ADD aab
+ADD bhdg
+ADD bde
+ADD gbb
+ADD dhae
+ADD gde
+ADD hgd
+ADD acdh
+ADD ffad
+ADD eeg
+ADD dac
+ADD dec
+ADD cagb
+ADD agd
+ADD hde
+ADD gff
+ADD aagf
+ADD bah
+ADD dbae
+ADD hbcf
+ADD gbgf
+ADD bead
+ADD faf
+ADD acbe
+ADD degc
+ADD dgh
+ADD hbhf
+ADD bdgc
+ADD hfff
+ADD fahg
+ADD faef
+ADD ega
+ADD gaca
+ADD cag
+ADD hdgf
+ADD efbh
+ADD geeg
+ADD fdd
+ADD habe
+ADD bcbc
+ADD aef
+ADD hedb
+ADD hcgf
+ADD hge
+ADD agge
+ADD cdac
+ADD abe
+ADD ddf
+ADD ggfe
+ADD bhed
+ADD dcf
+ADD ecf
+ADD gfbf
+ADD fge
+ADD addc
+ADD hag
+ADD ghh
+ADD edb
+ADD fbed
+ADD hhg
+ADD adc
+ADD gfhf
+ADD dhg
+ADD aah
+ADD ehd
+ADD bhce
+ADD ddd
+ADD bcgd
+ADD fed
+ADD gdhh
+ADD cdag
+ADD ecfc
+ADD ahac
+ADD fhcg
+ADD dfhe
+ADD ahh
+ADD gcdd
+ADD degh
+ADD cfdg
+ADD fceb
+ADD ddhb
+ADD fdcf
+ADD aad
+ADD chgb
+ADD fgdf
+ADD cdca
+ADD heba
+ADD cgbe
+ADD ddd
+ADD afh
+ADD fgf
+ADD agb
+ADD bbgc
+ADD gdbg
+ADD dcc
+ADD gbhd
+ADD cfhh
+ADD cab
+ADD ebc
+ADD gdc
+ADD dba
+ADD bfef
+ADD hefe
+ADD ahfh
+ADD hgha
+ADD fhfd
+ADD abge
+ADD febc
+ADD feh
+ADD fhb
+ADD bce
+ADD dfbc
+ADD ddh
+ADD aab
+ADD cbh
+ADD deff
+ADD gdb
+ADD adda
+ADD caad
+ADD ccd
+ADD hcd
+ADD chd
+ADD gee
+ADD gbbc
+ADD hcd
+ADD bbah
+ADD feeg
+ADD dabg
+ADD hahc
+ADD efc
+ADD hagh
+ADD fhc
+ADD aah
+ADD hbge
+ADD dhea
+ADD afcc
+ADD ccf
+ADD eah
+ADD faa
+ADD gaca
+ADD eeca
+ADD hece
+ADD agge
+ADD dggc
+ADD gaf
+ADD bcc
+ADD fahd
+ADD bdb
+ADD hbf
+ADD fgdd
+ADD ccb
+ADD edec
+ADD gcbb
+ADD ache
+ADD hdcd
+ADD gecf
+ADD acf
+ADD bce
+ADD heca
+ADD egh
+ADD beb
+ADD eha
+ADD afa
+ADD dhbh
+ADD gbb
+ADD dhd
+ADD afc
+ADD fad
+ADD bcd
+ADD hfa
+ADD beg
+ADD dfa
+ADD dhc
+ADD gcb
+ADD cda
+ADD hehe
+ADD bhdc
+ADD eccf
+ADD dfd
+ADD bgh
+ADD ehfe
+ADD cfhb
+ADD dfdd
+ADD aca
+ADD hfdc
+ADD dbf
+ADD gab
+ADD dgf
+ADD cgeg
+ADD dge
+ADD dca
+ADD afef
+ADD gdd
+ADD aad
+SEARCH ede
+SEARCH ..
+ADD bfgf
+ADD acb
+SEARCH ...
+SEARCH c.ad
+ADD ahb
+ADD abb
+ADD aaag
+ADD gaf
+SEARCH ...
+ADD abb
+ADD gghg
+SEARCH dffe
+ADD dae
+SEARCH ..f
+SEARCH .gdd
+ADD chbf
+ADD dcdb
+ADD gbga
+SEARCH ....
+ADD ghaa
+ADD afgc
+SEARCH hhfca
+ADD cgg
+ADD gec
+SEARCH .....
+SEARCH ...
+ADD dcd
+SEARCH .bb
+ADD bae
+ADD cae
+ADD eggb
+ADD dhd
+ADD bbah
+ADD dacd
+SEARCH gaf
+SEARCH ....
+ADD fbb
+SEARCH daadg
+ADD dce
+ADD gba
+ADD eff
+SEARCH .hh
+SEARCH .h..
+SEARCH abe
+ADD bgg
+SEARCH ...
+ADD fdgd
+ADD ghd
+ADD egg
+SEARCH bdedc
+SEARCH ...
+ADD ahbf
+ADD ech
+ADD daf
+ADD cbda
+ADD hddf
+ADD dca
+SEARCH gfhba
+ADD dggb
+SEARCH eg.
+ADD ggh
+ADD hbca
+ADD ffed
+ADD ecgh
+ADD hcea
+ADD ccbf
+ADD eafa
+ADD feeb
+ADD dbcd
+ADD fcg
+SEARCH a...
+ADD baff
+SEARCH cfge
+SEARCH h..d
+ADD gag
+ADD dhgg
+SEARCH .....
+ADD gfeg
+ADD hfg
+SEARCH db
+ADD caeh
+SEARCH ....
+ADD aaha
+SEARCH cc
+SEARCH ba.a
+SEARCH h.
+ADD dbeg
+SEARCH ..
+ADD agg
+SEARCH .fd
+ADD ggfg
+ADD eedf
+ADD cgb
+ADD cfc
+ADD ehd
+ADD bhga
+ADD dada
+ADD beed
+ADD edh
+ADD aec
+SEARCH ehacf
+SEARCH cfae
+SEARCH bf
+ADD hhd
+ADD cdbc
+SEARCH .....
+ADD acfg
+ADD fffh
+ADD dhh
+SEARCH aeh
+ADD hfh
+ADD cbcf
+SEARCH gd
+ADD ffhc
+ADD bfb
+ADD ddba
+ADD hhhf
+ADD bfhh
+SEARCH fdf.b
+SEARCH ...
+ADD deca
+ADD ehhf
+ADD dgd
+ADD dfga
+ADD adg
+ADD efbb
+ADD chfg
+ADD cah
+SEARCH ..b
+ADD cgg
+ADD cdh
+ADD afca
+ADD ddfe
+ADD acha
+SEARCH baef
+SEARCH ...
+ADD bbe
+ADD afb
+SEARCH ..
+SEARCH .b.fh
+SEARCH ...
+SEARCH ga.
+ADD aefh
+SEARCH .a
+ADD hhag
+SEARCH ...d
+SEARCH ...e
+SEARCH a.g
+SEARCH ..f
+ADD fcgf
+SEARCH cf..
+SEARCH .ah
+SEARCH ga
+ADD cff
+ADD gdf
+ADD efe
+SEARCH hcbfe
+SEARCH h.c.
+SEARCH .bc
+SEARCH .dh
+SEARCH gee
+ADD gacc
+SEARCH ..b
+ADD cfgc
+ADD fcg
+SEARCH ..
+ADD ebb
+ADD eaac
+SEARCH ...
+ADD ghbd
+SEARCH .g..
+SEARCH .c.
+ADD heda
+ADD abbh
+ADD gdhb
+ADD dhe
+SEARCH ....
+ADD gcd
+ADD dea
+SEARCH f..d
+ADD cad
+ADD hdf
+ADD aghd
+SEARCH db
+SEARCH .....
+ADD ccba
+SEARCH f.b
+ADD cgae
+SEARCH ..e
+SEARCH .d
+ADD cgd
+ADD cgb
+ADD bcd
+ADD afah
+ADD aefb
+ADD feee
+SEARCH ....
+SEARCH dhh
+ADD gada
+ADD aedc
+ADD fdgf
+SEARCH ...
+SEARCH fce
+ADD dhdb
+ADD hab
+SEARCH ....
+ADD cfgc
+SEARCH ecedd
+ADD ghfd
+SEARCH ..
+SEARCH d..g
+ADD fcgf
+ADD dhfg
+SEARCH .b.
+SEARCH ....
+SEARCH .d..
+ADD fag
+ADD egab
+SEARCH .aca
+ADD fgce
+ADD bafg
+ADD gdg
+SEARCH .b.
+ADD hhdb
+SEARCH ..fg
+ADD afag
+ADD cgf
+ADD ggh
+ADD hfe
+ADD bgce
+ADD fch
+SEARCH .....
+SEARCH .....
+ADD hahd
+SEARCH gb
+ADD efhf
+ADD efb
+SEARCH f..bg
+ADD bhfh
+SEARCH df.e
+ADD bge
+ADD cfha
+SEARCH h...
+SEARCH ....
+ADD fhe
+SEARCH ....
+ADD dfef
+SEARCH d...
+ADD cdde
+SEARCH .dhch
+ADD ecd
+ADD gca
+SEARCH e.ab
+ADD gde
+ADD hdgd
+ADD afcc
+ADD fed
+ADD hhf
+ADD hah
+SEARCH ..e
+ADD hfcf
+SEARCH ..
+ADD heb
+SEARCH ...
+ADD bdcb
+SEARCH ....
+ADD dhca
+ADD ehed
+SEARCH .f.
+ADD eec
+ADD fafa
+SEARCH .....
+ADD dcge
+ADD fbbf
+ADD hfcd
+ADD ffbe
+SEARCH hg
+ADD hdhh
+ADD hbc
+SEARCH .b..
+ADD dbc
+SEARCH gg
+ADD eee
+SEARCH ac.
+SEARCH c..
+ADD cfde
+SEARCH bgfcc
+SEARCH .abe
+ADD bfdd
+ADD fae
+ADD bdfa
+SEARCH ....
+SEARCH g..
+ADD agg
+SEARCH ....
+SEARCH acf
+ADD ffb
+SEARCH .....
+SEARCH ...
+ADD dea
+ADD fegh
+ADD gde
+ADD cdc
+ADD ecgg
+ADD gfhg
+ADD deha
+SEARCH .e..
+SEARCH he.
+ADD def
+ADD dhfd
+SEARCH .....
+SEARCH e..
+ADD ghh
+ADD ege
+ADD dbd
+SEARCH .e.
+ADD ecb
+SEARCH h...
+ADD dbgb
+SEARCH gec
+SEARCH .....
+SEARCH cac
+ADD gaa
+ADD chgb
+ADD hdeg
+SEARCH h.c.
+SEARCH ..
+ADD bcga
+ADD faf
+ADD gcc
+SEARCH h.
+SEARCH .....
+ADD bdb
+ADD abgf
+SEARCH c..
+ADD ggb
+ADD deh
+SEARCH ..
+ADD defe
+ADD ebh
+ADD hdgb
+ADD bfc
+ADD cce
+ADD cacg
+SEARCH .haa
+SEARCH ....
+ADD aaaf
+SEARCH hca.f
+SEARCH ....
+SEARCH gcg.h
+SEARCH cb
+SEARCH ce.aa
+SEARCH ....
+ADD ffd
+ADD abh
+ADD beea
+ADD ebg
+SEARCH dgff
+SEARCH gf
+SEARCH ..bf
+ADD adhc
+SEARCH he
+ADD hchh
+SEARCH adchh
+ADD fdbh
+ADD aeb
+SEARCH ...
+ADD eecb
+ADD ebge
+ADD eeeh
+ADD ghh
+ADD gef
+SEARCH d...
+SEARCH fe..
+ADD hghf
+ADD dbe
+SEARCH .....
+SEARCH aea
+SEARCH ebhfe
+SEARCH efb.
+ADD bec
+SEARCH ad
+SEARCH ....
+ADD hgfb
+SEARCH edh
+ADD fhad
+ADD adfa
+ADD efdd
+ADD bgag
+ADD bbdh
+ADD gaf
+SEARCH ....
+SEARCH ....
+ADD dcfb
+ADD hcf
+SEARCH .....
+SEARCH d...
+SEARCH ...
+ADD dgh
+ADD eaaf
+ADD dceg
+ADD gdh
+SEARCH .b.
+ADD fga
+SEARCH .....
+SEARCH .....
+ADD hbad
+SEARCH ....
+ADD befh
+ADD dfc
+SEARCH c.b.
+SEARCH .f.
+ADD gfaa
+SEARCH ...
+SEARCH ...
+ADD bega
+ADD hfdg
+SEARCH ...
+ADD fadh
+ADD deh
+ADD deaa
+ADD behc
+SEARCH f.hf.
+SEARCH ffd
+SEARCH .dgbc
+ADD hca
+SEARCH dhfef
+SEARCH b.
+ADD eagc
+ADD afda
+SEARCH .....
+ADD cab
+ADD ffgg
+ADD aahd
+ADD hec
+ADD abag
+ADD geae
+SEARCH .aahd
+SEARCH hb.f
+ADD caga
+SEARCH ...
+ADD bbfg
+SEARCH ..
+ADD fbc
+SEARCH dca
+ADD fcg
+ADD fgah
+SEARCH .b.
+ADD ebgb
+ADD bfe
+ADD ddgh
+ADD hbd
+ADD hah
+ADD gefa
+SEARCH h.c.
+SEARCH .f.
+ADD fbcf
+SEARCH d.g
+SEARCH .cha
+SEARCH gc
+ADD fegb
+SEARCH dg..
+ADD abg
+ADD heh
+SEARCH ..c.
+ADD dbe
+ADD ggef
+ADD bad
+ADD dgbd
+ADD abg
+ADD ghba
+ADD ade
+SEARCH ...d
+ADD hhcb
+SEARCH ...
+ADD caaf
+ADD dfce
+ADD bad
+SEARCH ....
+ADD fceb
+SEARCH ...
+ADD aca
+ADD ggcd
+ADD gdeh
+ADD dfge
+SEARCH ecc
+ADD egfg
+ADD ede
+ADD fcg
+SEARCH ..hc
+ADD hfb
+ADD cca
+SEARCH bce
+ADD eabd
+SEARCH gf
+ADD cdhb
+SEARCH addd
+ADD afef
+ADD aeah
+ADD hch
+ADD ecfc
+SEARCH .....
+ADD fcbe
+ADD gfg
+SEARCH cecdd
+SEARCH ...b
+SEARCH gfagb
+ADD hgh
+ADD hgef
+ADD agb
+SEARCH ....
+ADD edbe
+ADD egh
+ADD ccg
+ADD gca
+ADD dfc
+SEARCH ebeha
+ADD cdad
+SEARCH d..
+SEARCH ...
+SEARCH dhgef
+ADD gafd
+ADD ffgd
+ADD ecag
+SEARCH .h
+SEARCH ..
+ADD hcbf
+SEARCH ...
+SEARCH ch
+ADD fcce
+ADD gfha
+SEARCH .....
+SEARCH ...
+SEARCH ..d.
+SEARCH ....
+SEARCH ..
+ADD dhf
+SEARCH ....
+ADD hdha
+ADD bea
+ADD egc
+SEARCH .a..
+ADD cgb
+ADD cbb
+ADD hbg
+SEARCH ..ae
+ADD edha
+ADD hgd
+ADD hgg
+SEARCH .a.h
+SEARCH ..a
+SEARCH dge
+SEARCH d...
+ADD fdgd
+ADD bgef
+ADD dca
+ADD eagg
+SEARCH ..e
+ADD cdac
+ADD gbea
+ADD ddg
+ADD cbh
+SEARCH .....
+ADD cdgb
+ADD hba
+ADD efg
+SEARCH ba.d
+SEARCH agb
+ADD hgh
+SEARCH ca
+ADD afea
+ADD gdcb
+SEARCH ....
+ADD hdbe
+SEARCH ...
+ADD dehh
+ADD eba
+SEARCH .af
+SEARCH hbb
+ADD fed
+ADD ehc
+SEARCH ....
+ADD bbdd
+SEARCH cdg
+ADD ahg
+ADD hhe
+SEARCH hdhac
+ADD cfd
+ADD hdhg
+SEARCH cacbh
+ADD ada
+ADD ghd
+ADD cbfg
+ADD chg
+ADD haf
+ADD cfcg
+SEARCH ....
+ADD ggc
+ADD bdah
+ADD abhd
+ADD dcb
+ADD aae
+SEARCH .beda
+SEARCH ...
+ADD cbh
+ADD efhf
+SEARCH ..
+SEARCH bebb
+SEARCH ..
+ADD deh
+SEARCH ....
+SEARCH f..
+ADD fhd
+ADD ddab
+SEARCH d..g
+SEARCH gdcbf
+ADD gdg
+ADD gfe
+ADD cgca
+SEARCH gef
+ADD aadc
+ADD hfeh
+SEARCH ..
+SEARCH ..
+SEARCH f...
+ADD fccg
+SEARCH ..
+ADD acha
+ADD ffe
+SEARCH g..
+ADD fhf
+SEARCH fh.
+SEARCH ....
+SEARCH d.d
+SEARCH ...
+ADD ehde
+ADD chee
+SEARCH ....
+SEARCH ed
+ADD cbgd
+SEARCH .hf.
+SEARCH .....
+ADD hbh
+ADD chc
+SEARCH ...
+ADD fga
+ADD agfg
+SEARCH .dba
+ADD cdb
+ADD cfg
+SEARCH be
+SEARCH ....
+ADD fegh
+ADD hgh
+ADD cbef
+ADD afh
+ADD cdc
+SEARCH ....
+ADD eef
+SEARCH .....
+SEARCH e...
+ADD gcgb
+SEARCH ...
+ADD facc
+ADD feh
+SEARCH g.f
+ADD cgdf
+ADD hbcd
+SEARCH e.
+ADD cgc
+SEARCH gdhg
+ADD ehb
+ADD cdgf
+SEARCH ...
+SEARCH ..ah
+ADD ahb
+SEARCH ...
+ADD aee
+ADD bhe
+ADD cbha
+ADD dgca
+ADD fdg
+ADD heb
+SEARCH ba
+ADD bgee
+SEARCH fg
+SEARCH ....
+ADD dee
+SEARCH ..f.
+ADD dgdf
+SEARCH ....
+SEARCH c..
+ADD cbfh
+SEARCH ..cd
+SEARCH dhd
+SEARCH ..d.
+ADD deb
+SEARCH ..g.
+SEARCH cb.g
+SEARCH fcfba
+ADD ahfc
+ADD ghd
+ADD afcb
+SEARCH .....
+ADD dfd
+SEARCH eafbc
+ADD ghae
+ADD dfbb
+ADD fda
+SEARCH .cf
+SEARCH .fg
+SEARCH .....
+SEARCH cd.
+SEARCH ...
+SEARCH ....
+SEARCH h..f
+SEARCH ...
+SEARCH ..h
+SEARCH h..
+SEARCH ..
+ADD gacg
+SEARCH ...
+ADD chff
+ADD gche
+ADD fgfe
+SEARCH hhf
+SEARCH gaf.d
+ADD egf
+SEARCH fgf
+SEARCH ...
+SEARCH ...
+SEARCH ...
+SEARCH .....
+ADD gfhd
+SEARCH .....
+ADD fbdh
+ADD fag
+SEARCH fb
+ADD agb
+ADD bhbg
+ADD gff
+SEARCH fgaf
+ADD dbb
+ADD ghdc
+SEARCH abh
+SEARCH .....
+ADD hfb
+ADD eha
+ADD edd
+SEARCH ...
+ADD effe
+ADD dgd
+ADD ccdd
+ADD feag
+ADD egdf
+SEARCH .....
+SEARCH b.abd
+ADD cdha
+ADD agd
+SEARCH cg
+SEARCH ..gf
+ADD gha
+ADD bgca
+SEARCH ..
+SEARCH .f.
+SEARCH bc..
+ADD hghf
+SEARCH ..a.
+SEARCH cfe
+ADD eec
+SEARCH .....
+SEARCH g...
+ADD bbaa
+SEARCH f...
+ADD abbf
+SEARCH bbfgc
+SEARCH db.
+SEARCH a.f.
+ADD chg
+ADD aed
+SEARCH ...
+ADD gca
+ADD ahcd
+ADD ahf
+SEARCH ddh
+SEARCH ....
+ADD hcdd
+ADD hge
+SEARCH ..
+SEARCH ...
+ADD fgda
+SEARCH e.e
+SEARCH ...
+SEARCH ..
+SEARCH df..
+SEARCH ...
+ADD fgb
+ADD fcd
+SEARCH ...
+ADD ada
+ADD ahf
+SEARCH g..g
+ADD adfa
+ADD cabh
+ADD bfd
+SEARCH .d.
+SEARCH .ch
+ADD ahgh
+SEARCH agbe
+ADD fgbd
+ADD dgg
+ADD ddef
+ADD fcgc
+SEARCH bghhg
+SEARCH g.c
+ADD bgc
+ADD ccac
+ADD aac
+SEARCH g...
+ADD bge
+SEARCH dg.c
+ADD edhf
+SEARCH dh
+SEARCH c..b
+ADD hae
+ADD ffcg
+ADD ead
+SEARCH .f..
+SEARCH .g.h
+SEARCH ...
+ADD ddbf
+ADD ahcg
+SEARCH ..
+SEARCH ...
+SEARCH ...
+ADD bdc
+SEARCH ...
+ADD gba
+SEARCH ...
+ADD hgdb
+ADD adcg
+ADD abch
+ADD dab
+ADD ggh
+SEARCH cb.
+ADD edb
+ADD eeda
+ADD fgca
+ADD hbh
+SEARCH bcbaa
+ADD cedd
+SEARCH ..
+SEARCH dc.
+ADD dec
+ADD gec
+ADD dcd
+SEARCH ..
+ADD ebad
+ADD cdfc
+ADD haf
+SEARCH .....
+ADD abfh
+ADD hcdg
+ADD cfaf
+ADD bhf
+ADD abcd
+SEARCH ...
+SEARCH ..
+ADD aeea
+ADD bfh
+SEARCH .....
+ADD ega
+ADD edga
+SEARCH eba.
+SEARCH .....
+ADD beha
+SEARCH h..
+SEARCH .ge.
+SEARCH ....
+ADD fbd
+SEARCH agd
+SEARCH gh.h
+ADD eefd
+ADD fda
+ADD ddf
+SEARCH ..g.
+ADD fhcd
+SEARCH .eg
+SEARCH .....
+ADD hfg
+ADD geb
+SEARCH ..
+SEARCH a..e
+SEARCH ..g.
+SEARCH ....
+SEARCH e.g
+SEARCH af
+ADD cbf
+ADD cafe
+ADD bhhb
+SEARCH hd
+ADD gbbg
+SEARCH ..
+ADD dghb
+ADD dga
+ADD gah
+ADD eaec
+ADD haac
+ADD defc
+SEARCH g.bc.
+SEARCH ....
+SEARCH .b.
+SEARCH c..
+ADD ced
+ADD bgbh
+SEARCH dgb
+SEARCH geaed
+ADD ddb
+SEARCH cd..
+SEARCH h.fd
+ADD bhch
+SEARCH ...
+ADD cgcb
+SEARCH .g.
+ADD egfd
+ADD cbc
+ADD afe
+ADD ecff
+SEARCH hh.
+SEARCH ....
+ADD fecb
+SEARCH ...
+ADD abc
+ADD bdch
+ADD bbed
+ADD eaba
+ADD dgad
+SEARCH ..
+SEARCH ...
+SEARCH ...a
+SEARCH ae
+SEARCH .cf.
+SEARCH fbhdf
+SEARCH cd
+SEARCH ...
+SEARCH .d.
+ADD aeg
+SEARCH bfb
+ADD bdg
+ADD hefd
+SEARCH fe.ah
+ADD ghf
+SEARCH .d
+ADD hgeg
+SEARCH ..
+SEARCH .be.
+ADD fcd
+ADD gce
+ADD dbgd
+SEARCH ..
+ADD ffb
+ADD ahaf
+ADD hba
+SEARCH ...
+ADD bhde
+SEARCH faheg
+SEARCH ..
+SEARCH ba
+ADD ffg
+ADD ccg
+ADD gbeh
+SEARCH h..
+SEARCH bbhd.
+ADD ebge
+SEARCH ...
+ADD fead
+ADD dcd
+ADD ehbh
+ADD gfhc
+SEARCH ..
+ADD beac
+SEARCH gafhf
+SEARCH b..
+ADD face
+SEARCH hcc
+ADD babd
+ADD eed
+SEARCH hhfcb
+ADD bbha
+SEARCH .ad
+SEARCH .....
+SEARCH ...c
+SEARCH .....
+ADD bcf
+ADD gcch
+ADD gdbd
+SEARCH .....
+ADD dfa
+ADD egba
+ADD dfb
+SEARCH fca
+ADD efgf
+SEARCH ...
+ADD faff
+ADD dfea
+ADD hbcg
+ADD cfdf
+SEARCH dfa
+SEARCH e..
+ADD dege
+ADD gdhd
+ADD bfeh
+ADD gahh
+SEARCH ...
+SEARCH ...
+ADD heeg
+SEARCH edf
+ADD eded
+SEARCH hcbg
+ADD aac
+ADD gah
+SEARCH geaef
+SEARCH gde
+SEARCH ...
+SEARCH fa
+ADD hab
+ADD bebb
+ADD ceaf
+ADD aee
+SEARCH gdh
+ADD fbe
+SEARCH ...
+ADD eefd
+ADD geef
+SEARCH ....
+ADD hgfa
+ADD ehbf
+SEARCH ....
+SEARCH .e
+SEARCH bae
+SEARCH ff
+SEARCH ge
+SEARCH e..e
+SEARCH ..
+SEARCH ..
+SEARCH dcga
+ADD edd
+ADD hhc
+SEARCH e.
+ADD dcc
+ADD ddd
+ADD aeah
+ADD add
+ADD cbfb
+ADD eedc
+SEARCH hf.f
+SEARCH ..bc
+SEARCH ...
+ADD bbhg
+SEARCH ..a
+SEARCH ....
+SEARCH b...
+ADD bhb
+ADD gfc
+SEARCH ....
+ADD ebaf
+ADD ccb
+ADD ahh
+SEARCH aeh
+SEARCH ..
+ADD bacd
+SEARCH ddg
+SEARCH .f
+ADD ehed
+SEARCH gedf
+ADD chgf
+SEARCH hcf
+SEARCH ...
+SEARCH cdda
+SEARCH hb.b
+ADD fcgf
+SEARCH ....
+ADD bfa
+SEARCH ca
+SEARCH .....
+ADD edb
+ADD aec
+ADD chdg
+SEARCH .....
+SEARCH ed..
+ADD cgc
+ADD hae
+SEARCH adc
+SEARCH cceg.
+SEARCH bfha
+SEARCH ..g
+SEARCH a.e
+SEARCH gac.
+ADD hgfb
+SEARCH ...
+SEARCH ch.f
+SEARCH .....
+ADD cdhh
+ADD dacb
+ADD bbf
+ADD gegf
+SEARCH ...
+SEARCH acf
+ADD hgb
+ADD cbe
+ADD edgh
+ADD adh
+SEARCH hb.
+ADD che
+SEARCH h.a.
+SEARCH ...
+ADD cbg
+SEARCH b...
+SEARCH ffdca
+ADD fbhf
+ADD dbh
+ADD eafe
+SEARCH ...b
+ADD bdaa
+SEARCH ....
+ADD hgcd
+SEARCH ...
+SEARCH .gf.
+SEARCH agfa.
+SEARCH db
+ADD fgfd
+SEARCH ...
+ADD fhb
+ADD bfeg
+ADD eegg
+SEARCH ..
+ADD bfd
+ADD fgd
+SEARCH ....
+ADD aab
+ADD dba
+SEARCH ....
+SEARCH ...
+ADD eef
+SEARCH .db
+ADD gcag
+SEARCH ...a
+ADD edch
+SEARCH hhd
+SEARCH bg
+SEARCH c..
+SEARCH ...
+ADD ech
+SEARCH .....
+ADD deh
+SEARCH d.d
+SEARCH .ga.e
+ADD bcbd
+ADD edg
+ADD ehd
+SEARCH ..
+ADD aea
+ADD gad
+SEARCH aa
+ADD cdaa
+SEARCH decf
+SEARCH gh.a
+SEARCH bceg
+SEARCH ...
+ADD fac
+ADD abf
+SEARCH a..gd
+SEARCH cfhf
+ADD bfhf
+SEARCH ebbb
+ADD dcab
+ADD gbc
+SEARCH hdfb
+ADD bcd
+ADD hfe
+ADD cde
+ADD baeb
+ADD hdhg
+SEARCH d.
+SEARCH ...
+SEARCH ...c
+ADD ffd
+SEARCH ...
+ADD dfa
+SEARCH c.bgc
+ADD ffhh
+SEARCH .a..
+SEARCH ecb
+SEARCH bg.ee
+ADD hcb
+ADD acd
+ADD hhae
+SEARCH .b.
+ADD feec
+ADD gbb
+ADD efe
+ADD hebg
+ADD ddh
+SEARCH a..
+ADD egh
+ADD ggh
+ADD ahca
+ADD ebh
+ADD hha
+ADD gdee
+SEARCH e.
+SEARCH .b..
+ADD hbea
+ADD ceed
+ADD dabh
+ADD acgd
+ADD bec
+SEARCH ..
+SEARCH ...g
+ADD hgdf
+SEARCH ....
+SEARCH ..
+SEARCH .....
+SEARCH ae
+SEARCH ....
+ADD ggc
+ADD ead
+ADD eead
+ADD dbeh
+ADD fgf
+ADD acga
+ADD ahee
+SEARCH ...a
+SEARCH ..
+ADD dcfh
+SEARCH d.h
+ADD cfbd
+ADD gcb
+ADD ehbe
+ADD hfh
+ADD cda
+SEARCH .feh
+SEARCH ...
+SEARCH c..c
+ADD beb
+SEARCH bded
+SEARCH .bf.
+ADD faf
+ADD chcg
+SEARCH bab
+ADD ehb
+SEARCH ga
+SEARCH ...d
+SEARCH .f.
+SEARCH ..
+ADD afee
+ADD haaf
+SEARCH ...
+SEARCH hg..
+SEARCH d.e
+SEARCH ....
+SEARCH ..e
+ADD ccab
+SEARCH ..b.
+SEARCH g...
+ADD edgh
+SEARCH .gh.
+SEARCH ...
+SEARCH g.bg
+ADD fabb
+SEARCH .bc
+ADD aga
+SEARCH hb.
+ADD ahgc
+ADD cah
+ADD hdgf
+SEARCH ba
+SEARCH g...
+SEARCH ..eg
+ADD dgd
+SEARCH hee
+SEARCH gdb
+SEARCH ab..
+SEARCH ....
+ADD ebf
+ADD cdea
+SEARCH g.h
+ADD ebbh
+ADD dee
+SEARCH aedhg
+SEARCH .bba
+SEARCH b.
+ADD hdg
+ADD eda
+ADD bfde
+SEARCH agfh
+ADD hhc
+ADD bad
+ADD bbg
+ADD fdec
+SEARCH ..
+SEARCH ahagg
+SEARCH a..g
+ADD aacd
+ADD hcb
+SEARCH dh
+ADD hgdc
+ADD hhf
+SEARCH ccce
+ADD hdbe
+ADD edd
+ADD egd
+SEARCH ...
+ADD ehb
+ADD acf
+SEARCH ..
+SEARCH .....
+SEARCH .....
+ADD chg
+SEARCH ...
+SEARCH ch.c
+ADD fade
+ADD agf
+SEARCH .fgh.
+SEARCH ....
+SEARCH gbhga
+SEARCH .bc
+ADD chff
+SEARCH .c
+SEARCH ....
+SEARCH .bd.
+ADD ccga
+ADD bfd
+ADD che
+ADD cce
+SEARCH .d..
+SEARCH ....
+SEARCH hhb
+ADD fcda
+ADD hdf
+ADD hbb
+ADD afgb
+ADD abff
+ADD beh
+ADD gdg
+ADD fac
+SEARCH g.bg
+SEARCH ..
+ADD ccf
+SEARCH cac
+ADD bfd
+SEARCH ....
+SEARCH ..
+SEARCH ..
+SEARCH ...
+SEARCH ...
+ADD afhd
+ADD dcfh
+SEARCH .ahb
+SEARCH ...
+ADD aea
+SEARCH ch.g
+ADD gbe
+ADD hcf
+ADD febc
+ADD agf
+SEARCH .ba
+SEARCH ...e
+SEARCH ....
+SEARCH ..
+ADD efg
+SEARCH hcgd
+ADD beeg
+SEARCH .ad
+SEARCH .habg
+ADD gch
+ADD cdae
+ADD bagh
+SEARCH .....
+SEARCH h.gc
+SEARCH bh.h
+ADD eehh
+ADD hadg
+SEARCH .bg
+SEARCH ..f
+ADD hhe
+ADD bgcb
+ADD ghba
+ADD ccad
+SEARCH ..fh
+SEARCH ..
+SEARCH ...h
+SEARCH .ec.
+SEARCH cc
+ADD agc
+ADD ddgg
+SEARCH hbc.
+ADD ccc
+SEARCH c..
+ADD hfb
+SEARCH ..
+ADD ghhg
+SEARCH .a.
+SEARCH ..a.
+SEARCH facc
+ADD dbb
+ADD hfbf
+ADD aaa
+ADD fcg
+ADD bghb
+SEARCH adc.h
+SEARCH gd..
+ADD dbh
+ADD hfhd
+SEARCH ghh
+ADD bbg
+ADD efhd
+SEARCH .d.
+SEARCH ..
+ADD faf
+ADD hbac
+ADD acdg
+SEARCH c.bh
+SEARCH ..
+SEARCH ba
+SEARCH ff.
+SEARCH .....
+ADD afhh
+ADD fef
+SEARCH af
+SEARCH ...
+SEARCH h.b
+ADD fbhc
+SEARCH ..
+SEARCH ..
+ADD ffcf
+ADD gecc
+ADD bgfe
+SEARCH ..a
+ADD aef
+ADD fbe
+SEARCH .....
+SEARCH gh
+ADD ehh
+ADD adh
+ADD efc
+SEARCH ..
+ADD affb
+ADD dadc
+ADD ehd
+SEARCH ...
+SEARCH d.d
+SEARCH ....
+ADD ffb
+ADD dah
+SEARCH ccbc
+ADD cfe
+SEARCH hhhh.
+SEARCH ..
+ADD ffbc
+ADD hge
+SEARCH egh
+SEARCH ec
+ADD ged
+ADD hha
+SEARCH ...
+ADD aag
+ADD fbh
+ADD gcca
+SEARCH ...c
+SEARCH c...
+ADD gcef
+SEARCH bg
+SEARCH .gc.
+ADD che
+SEARCH gh
+SEARCH ....
+ADD cgeh
+SEARCH ecfh.
+ADD gdbg
+SEARCH ..b.
+ADD cga
+SEARCH de
+ADD chdf
+ADD edeb
+SEARCH ..
+ADD hgf
+SEARCH ..b.
+ADD deh
+ADD ada
+SEARCH ...
+SEARCH .ed
+ADD hfdf
+SEARCH fea.
+ADD deb
+ADD cddg
+ADD bcc
+ADD aefc
+ADD fach
+SEARCH b...
+SEARCH .a.
+ADD dfdf
+SEARCH .....
+SEARCH dbfcb
+ADD edg
+SEARCH hgd.
+SEARCH gb.
+SEARCH d...
+SEARCH ddabg
+ADD hbh
+SEARCH .....
+ADD hce
+ADD bcab
+ADD fecd
+ADD edce
+ADD fgfe
+SEARCH aa.
+ADD daca
+ADD echf
+ADD cadf
+SEARCH .....
+SEARCH hh
+ADD eedh
+ADD bag
+ADD defd
+SEARCH ac
+SEARCH df
+ADD dbba
+SEARCH acc
+SEARCH ah..
+ADD dah
+ADD ebe
+SEARCH cbaga
+SEARCH hbg
+ADD cdbd
+SEARCH .d..
+SEARCH .aebe
+SEARCH ....
+ADD dcce
+SEARCH hegg
+ADD hff
+ADD gfe
+ADD bfb
+SEARCH c.b.
+SEARCH ...c
+ADD egb
+ADD dbd
+ADD hgca
+SEARCH ...
+ADD efh
+ADD dbe
+ADD gcgg
+ADD gfe
+ADD edad
+ADD ecbd
+SEARCH .....
+ADD ahe
+SEARCH d..
+ADD fee
+SEARCH db..
+ADD fged
+ADD fga
+SEARCH .....
+ADD dfa
+ADD cab
+SEARCH eab
+SEARCH b.gc
+ADD abeb
+SEARCH ...
+SEARCH .....
+SEARCH dege
+ADD ccf
+SEARCH ....
+SEARCH ...
+SEARCH ..
+SEARCH ahgee
+SEARCH .fef
+ADD ehbb
+ADD deh
+SEARCH ....
+SEARCH .....
+ADD ega
+ADD bfg
+SEARCH ecffe
+ADD hfff
+ADD hda
+SEARCH gbc
+SEARCH .b.
+ADD dfa
+ADD gdb
+SEARCH ...
+SEARCH ..
+SEARCH .....
+SEARCH ....
+SEARCH a.d.
+ADD gaf
+SEARCH fh.
+ADD cfa
+SEARCH ....
+ADD bcgh
+ADD cbe
+SEARCH .....
+SEARCH dddee
+ADD gbdf
+ADD cahg
+ADD aebb
+ADD hfcb
+ADD chc
+ADD heg
+SEARCH fc
+ADD bbhc
+SEARCH bfa
+ADD dhhd
+SEARCH fhc.
+SEARCH .....
+ADD gac
+ADD eag
+SEARCH .ebf
+SEARCH .....
+ADD agga
+ADD acge
+SEARCH dh
+ADD aahb
+SEARCH bebcc
+ADD bch
+ADD agf
+SEARCH ....
+SEARCH d.c
+SEARCH ..
+SEARCH ..
+SEARCH .ad
+ADD fae
+SEARCH dfb
+ADD dbdb
+SEARCH ..e.
+SEARCH ....
+ADD aheg
+ADD cddb
+ADD cch
+ADD fbbb
+ADD fhb
+ADD bed
+SEARCH .....
+SEARCH ..e.
+ADD eaga
+ADD fca
+SEARCH ef
+ADD bdf
+SEARCH ..a
+ADD fab
+SEARCH .aa.
+ADD fheg
+ADD ceb
+ADD geh
+ADD aga
+ADD caa
+ADD habb
+SEARCH .f
+SEARCH hh
+ADD ghhe
+SEARCH ...
+ADD ddbb
+ADD dhfe
+ADD ccfa
+SEARCH ...
+ADD bha
+SEARCH ..
+ADD fgaf
+ADD hhf
+SEARCH af..
+SEARCH ..d.
+ADD hfbf
+ADD daef
+SEARCH bc.
+SEARCH .....
+ADD chg
+ADD cdc
+ADD bcbd
+SEARCH ....
+SEARCH ...
+SEARCH h.e
+ADD affh
+ADD fce
+ADD cgb
+ADD fgb
+ADD bdfg
+SEARCH egf.
+ADD hfaf
+ADD agf
+ADD bee
+SEARCH ....
+ADD cdb
+SEARCH fed
+ADD bhdd
+ADD eec
+ADD ddaf
+SEARCH ..h.
+SEARCH ah
+ADD ehc
+ADD bec
+ADD cha
+ADD egg
+ADD aed
+SEARCH hg..
+SEARCH .f..
+SEARCH cd.
+SEARCH cbgd
+ADD ffhh
+ADD ehd
+SEARCH aea
+ADD hec
+SEARCH g.a
+ADD bca
+ADD caa
+ADD dbeh
+SEARCH be
+ADD aec
+ADD efg
+SEARCH .....
+SEARCH e..d
+ADD chhh
+ADD gfa
+SEARCH beh
+SEARCH .....
+ADD fah
+ADD gdh
+ADD hhd
+SEARCH .cga
+SEARCH afch
+ADD fefa
+ADD eacc
+ADD fbh
+ADD gab
+SEARCH f.da
+ADD edgc
+ADD eed
+SEARCH ageg
+SEARCH f.d.
+SEARCH ....
+SEARCH ..
+SEARCH g.ca
+SEARCH b..
+SEARCH ea
+ADD gdac
+ADD hgeh
+ADD aded
+SEARCH .a..
+ADD ghhb
+ADD gee
+ADD gef
+SEARCH .c..
+SEARCH ...
+ADD efhe
+SEARCH ..
+ADD gafc
+SEARCH ea
+SEARCH d..
+ADD eahe
+ADD achh
+ADD dcf
+SEARCH .gb
+ADD ahef
+ADD bfde
+ADD abd
+ADD eahb
+ADD cbf
+SEARCH .gh
+ADD aee
+SEARCH ...
+SEARCH ..
+SEARCH ....
+SEARCH fddag
+SEARCH ....
+ADD cde
+SEARCH dh.
+ADD ggh
+SEARCH f.e
+SEARCH fh
+SEARCH ..g
+ADD dgb
+ADD bcgc
+ADD cffc
+SEARCH ....
+ADD caeb
+SEARCH hcf.
+ADD hab
+SEARCH dgh
+ADD cdba
+ADD gebc
+ADD hhcb
+SEARCH ...
+ADD bhha
+ADD chc
+ADD ahfd
+SEARCH ..
+ADD aga
+ADD agbb
+ADD hcbc
+',
+                            'expected_output' => 'no
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+yes
+yes
+no
+yes
+no
+no
+yes
+no
+no
+no
+no
+yes
+no
+no
+no
+no
+no
+no
+no
+yes
+yes
+no
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+no
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+no
+no
+yes
+no
+yes
+yes
+no
+yes
+no
+no
+no
+yes
+no
+no
+yes
+no
+no
+yes
+yes
+yes
+no
+no
+no
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+no
+no
+no
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+no
+no
+no
+yes
+no
+yes
+no
+yes
+yes
+no
+no
+no
+yes
+no
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+yes
+yes
+yes
+no
+yes
+no
+no
+no
+yes
+no
+yes
+no
+no
+no
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+no
+no
+no
+yes
+no
+yes
+no
+no
+no
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+no
+yes
+no
+no
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+no
+no
+no
+no
+yes
+yes
+yes
+no
+no
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+no
+no
+yes
+yes
+yes
+no
+no
+no
+yes
+no
+yes
+no
+no
+no
+yes
+no
+yes
+no
+no
+yes
+no
+no
+yes
+no
+yes
+no
+no
+no
+yes
+yes
+yes
+yes
+yes
+no
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+no
+no
+no
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+no
+yes
+yes
+no
+no
+yes
+no
+no
+no
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+no
+no
+no
+no
+yes
+no
+yes
+no
+no
+no
+no
+no
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+no
+yes
+yes
+no
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+no
+no
+no
+no
+no
+no
+yes
+no
+no
+yes
+no
+no
+no
+yes
+no
+no
+yes
+no
+yes
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+no
+no
+no
+yes
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+no
+no
+yes
+no
+no
+yes
+yes
+no
+no
+yes
+no
+no
+no
+yes
+yes
+yes
+no
+no
+no
+yes
+no
+yes
+yes
+yes
+no
+yes
+no
+yes
+no
+yes
+no
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+no
+no
+yes
+no
+no
+no
+no
+no
+yes
+no
+yes
+yes
+no
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+no
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+no
+no
+no
+yes
+yes
+no
+no
+no
+no
+no
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+yes
+yes
+no
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+no
+no
+yes
+yes
+no
+yes
+no
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+no
+no
+yes
+yes
+yes
+yes
+no
+yes
+no
+yes
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'friend-groups',
+                'title' => 'Friend groups',
+                'problem' => [
+                    'title' => 'Friend groups',
+                    'description' => 'People are numbered 1 to n and start with no friends. Friends of friends belong to the same group.
+- JOIN a b: a and b become friends, which merges their groups. Prints nothing.
+- SAME a b: print yes if a and b are in the same group, otherwise no. Everyone is in the same group as themselves.
+
+Input
+Line 1: n and q, separated by a space.
+Next q lines: one command each.
+
+Output
+One line for each SAME, in order.
+
+Constraints
+1 <= n <= 5000
+1 <= q <= 5000
+1 <= a, b <= n (a can equal b)
+There is at least one SAME.',
+                    'difficulty' => 'medium',
+                    'test_cases' => [
+                        [
+                            'input' => '5 8
+JOIN 1 2
+SAME 1 2
+SAME 1 3
+JOIN 3 4
+SAME 2 4
+JOIN 2 3
+SAME 1 4
+SAME 5 1
+',
+                            'expected_output' => 'yes
+no
+no
+yes
+no',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '3 3
+SAME 1 2
+JOIN 1 2
+SAME 2 1
+',
+                            'expected_output' => 'no
+yes',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '1 3
+SAME 1 1
+JOIN 1 1
+SAME 1 1
+',
+                            'expected_output' => 'yes
+yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '6 17
+SAME 2 5
+SAME 4 4
+JOIN 1 2
+JOIN 2 3
+JOIN 3 1
+JOIN 1 3
+SAME 3 2
+JOIN 4 5
+SAME 1 4
+SAME 6 6
+JOIN 5 6
+JOIN 6 4
+SAME 4 6
+SAME 2 6
+JOIN 6 2
+SAME 1 5
+SAME 3 4
+',
+                            'expected_output' => 'no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '3000 3000
+JOIN 1 2
+JOIN 2 3
+JOIN 3 4
+JOIN 4 5
+JOIN 5 6
+JOIN 6 7
+JOIN 7 8
+JOIN 8 9
+JOIN 9 10
+JOIN 10 11
+JOIN 11 12
+JOIN 12 13
+JOIN 13 14
+JOIN 14 15
+JOIN 15 16
+JOIN 16 17
+JOIN 17 18
+JOIN 18 19
+JOIN 19 20
+JOIN 20 21
+JOIN 21 22
+JOIN 22 23
+JOIN 23 24
+JOIN 24 25
+JOIN 25 26
+JOIN 26 27
+JOIN 27 28
+JOIN 28 29
+JOIN 29 30
+JOIN 30 31
+JOIN 31 32
+JOIN 32 33
+JOIN 33 34
+JOIN 34 35
+JOIN 35 36
+JOIN 36 37
+JOIN 37 38
+JOIN 38 39
+JOIN 39 40
+JOIN 40 41
+JOIN 41 42
+JOIN 42 43
+JOIN 43 44
+JOIN 44 45
+JOIN 45 46
+JOIN 46 47
+JOIN 47 48
+JOIN 48 49
+JOIN 49 50
+JOIN 50 51
+JOIN 51 52
+JOIN 52 53
+JOIN 53 54
+JOIN 54 55
+JOIN 55 56
+JOIN 56 57
+JOIN 57 58
+JOIN 58 59
+JOIN 59 60
+JOIN 60 61
+JOIN 61 62
+JOIN 62 63
+JOIN 63 64
+JOIN 64 65
+JOIN 65 66
+JOIN 66 67
+JOIN 67 68
+JOIN 68 69
+JOIN 69 70
+JOIN 70 71
+JOIN 71 72
+JOIN 72 73
+JOIN 73 74
+JOIN 74 75
+JOIN 75 76
+JOIN 76 77
+JOIN 77 78
+JOIN 78 79
+JOIN 79 80
+JOIN 80 81
+JOIN 81 82
+JOIN 82 83
+JOIN 83 84
+JOIN 84 85
+JOIN 85 86
+JOIN 86 87
+JOIN 87 88
+JOIN 88 89
+JOIN 89 90
+JOIN 90 91
+JOIN 91 92
+JOIN 92 93
+JOIN 93 94
+JOIN 94 95
+JOIN 95 96
+JOIN 96 97
+JOIN 97 98
+JOIN 98 99
+JOIN 99 100
+JOIN 100 101
+JOIN 101 102
+JOIN 102 103
+JOIN 103 104
+JOIN 104 105
+JOIN 105 106
+JOIN 106 107
+JOIN 107 108
+JOIN 108 109
+JOIN 109 110
+JOIN 110 111
+JOIN 111 112
+JOIN 112 113
+JOIN 113 114
+JOIN 114 115
+JOIN 115 116
+JOIN 116 117
+JOIN 117 118
+JOIN 118 119
+JOIN 119 120
+JOIN 120 121
+JOIN 121 122
+JOIN 122 123
+JOIN 123 124
+JOIN 124 125
+JOIN 125 126
+JOIN 126 127
+JOIN 127 128
+JOIN 128 129
+JOIN 129 130
+JOIN 130 131
+JOIN 131 132
+JOIN 132 133
+JOIN 133 134
+JOIN 134 135
+JOIN 135 136
+JOIN 136 137
+JOIN 137 138
+JOIN 138 139
+JOIN 139 140
+JOIN 140 141
+JOIN 141 142
+JOIN 142 143
+JOIN 143 144
+JOIN 144 145
+JOIN 145 146
+JOIN 146 147
+JOIN 147 148
+JOIN 148 149
+JOIN 149 150
+JOIN 150 151
+JOIN 151 152
+JOIN 152 153
+JOIN 153 154
+JOIN 154 155
+JOIN 155 156
+JOIN 156 157
+JOIN 157 158
+JOIN 158 159
+JOIN 159 160
+JOIN 160 161
+JOIN 161 162
+JOIN 162 163
+JOIN 163 164
+JOIN 164 165
+JOIN 165 166
+JOIN 166 167
+JOIN 167 168
+JOIN 168 169
+JOIN 169 170
+JOIN 170 171
+JOIN 171 172
+JOIN 172 173
+JOIN 173 174
+JOIN 174 175
+JOIN 175 176
+JOIN 176 177
+JOIN 177 178
+JOIN 178 179
+JOIN 179 180
+JOIN 180 181
+JOIN 181 182
+JOIN 182 183
+JOIN 183 184
+JOIN 184 185
+JOIN 185 186
+JOIN 186 187
+JOIN 187 188
+JOIN 188 189
+JOIN 189 190
+JOIN 190 191
+JOIN 191 192
+JOIN 192 193
+JOIN 193 194
+JOIN 194 195
+JOIN 195 196
+JOIN 196 197
+JOIN 197 198
+JOIN 198 199
+JOIN 199 200
+JOIN 200 201
+JOIN 201 202
+JOIN 202 203
+JOIN 203 204
+JOIN 204 205
+JOIN 205 206
+JOIN 206 207
+JOIN 207 208
+JOIN 208 209
+JOIN 209 210
+JOIN 210 211
+JOIN 211 212
+JOIN 212 213
+JOIN 213 214
+JOIN 214 215
+JOIN 215 216
+JOIN 216 217
+JOIN 217 218
+JOIN 218 219
+JOIN 219 220
+JOIN 220 221
+JOIN 221 222
+JOIN 222 223
+JOIN 223 224
+JOIN 224 225
+JOIN 225 226
+JOIN 226 227
+JOIN 227 228
+JOIN 228 229
+JOIN 229 230
+JOIN 230 231
+JOIN 231 232
+JOIN 232 233
+JOIN 233 234
+JOIN 234 235
+JOIN 235 236
+JOIN 236 237
+JOIN 237 238
+JOIN 238 239
+JOIN 239 240
+JOIN 240 241
+JOIN 241 242
+JOIN 242 243
+JOIN 243 244
+JOIN 244 245
+JOIN 245 246
+JOIN 246 247
+JOIN 247 248
+JOIN 248 249
+JOIN 249 250
+JOIN 250 251
+JOIN 251 252
+JOIN 252 253
+JOIN 253 254
+JOIN 254 255
+JOIN 255 256
+JOIN 256 257
+JOIN 257 258
+JOIN 258 259
+JOIN 259 260
+JOIN 260 261
+JOIN 261 262
+JOIN 262 263
+JOIN 263 264
+JOIN 264 265
+JOIN 265 266
+JOIN 266 267
+JOIN 267 268
+JOIN 268 269
+JOIN 269 270
+JOIN 270 271
+JOIN 271 272
+JOIN 272 273
+JOIN 273 274
+JOIN 274 275
+JOIN 275 276
+JOIN 276 277
+JOIN 277 278
+JOIN 278 279
+JOIN 279 280
+JOIN 280 281
+JOIN 281 282
+JOIN 282 283
+JOIN 283 284
+JOIN 284 285
+JOIN 285 286
+JOIN 286 287
+JOIN 287 288
+JOIN 288 289
+JOIN 289 290
+JOIN 290 291
+JOIN 291 292
+JOIN 292 293
+JOIN 293 294
+JOIN 294 295
+JOIN 295 296
+JOIN 296 297
+JOIN 297 298
+JOIN 298 299
+JOIN 299 300
+JOIN 300 301
+JOIN 301 302
+JOIN 302 303
+JOIN 303 304
+JOIN 304 305
+JOIN 305 306
+JOIN 306 307
+JOIN 307 308
+JOIN 308 309
+JOIN 309 310
+JOIN 310 311
+JOIN 311 312
+JOIN 312 313
+JOIN 313 314
+JOIN 314 315
+JOIN 315 316
+JOIN 316 317
+JOIN 317 318
+JOIN 318 319
+JOIN 319 320
+JOIN 320 321
+JOIN 321 322
+JOIN 322 323
+JOIN 323 324
+JOIN 324 325
+JOIN 325 326
+JOIN 326 327
+JOIN 327 328
+JOIN 328 329
+JOIN 329 330
+JOIN 330 331
+JOIN 331 332
+JOIN 332 333
+JOIN 333 334
+JOIN 334 335
+JOIN 335 336
+JOIN 336 337
+JOIN 337 338
+JOIN 338 339
+JOIN 339 340
+JOIN 340 341
+JOIN 341 342
+JOIN 342 343
+JOIN 343 344
+JOIN 344 345
+JOIN 345 346
+JOIN 346 347
+JOIN 347 348
+JOIN 348 349
+JOIN 349 350
+JOIN 350 351
+JOIN 351 352
+JOIN 352 353
+JOIN 353 354
+JOIN 354 355
+JOIN 355 356
+JOIN 356 357
+JOIN 357 358
+JOIN 358 359
+JOIN 359 360
+JOIN 360 361
+JOIN 361 362
+JOIN 362 363
+JOIN 363 364
+JOIN 364 365
+JOIN 365 366
+JOIN 366 367
+JOIN 367 368
+JOIN 368 369
+JOIN 369 370
+JOIN 370 371
+JOIN 371 372
+JOIN 372 373
+JOIN 373 374
+JOIN 374 375
+JOIN 375 376
+JOIN 376 377
+JOIN 377 378
+JOIN 378 379
+JOIN 379 380
+JOIN 380 381
+JOIN 381 382
+JOIN 382 383
+JOIN 383 384
+JOIN 384 385
+JOIN 385 386
+JOIN 386 387
+JOIN 387 388
+JOIN 388 389
+JOIN 389 390
+JOIN 390 391
+JOIN 391 392
+JOIN 392 393
+JOIN 393 394
+JOIN 394 395
+JOIN 395 396
+JOIN 396 397
+JOIN 397 398
+JOIN 398 399
+JOIN 399 400
+JOIN 400 401
+JOIN 401 402
+JOIN 402 403
+JOIN 403 404
+JOIN 404 405
+JOIN 405 406
+JOIN 406 407
+JOIN 407 408
+JOIN 408 409
+JOIN 409 410
+JOIN 410 411
+JOIN 411 412
+JOIN 412 413
+JOIN 413 414
+JOIN 414 415
+JOIN 415 416
+JOIN 416 417
+JOIN 417 418
+JOIN 418 419
+JOIN 419 420
+JOIN 420 421
+JOIN 421 422
+JOIN 422 423
+JOIN 423 424
+JOIN 424 425
+JOIN 425 426
+JOIN 426 427
+JOIN 427 428
+JOIN 428 429
+JOIN 429 430
+JOIN 430 431
+JOIN 431 432
+JOIN 432 433
+JOIN 433 434
+JOIN 434 435
+JOIN 435 436
+JOIN 436 437
+JOIN 437 438
+JOIN 438 439
+JOIN 439 440
+JOIN 440 441
+JOIN 441 442
+JOIN 442 443
+JOIN 443 444
+JOIN 444 445
+JOIN 445 446
+JOIN 446 447
+JOIN 447 448
+JOIN 448 449
+JOIN 449 450
+JOIN 450 451
+JOIN 451 452
+JOIN 452 453
+JOIN 453 454
+JOIN 454 455
+JOIN 455 456
+JOIN 456 457
+JOIN 457 458
+JOIN 458 459
+JOIN 459 460
+JOIN 460 461
+JOIN 461 462
+JOIN 462 463
+JOIN 463 464
+JOIN 464 465
+JOIN 465 466
+JOIN 466 467
+JOIN 467 468
+JOIN 468 469
+JOIN 469 470
+JOIN 470 471
+JOIN 471 472
+JOIN 472 473
+JOIN 473 474
+JOIN 474 475
+JOIN 475 476
+JOIN 476 477
+JOIN 477 478
+JOIN 478 479
+JOIN 479 480
+JOIN 480 481
+JOIN 481 482
+JOIN 482 483
+JOIN 483 484
+JOIN 484 485
+JOIN 485 486
+JOIN 486 487
+JOIN 487 488
+JOIN 488 489
+JOIN 489 490
+JOIN 490 491
+JOIN 491 492
+JOIN 492 493
+JOIN 493 494
+JOIN 494 495
+JOIN 495 496
+JOIN 496 497
+JOIN 497 498
+JOIN 498 499
+JOIN 499 500
+JOIN 500 501
+JOIN 501 502
+JOIN 502 503
+JOIN 503 504
+JOIN 504 505
+JOIN 505 506
+JOIN 506 507
+JOIN 507 508
+JOIN 508 509
+JOIN 509 510
+JOIN 510 511
+JOIN 511 512
+JOIN 512 513
+JOIN 513 514
+JOIN 514 515
+JOIN 515 516
+JOIN 516 517
+JOIN 517 518
+JOIN 518 519
+JOIN 519 520
+JOIN 520 521
+JOIN 521 522
+JOIN 522 523
+JOIN 523 524
+JOIN 524 525
+JOIN 525 526
+JOIN 526 527
+JOIN 527 528
+JOIN 528 529
+JOIN 529 530
+JOIN 530 531
+JOIN 531 532
+JOIN 532 533
+JOIN 533 534
+JOIN 534 535
+JOIN 535 536
+JOIN 536 537
+JOIN 537 538
+JOIN 538 539
+JOIN 539 540
+JOIN 540 541
+JOIN 541 542
+JOIN 542 543
+JOIN 543 544
+JOIN 544 545
+JOIN 545 546
+JOIN 546 547
+JOIN 547 548
+JOIN 548 549
+JOIN 549 550
+JOIN 550 551
+JOIN 551 552
+JOIN 552 553
+JOIN 553 554
+JOIN 554 555
+JOIN 555 556
+JOIN 556 557
+JOIN 557 558
+JOIN 558 559
+JOIN 559 560
+JOIN 560 561
+JOIN 561 562
+JOIN 562 563
+JOIN 563 564
+JOIN 564 565
+JOIN 565 566
+JOIN 566 567
+JOIN 567 568
+JOIN 568 569
+JOIN 569 570
+JOIN 570 571
+JOIN 571 572
+JOIN 572 573
+JOIN 573 574
+JOIN 574 575
+JOIN 575 576
+JOIN 576 577
+JOIN 577 578
+JOIN 578 579
+JOIN 579 580
+JOIN 580 581
+JOIN 581 582
+JOIN 582 583
+JOIN 583 584
+JOIN 584 585
+JOIN 585 586
+JOIN 586 587
+JOIN 587 588
+JOIN 588 589
+JOIN 589 590
+JOIN 590 591
+JOIN 591 592
+JOIN 592 593
+JOIN 593 594
+JOIN 594 595
+JOIN 595 596
+JOIN 596 597
+JOIN 597 598
+JOIN 598 599
+JOIN 599 600
+JOIN 600 601
+JOIN 601 602
+JOIN 602 603
+JOIN 603 604
+JOIN 604 605
+JOIN 605 606
+JOIN 606 607
+JOIN 607 608
+JOIN 608 609
+JOIN 609 610
+JOIN 610 611
+JOIN 611 612
+JOIN 612 613
+JOIN 613 614
+JOIN 614 615
+JOIN 615 616
+JOIN 616 617
+JOIN 617 618
+JOIN 618 619
+JOIN 619 620
+JOIN 620 621
+JOIN 621 622
+JOIN 622 623
+JOIN 623 624
+JOIN 624 625
+JOIN 625 626
+JOIN 626 627
+JOIN 627 628
+JOIN 628 629
+JOIN 629 630
+JOIN 630 631
+JOIN 631 632
+JOIN 632 633
+JOIN 633 634
+JOIN 634 635
+JOIN 635 636
+JOIN 636 637
+JOIN 637 638
+JOIN 638 639
+JOIN 639 640
+JOIN 640 641
+JOIN 641 642
+JOIN 642 643
+JOIN 643 644
+JOIN 644 645
+JOIN 645 646
+JOIN 646 647
+JOIN 647 648
+JOIN 648 649
+JOIN 649 650
+JOIN 650 651
+JOIN 651 652
+JOIN 652 653
+JOIN 653 654
+JOIN 654 655
+JOIN 655 656
+JOIN 656 657
+JOIN 657 658
+JOIN 658 659
+JOIN 659 660
+JOIN 660 661
+JOIN 661 662
+JOIN 662 663
+JOIN 663 664
+JOIN 664 665
+JOIN 665 666
+JOIN 666 667
+JOIN 667 668
+JOIN 668 669
+JOIN 669 670
+JOIN 670 671
+JOIN 671 672
+JOIN 672 673
+JOIN 673 674
+JOIN 674 675
+JOIN 675 676
+JOIN 676 677
+JOIN 677 678
+JOIN 678 679
+JOIN 679 680
+JOIN 680 681
+JOIN 681 682
+JOIN 682 683
+JOIN 683 684
+JOIN 684 685
+JOIN 685 686
+JOIN 686 687
+JOIN 687 688
+JOIN 688 689
+JOIN 689 690
+JOIN 690 691
+JOIN 691 692
+JOIN 692 693
+JOIN 693 694
+JOIN 694 695
+JOIN 695 696
+JOIN 696 697
+JOIN 697 698
+JOIN 698 699
+JOIN 699 700
+JOIN 700 701
+JOIN 701 702
+JOIN 702 703
+JOIN 703 704
+JOIN 704 705
+JOIN 705 706
+JOIN 706 707
+JOIN 707 708
+JOIN 708 709
+JOIN 709 710
+JOIN 710 711
+JOIN 711 712
+JOIN 712 713
+JOIN 713 714
+JOIN 714 715
+JOIN 715 716
+JOIN 716 717
+JOIN 717 718
+JOIN 718 719
+JOIN 719 720
+JOIN 720 721
+JOIN 721 722
+JOIN 722 723
+JOIN 723 724
+JOIN 724 725
+JOIN 725 726
+JOIN 726 727
+JOIN 727 728
+JOIN 728 729
+JOIN 729 730
+JOIN 730 731
+JOIN 731 732
+JOIN 732 733
+JOIN 733 734
+JOIN 734 735
+JOIN 735 736
+JOIN 736 737
+JOIN 737 738
+JOIN 738 739
+JOIN 739 740
+JOIN 740 741
+JOIN 741 742
+JOIN 742 743
+JOIN 743 744
+JOIN 744 745
+JOIN 745 746
+JOIN 746 747
+JOIN 747 748
+JOIN 748 749
+JOIN 749 750
+JOIN 750 751
+JOIN 751 752
+JOIN 752 753
+JOIN 753 754
+JOIN 754 755
+JOIN 755 756
+JOIN 756 757
+JOIN 757 758
+JOIN 758 759
+JOIN 759 760
+JOIN 760 761
+JOIN 761 762
+JOIN 762 763
+JOIN 763 764
+JOIN 764 765
+JOIN 765 766
+JOIN 766 767
+JOIN 767 768
+JOIN 768 769
+JOIN 769 770
+JOIN 770 771
+JOIN 771 772
+JOIN 772 773
+JOIN 773 774
+JOIN 774 775
+JOIN 775 776
+JOIN 776 777
+JOIN 777 778
+JOIN 778 779
+JOIN 779 780
+JOIN 780 781
+JOIN 781 782
+JOIN 782 783
+JOIN 783 784
+JOIN 784 785
+JOIN 785 786
+JOIN 786 787
+JOIN 787 788
+JOIN 788 789
+JOIN 789 790
+JOIN 790 791
+JOIN 791 792
+JOIN 792 793
+JOIN 793 794
+JOIN 794 795
+JOIN 795 796
+JOIN 796 797
+JOIN 797 798
+JOIN 798 799
+JOIN 799 800
+JOIN 800 801
+JOIN 801 802
+JOIN 802 803
+JOIN 803 804
+JOIN 804 805
+JOIN 805 806
+JOIN 806 807
+JOIN 807 808
+JOIN 808 809
+JOIN 809 810
+JOIN 810 811
+JOIN 811 812
+JOIN 812 813
+JOIN 813 814
+JOIN 814 815
+JOIN 815 816
+JOIN 816 817
+JOIN 817 818
+JOIN 818 819
+JOIN 819 820
+JOIN 820 821
+JOIN 821 822
+JOIN 822 823
+JOIN 823 824
+JOIN 824 825
+JOIN 825 826
+JOIN 826 827
+JOIN 827 828
+JOIN 828 829
+JOIN 829 830
+JOIN 830 831
+JOIN 831 832
+JOIN 832 833
+JOIN 833 834
+JOIN 834 835
+JOIN 835 836
+JOIN 836 837
+JOIN 837 838
+JOIN 838 839
+JOIN 839 840
+JOIN 840 841
+JOIN 841 842
+JOIN 842 843
+JOIN 843 844
+JOIN 844 845
+JOIN 845 846
+JOIN 846 847
+JOIN 847 848
+JOIN 848 849
+JOIN 849 850
+JOIN 850 851
+JOIN 851 852
+JOIN 852 853
+JOIN 853 854
+JOIN 854 855
+JOIN 855 856
+JOIN 856 857
+JOIN 857 858
+JOIN 858 859
+JOIN 859 860
+JOIN 860 861
+JOIN 861 862
+JOIN 862 863
+JOIN 863 864
+JOIN 864 865
+JOIN 865 866
+JOIN 866 867
+JOIN 867 868
+JOIN 868 869
+JOIN 869 870
+JOIN 870 871
+JOIN 871 872
+JOIN 872 873
+JOIN 873 874
+JOIN 874 875
+JOIN 875 876
+JOIN 876 877
+JOIN 877 878
+JOIN 878 879
+JOIN 879 880
+JOIN 880 881
+JOIN 881 882
+JOIN 882 883
+JOIN 883 884
+JOIN 884 885
+JOIN 885 886
+JOIN 886 887
+JOIN 887 888
+JOIN 888 889
+JOIN 889 890
+JOIN 890 891
+JOIN 891 892
+JOIN 892 893
+JOIN 893 894
+JOIN 894 895
+JOIN 895 896
+JOIN 896 897
+JOIN 897 898
+JOIN 898 899
+JOIN 899 900
+JOIN 900 901
+JOIN 901 902
+JOIN 902 903
+JOIN 903 904
+JOIN 904 905
+JOIN 905 906
+JOIN 906 907
+JOIN 907 908
+JOIN 908 909
+JOIN 909 910
+JOIN 910 911
+JOIN 911 912
+JOIN 912 913
+JOIN 913 914
+JOIN 914 915
+JOIN 915 916
+JOIN 916 917
+JOIN 917 918
+JOIN 918 919
+JOIN 919 920
+JOIN 920 921
+JOIN 921 922
+JOIN 922 923
+JOIN 923 924
+JOIN 924 925
+JOIN 925 926
+JOIN 926 927
+JOIN 927 928
+JOIN 928 929
+JOIN 929 930
+JOIN 930 931
+JOIN 931 932
+JOIN 932 933
+JOIN 933 934
+JOIN 934 935
+JOIN 935 936
+JOIN 936 937
+JOIN 937 938
+JOIN 938 939
+JOIN 939 940
+JOIN 940 941
+JOIN 941 942
+JOIN 942 943
+JOIN 943 944
+JOIN 944 945
+JOIN 945 946
+JOIN 946 947
+JOIN 947 948
+JOIN 948 949
+JOIN 949 950
+JOIN 950 951
+JOIN 951 952
+JOIN 952 953
+JOIN 953 954
+JOIN 954 955
+JOIN 955 956
+JOIN 956 957
+JOIN 957 958
+JOIN 958 959
+JOIN 959 960
+JOIN 960 961
+JOIN 961 962
+JOIN 962 963
+JOIN 963 964
+JOIN 964 965
+JOIN 965 966
+JOIN 966 967
+JOIN 967 968
+JOIN 968 969
+JOIN 969 970
+JOIN 970 971
+JOIN 971 972
+JOIN 972 973
+JOIN 973 974
+JOIN 974 975
+JOIN 975 976
+JOIN 976 977
+JOIN 977 978
+JOIN 978 979
+JOIN 979 980
+JOIN 980 981
+JOIN 981 982
+JOIN 982 983
+JOIN 983 984
+JOIN 984 985
+JOIN 985 986
+JOIN 986 987
+JOIN 987 988
+JOIN 988 989
+JOIN 989 990
+JOIN 990 991
+JOIN 991 992
+JOIN 992 993
+JOIN 993 994
+JOIN 994 995
+JOIN 995 996
+JOIN 996 997
+JOIN 997 998
+JOIN 998 999
+JOIN 999 1000
+JOIN 1000 1001
+JOIN 1001 1002
+JOIN 1002 1003
+JOIN 1003 1004
+JOIN 1004 1005
+JOIN 1005 1006
+JOIN 1006 1007
+JOIN 1007 1008
+JOIN 1008 1009
+JOIN 1009 1010
+JOIN 1010 1011
+JOIN 1011 1012
+JOIN 1012 1013
+JOIN 1013 1014
+JOIN 1014 1015
+JOIN 1015 1016
+JOIN 1016 1017
+JOIN 1017 1018
+JOIN 1018 1019
+JOIN 1019 1020
+JOIN 1020 1021
+JOIN 1021 1022
+JOIN 1022 1023
+JOIN 1023 1024
+JOIN 1024 1025
+JOIN 1025 1026
+JOIN 1026 1027
+JOIN 1027 1028
+JOIN 1028 1029
+JOIN 1029 1030
+JOIN 1030 1031
+JOIN 1031 1032
+JOIN 1032 1033
+JOIN 1033 1034
+JOIN 1034 1035
+JOIN 1035 1036
+JOIN 1036 1037
+JOIN 1037 1038
+JOIN 1038 1039
+JOIN 1039 1040
+JOIN 1040 1041
+JOIN 1041 1042
+JOIN 1042 1043
+JOIN 1043 1044
+JOIN 1044 1045
+JOIN 1045 1046
+JOIN 1046 1047
+JOIN 1047 1048
+JOIN 1048 1049
+JOIN 1049 1050
+JOIN 1050 1051
+JOIN 1051 1052
+JOIN 1052 1053
+JOIN 1053 1054
+JOIN 1054 1055
+JOIN 1055 1056
+JOIN 1056 1057
+JOIN 1057 1058
+JOIN 1058 1059
+JOIN 1059 1060
+JOIN 1060 1061
+JOIN 1061 1062
+JOIN 1062 1063
+JOIN 1063 1064
+JOIN 1064 1065
+JOIN 1065 1066
+JOIN 1066 1067
+JOIN 1067 1068
+JOIN 1068 1069
+JOIN 1069 1070
+JOIN 1070 1071
+JOIN 1071 1072
+JOIN 1072 1073
+JOIN 1073 1074
+JOIN 1074 1075
+JOIN 1075 1076
+JOIN 1076 1077
+JOIN 1077 1078
+JOIN 1078 1079
+JOIN 1079 1080
+JOIN 1080 1081
+JOIN 1081 1082
+JOIN 1082 1083
+JOIN 1083 1084
+JOIN 1084 1085
+JOIN 1085 1086
+JOIN 1086 1087
+JOIN 1087 1088
+JOIN 1088 1089
+JOIN 1089 1090
+JOIN 1090 1091
+JOIN 1091 1092
+JOIN 1092 1093
+JOIN 1093 1094
+JOIN 1094 1095
+JOIN 1095 1096
+JOIN 1096 1097
+JOIN 1097 1098
+JOIN 1098 1099
+JOIN 1099 1100
+JOIN 1100 1101
+JOIN 1101 1102
+JOIN 1102 1103
+JOIN 1103 1104
+JOIN 1104 1105
+JOIN 1105 1106
+JOIN 1106 1107
+JOIN 1107 1108
+JOIN 1108 1109
+JOIN 1109 1110
+JOIN 1110 1111
+JOIN 1111 1112
+JOIN 1112 1113
+JOIN 1113 1114
+JOIN 1114 1115
+JOIN 1115 1116
+JOIN 1116 1117
+JOIN 1117 1118
+JOIN 1118 1119
+JOIN 1119 1120
+JOIN 1120 1121
+JOIN 1121 1122
+JOIN 1122 1123
+JOIN 1123 1124
+JOIN 1124 1125
+JOIN 1125 1126
+JOIN 1126 1127
+JOIN 1127 1128
+JOIN 1128 1129
+JOIN 1129 1130
+JOIN 1130 1131
+JOIN 1131 1132
+JOIN 1132 1133
+JOIN 1133 1134
+JOIN 1134 1135
+JOIN 1135 1136
+JOIN 1136 1137
+JOIN 1137 1138
+JOIN 1138 1139
+JOIN 1139 1140
+JOIN 1140 1141
+JOIN 1141 1142
+JOIN 1142 1143
+JOIN 1143 1144
+JOIN 1144 1145
+JOIN 1145 1146
+JOIN 1146 1147
+JOIN 1147 1148
+JOIN 1148 1149
+JOIN 1149 1150
+JOIN 1150 1151
+JOIN 1151 1152
+JOIN 1152 1153
+JOIN 1153 1154
+JOIN 1154 1155
+JOIN 1155 1156
+JOIN 1156 1157
+JOIN 1157 1158
+JOIN 1158 1159
+JOIN 1159 1160
+JOIN 1160 1161
+JOIN 1161 1162
+JOIN 1162 1163
+JOIN 1163 1164
+JOIN 1164 1165
+JOIN 1165 1166
+JOIN 1166 1167
+JOIN 1167 1168
+JOIN 1168 1169
+JOIN 1169 1170
+JOIN 1170 1171
+JOIN 1171 1172
+JOIN 1172 1173
+JOIN 1173 1174
+JOIN 1174 1175
+JOIN 1175 1176
+JOIN 1176 1177
+JOIN 1177 1178
+JOIN 1178 1179
+JOIN 1179 1180
+JOIN 1180 1181
+JOIN 1181 1182
+JOIN 1182 1183
+JOIN 1183 1184
+JOIN 1184 1185
+JOIN 1185 1186
+JOIN 1186 1187
+JOIN 1187 1188
+JOIN 1188 1189
+JOIN 1189 1190
+JOIN 1190 1191
+JOIN 1191 1192
+JOIN 1192 1193
+JOIN 1193 1194
+JOIN 1194 1195
+JOIN 1195 1196
+JOIN 1196 1197
+JOIN 1197 1198
+JOIN 1198 1199
+JOIN 1199 1200
+JOIN 1200 1201
+JOIN 1201 1202
+JOIN 1202 1203
+JOIN 1203 1204
+JOIN 1204 1205
+JOIN 1205 1206
+JOIN 1206 1207
+JOIN 1207 1208
+JOIN 1208 1209
+JOIN 1209 1210
+JOIN 1210 1211
+JOIN 1211 1212
+JOIN 1212 1213
+JOIN 1213 1214
+JOIN 1214 1215
+JOIN 1215 1216
+JOIN 1216 1217
+JOIN 1217 1218
+JOIN 1218 1219
+JOIN 1219 1220
+JOIN 1220 1221
+JOIN 1221 1222
+JOIN 1222 1223
+JOIN 1223 1224
+JOIN 1224 1225
+JOIN 1225 1226
+JOIN 1226 1227
+JOIN 1227 1228
+JOIN 1228 1229
+JOIN 1229 1230
+JOIN 1230 1231
+JOIN 1231 1232
+JOIN 1232 1233
+JOIN 1233 1234
+JOIN 1234 1235
+JOIN 1235 1236
+JOIN 1236 1237
+JOIN 1237 1238
+JOIN 1238 1239
+JOIN 1239 1240
+JOIN 1240 1241
+JOIN 1241 1242
+JOIN 1242 1243
+JOIN 1243 1244
+JOIN 1244 1245
+JOIN 1245 1246
+JOIN 1246 1247
+JOIN 1247 1248
+JOIN 1248 1249
+JOIN 1249 1250
+JOIN 1250 1251
+JOIN 1251 1252
+JOIN 1252 1253
+JOIN 1253 1254
+JOIN 1254 1255
+JOIN 1255 1256
+JOIN 1256 1257
+JOIN 1257 1258
+JOIN 1258 1259
+JOIN 1259 1260
+JOIN 1260 1261
+JOIN 1261 1262
+JOIN 1262 1263
+JOIN 1263 1264
+JOIN 1264 1265
+JOIN 1265 1266
+JOIN 1266 1267
+JOIN 1267 1268
+JOIN 1268 1269
+JOIN 1269 1270
+JOIN 1270 1271
+JOIN 1271 1272
+JOIN 1272 1273
+JOIN 1273 1274
+JOIN 1274 1275
+JOIN 1275 1276
+JOIN 1276 1277
+JOIN 1277 1278
+JOIN 1278 1279
+JOIN 1279 1280
+JOIN 1280 1281
+JOIN 1281 1282
+JOIN 1282 1283
+JOIN 1283 1284
+JOIN 1284 1285
+JOIN 1285 1286
+JOIN 1286 1287
+JOIN 1287 1288
+JOIN 1288 1289
+JOIN 1289 1290
+JOIN 1290 1291
+JOIN 1291 1292
+JOIN 1292 1293
+JOIN 1293 1294
+JOIN 1294 1295
+JOIN 1295 1296
+JOIN 1296 1297
+JOIN 1297 1298
+JOIN 1298 1299
+JOIN 1299 1300
+JOIN 1300 1301
+JOIN 1301 1302
+JOIN 1302 1303
+JOIN 1303 1304
+JOIN 1304 1305
+JOIN 1305 1306
+JOIN 1306 1307
+JOIN 1307 1308
+JOIN 1308 1309
+JOIN 1309 1310
+JOIN 1310 1311
+JOIN 1311 1312
+JOIN 1312 1313
+JOIN 1313 1314
+JOIN 1314 1315
+JOIN 1315 1316
+JOIN 1316 1317
+JOIN 1317 1318
+JOIN 1318 1319
+JOIN 1319 1320
+JOIN 1320 1321
+JOIN 1321 1322
+JOIN 1322 1323
+JOIN 1323 1324
+JOIN 1324 1325
+JOIN 1325 1326
+JOIN 1326 1327
+JOIN 1327 1328
+JOIN 1328 1329
+JOIN 1329 1330
+JOIN 1330 1331
+JOIN 1331 1332
+JOIN 1332 1333
+JOIN 1333 1334
+JOIN 1334 1335
+JOIN 1335 1336
+JOIN 1336 1337
+JOIN 1337 1338
+JOIN 1338 1339
+JOIN 1339 1340
+JOIN 1340 1341
+JOIN 1341 1342
+JOIN 1342 1343
+JOIN 1343 1344
+JOIN 1344 1345
+JOIN 1345 1346
+JOIN 1346 1347
+JOIN 1347 1348
+JOIN 1348 1349
+JOIN 1349 1350
+JOIN 1350 1351
+JOIN 1351 1352
+JOIN 1352 1353
+JOIN 1353 1354
+JOIN 1354 1355
+JOIN 1355 1356
+JOIN 1356 1357
+JOIN 1357 1358
+JOIN 1358 1359
+JOIN 1359 1360
+JOIN 1360 1361
+JOIN 1361 1362
+JOIN 1362 1363
+JOIN 1363 1364
+JOIN 1364 1365
+JOIN 1365 1366
+JOIN 1366 1367
+JOIN 1367 1368
+JOIN 1368 1369
+JOIN 1369 1370
+JOIN 1370 1371
+JOIN 1371 1372
+JOIN 1372 1373
+JOIN 1373 1374
+JOIN 1374 1375
+JOIN 1375 1376
+JOIN 1376 1377
+JOIN 1377 1378
+JOIN 1378 1379
+JOIN 1379 1380
+JOIN 1380 1381
+JOIN 1381 1382
+JOIN 1382 1383
+JOIN 1383 1384
+JOIN 1384 1385
+JOIN 1385 1386
+JOIN 1386 1387
+JOIN 1387 1388
+JOIN 1388 1389
+JOIN 1389 1390
+JOIN 1390 1391
+JOIN 1391 1392
+JOIN 1392 1393
+JOIN 1393 1394
+JOIN 1394 1395
+JOIN 1395 1396
+JOIN 1396 1397
+JOIN 1397 1398
+JOIN 1398 1399
+JOIN 1399 1400
+JOIN 1400 1401
+JOIN 1401 1402
+JOIN 1402 1403
+JOIN 1403 1404
+JOIN 1404 1405
+JOIN 1405 1406
+JOIN 1406 1407
+JOIN 1407 1408
+JOIN 1408 1409
+JOIN 1409 1410
+JOIN 1410 1411
+JOIN 1411 1412
+JOIN 1412 1413
+JOIN 1413 1414
+JOIN 1414 1415
+JOIN 1415 1416
+JOIN 1416 1417
+JOIN 1417 1418
+JOIN 1418 1419
+JOIN 1419 1420
+JOIN 1420 1421
+JOIN 1421 1422
+JOIN 1422 1423
+JOIN 1423 1424
+JOIN 1424 1425
+JOIN 1425 1426
+JOIN 1426 1427
+JOIN 1427 1428
+JOIN 1428 1429
+JOIN 1429 1430
+JOIN 1430 1431
+JOIN 1431 1432
+JOIN 1432 1433
+JOIN 1433 1434
+JOIN 1434 1435
+JOIN 1435 1436
+JOIN 1436 1437
+JOIN 1437 1438
+JOIN 1438 1439
+JOIN 1439 1440
+JOIN 1440 1441
+JOIN 1441 1442
+JOIN 1442 1443
+JOIN 1443 1444
+JOIN 1444 1445
+JOIN 1445 1446
+JOIN 1446 1447
+JOIN 1447 1448
+JOIN 1448 1449
+JOIN 1449 1450
+JOIN 1450 1451
+JOIN 1451 1452
+JOIN 1452 1453
+JOIN 1453 1454
+JOIN 1454 1455
+JOIN 1455 1456
+JOIN 1456 1457
+JOIN 1457 1458
+JOIN 1458 1459
+JOIN 1459 1460
+JOIN 1460 1461
+JOIN 1461 1462
+JOIN 1462 1463
+JOIN 1463 1464
+JOIN 1464 1465
+JOIN 1465 1466
+JOIN 1466 1467
+JOIN 1467 1468
+JOIN 1468 1469
+JOIN 1469 1470
+JOIN 1470 1471
+JOIN 1471 1472
+JOIN 1472 1473
+JOIN 1473 1474
+JOIN 1474 1475
+JOIN 1475 1476
+JOIN 1476 1477
+JOIN 1477 1478
+JOIN 1478 1479
+JOIN 1479 1480
+JOIN 1480 1481
+JOIN 1481 1482
+JOIN 1482 1483
+JOIN 1483 1484
+JOIN 1484 1485
+JOIN 1485 1486
+JOIN 1486 1487
+JOIN 1487 1488
+JOIN 1488 1489
+JOIN 1489 1490
+JOIN 1490 1491
+JOIN 1491 1492
+JOIN 1492 1493
+JOIN 1493 1494
+JOIN 1494 1495
+JOIN 1495 1496
+JOIN 1496 1497
+JOIN 1497 1498
+JOIN 1498 1499
+JOIN 1499 1500
+JOIN 1501 1500
+JOIN 1502 1501
+JOIN 1503 1502
+JOIN 1504 1503
+JOIN 1505 1504
+JOIN 1506 1505
+JOIN 1507 1506
+JOIN 1508 1507
+JOIN 1509 1508
+JOIN 1510 1509
+JOIN 1511 1510
+JOIN 1512 1511
+JOIN 1513 1512
+JOIN 1514 1513
+JOIN 1515 1514
+JOIN 1516 1515
+JOIN 1517 1516
+JOIN 1518 1517
+JOIN 1519 1518
+JOIN 1520 1519
+JOIN 1521 1520
+JOIN 1522 1521
+JOIN 1523 1522
+JOIN 1524 1523
+JOIN 1525 1524
+JOIN 1526 1525
+JOIN 1527 1526
+JOIN 1528 1527
+JOIN 1529 1528
+JOIN 1530 1529
+JOIN 1531 1530
+JOIN 1532 1531
+JOIN 1533 1532
+JOIN 1534 1533
+JOIN 1535 1534
+JOIN 1536 1535
+JOIN 1537 1536
+JOIN 1538 1537
+JOIN 1539 1538
+JOIN 1540 1539
+JOIN 1541 1540
+JOIN 1542 1541
+JOIN 1543 1542
+JOIN 1544 1543
+JOIN 1545 1544
+JOIN 1546 1545
+JOIN 1547 1546
+JOIN 1548 1547
+JOIN 1549 1548
+JOIN 1550 1549
+JOIN 1551 1550
+JOIN 1552 1551
+JOIN 1553 1552
+JOIN 1554 1553
+JOIN 1555 1554
+JOIN 1556 1555
+JOIN 1557 1556
+JOIN 1558 1557
+JOIN 1559 1558
+JOIN 1560 1559
+JOIN 1561 1560
+JOIN 1562 1561
+JOIN 1563 1562
+JOIN 1564 1563
+JOIN 1565 1564
+JOIN 1566 1565
+JOIN 1567 1566
+JOIN 1568 1567
+JOIN 1569 1568
+JOIN 1570 1569
+JOIN 1571 1570
+JOIN 1572 1571
+JOIN 1573 1572
+JOIN 1574 1573
+JOIN 1575 1574
+JOIN 1576 1575
+JOIN 1577 1576
+JOIN 1578 1577
+JOIN 1579 1578
+JOIN 1580 1579
+JOIN 1581 1580
+JOIN 1582 1581
+JOIN 1583 1582
+JOIN 1584 1583
+JOIN 1585 1584
+JOIN 1586 1585
+JOIN 1587 1586
+JOIN 1588 1587
+JOIN 1589 1588
+JOIN 1590 1589
+JOIN 1591 1590
+JOIN 1592 1591
+JOIN 1593 1592
+JOIN 1594 1593
+JOIN 1595 1594
+JOIN 1596 1595
+JOIN 1597 1596
+JOIN 1598 1597
+JOIN 1599 1598
+JOIN 1600 1599
+JOIN 1601 1600
+JOIN 1602 1601
+JOIN 1603 1602
+JOIN 1604 1603
+JOIN 1605 1604
+JOIN 1606 1605
+JOIN 1607 1606
+JOIN 1608 1607
+JOIN 1609 1608
+JOIN 1610 1609
+JOIN 1611 1610
+JOIN 1612 1611
+JOIN 1613 1612
+JOIN 1614 1613
+JOIN 1615 1614
+JOIN 1616 1615
+JOIN 1617 1616
+JOIN 1618 1617
+JOIN 1619 1618
+JOIN 1620 1619
+JOIN 1621 1620
+JOIN 1622 1621
+JOIN 1623 1622
+JOIN 1624 1623
+JOIN 1625 1624
+JOIN 1626 1625
+JOIN 1627 1626
+JOIN 1628 1627
+JOIN 1629 1628
+JOIN 1630 1629
+JOIN 1631 1630
+JOIN 1632 1631
+JOIN 1633 1632
+JOIN 1634 1633
+JOIN 1635 1634
+JOIN 1636 1635
+JOIN 1637 1636
+JOIN 1638 1637
+JOIN 1639 1638
+JOIN 1640 1639
+JOIN 1641 1640
+JOIN 1642 1641
+JOIN 1643 1642
+JOIN 1644 1643
+JOIN 1645 1644
+JOIN 1646 1645
+JOIN 1647 1646
+JOIN 1648 1647
+JOIN 1649 1648
+JOIN 1650 1649
+JOIN 1651 1650
+JOIN 1652 1651
+JOIN 1653 1652
+JOIN 1654 1653
+JOIN 1655 1654
+JOIN 1656 1655
+JOIN 1657 1656
+JOIN 1658 1657
+JOIN 1659 1658
+JOIN 1660 1659
+JOIN 1661 1660
+JOIN 1662 1661
+JOIN 1663 1662
+JOIN 1664 1663
+JOIN 1665 1664
+JOIN 1666 1665
+JOIN 1667 1666
+JOIN 1668 1667
+JOIN 1669 1668
+JOIN 1670 1669
+JOIN 1671 1670
+JOIN 1672 1671
+JOIN 1673 1672
+JOIN 1674 1673
+JOIN 1675 1674
+JOIN 1676 1675
+JOIN 1677 1676
+JOIN 1678 1677
+JOIN 1679 1678
+JOIN 1680 1679
+JOIN 1681 1680
+JOIN 1682 1681
+JOIN 1683 1682
+JOIN 1684 1683
+JOIN 1685 1684
+JOIN 1686 1685
+JOIN 1687 1686
+JOIN 1688 1687
+JOIN 1689 1688
+JOIN 1690 1689
+JOIN 1691 1690
+JOIN 1692 1691
+JOIN 1693 1692
+JOIN 1694 1693
+JOIN 1695 1694
+JOIN 1696 1695
+JOIN 1697 1696
+JOIN 1698 1697
+JOIN 1699 1698
+JOIN 1700 1699
+JOIN 1701 1700
+JOIN 1702 1701
+JOIN 1703 1702
+JOIN 1704 1703
+JOIN 1705 1704
+JOIN 1706 1705
+JOIN 1707 1706
+JOIN 1708 1707
+JOIN 1709 1708
+JOIN 1710 1709
+JOIN 1711 1710
+JOIN 1712 1711
+JOIN 1713 1712
+JOIN 1714 1713
+JOIN 1715 1714
+JOIN 1716 1715
+JOIN 1717 1716
+JOIN 1718 1717
+JOIN 1719 1718
+JOIN 1720 1719
+JOIN 1721 1720
+JOIN 1722 1721
+JOIN 1723 1722
+JOIN 1724 1723
+JOIN 1725 1724
+JOIN 1726 1725
+JOIN 1727 1726
+JOIN 1728 1727
+JOIN 1729 1728
+JOIN 1730 1729
+JOIN 1731 1730
+JOIN 1732 1731
+JOIN 1733 1732
+JOIN 1734 1733
+JOIN 1735 1734
+JOIN 1736 1735
+JOIN 1737 1736
+JOIN 1738 1737
+JOIN 1739 1738
+JOIN 1740 1739
+JOIN 1741 1740
+JOIN 1742 1741
+JOIN 1743 1742
+JOIN 1744 1743
+JOIN 1745 1744
+JOIN 1746 1745
+JOIN 1747 1746
+JOIN 1748 1747
+JOIN 1749 1748
+JOIN 1750 1749
+JOIN 1751 1750
+JOIN 1752 1751
+JOIN 1753 1752
+JOIN 1754 1753
+JOIN 1755 1754
+JOIN 1756 1755
+JOIN 1757 1756
+JOIN 1758 1757
+JOIN 1759 1758
+JOIN 1760 1759
+JOIN 1761 1760
+JOIN 1762 1761
+JOIN 1763 1762
+JOIN 1764 1763
+JOIN 1765 1764
+JOIN 1766 1765
+JOIN 1767 1766
+JOIN 1768 1767
+JOIN 1769 1768
+JOIN 1770 1769
+JOIN 1771 1770
+JOIN 1772 1771
+JOIN 1773 1772
+JOIN 1774 1773
+JOIN 1775 1774
+JOIN 1776 1775
+JOIN 1777 1776
+JOIN 1778 1777
+JOIN 1779 1778
+JOIN 1780 1779
+JOIN 1781 1780
+JOIN 1782 1781
+JOIN 1783 1782
+JOIN 1784 1783
+JOIN 1785 1784
+JOIN 1786 1785
+JOIN 1787 1786
+JOIN 1788 1787
+JOIN 1789 1788
+JOIN 1790 1789
+JOIN 1791 1790
+JOIN 1792 1791
+JOIN 1793 1792
+JOIN 1794 1793
+JOIN 1795 1794
+JOIN 1796 1795
+JOIN 1797 1796
+JOIN 1798 1797
+JOIN 1799 1798
+JOIN 1800 1799
+JOIN 1801 1800
+JOIN 1802 1801
+JOIN 1803 1802
+JOIN 1804 1803
+JOIN 1805 1804
+JOIN 1806 1805
+JOIN 1807 1806
+JOIN 1808 1807
+JOIN 1809 1808
+JOIN 1810 1809
+JOIN 1811 1810
+JOIN 1812 1811
+JOIN 1813 1812
+JOIN 1814 1813
+JOIN 1815 1814
+JOIN 1816 1815
+JOIN 1817 1816
+JOIN 1818 1817
+JOIN 1819 1818
+JOIN 1820 1819
+JOIN 1821 1820
+JOIN 1822 1821
+JOIN 1823 1822
+JOIN 1824 1823
+JOIN 1825 1824
+JOIN 1826 1825
+JOIN 1827 1826
+JOIN 1828 1827
+JOIN 1829 1828
+JOIN 1830 1829
+JOIN 1831 1830
+JOIN 1832 1831
+JOIN 1833 1832
+JOIN 1834 1833
+JOIN 1835 1834
+JOIN 1836 1835
+JOIN 1837 1836
+JOIN 1838 1837
+JOIN 1839 1838
+JOIN 1840 1839
+JOIN 1841 1840
+JOIN 1842 1841
+JOIN 1843 1842
+JOIN 1844 1843
+JOIN 1845 1844
+JOIN 1846 1845
+JOIN 1847 1846
+JOIN 1848 1847
+JOIN 1849 1848
+JOIN 1850 1849
+JOIN 1851 1850
+JOIN 1852 1851
+JOIN 1853 1852
+JOIN 1854 1853
+JOIN 1855 1854
+JOIN 1856 1855
+JOIN 1857 1856
+JOIN 1858 1857
+JOIN 1859 1858
+JOIN 1860 1859
+JOIN 1861 1860
+JOIN 1862 1861
+JOIN 1863 1862
+JOIN 1864 1863
+JOIN 1865 1864
+JOIN 1866 1865
+JOIN 1867 1866
+JOIN 1868 1867
+JOIN 1869 1868
+JOIN 1870 1869
+JOIN 1871 1870
+JOIN 1872 1871
+JOIN 1873 1872
+JOIN 1874 1873
+JOIN 1875 1874
+JOIN 1876 1875
+JOIN 1877 1876
+JOIN 1878 1877
+JOIN 1879 1878
+JOIN 1880 1879
+JOIN 1881 1880
+JOIN 1882 1881
+JOIN 1883 1882
+JOIN 1884 1883
+JOIN 1885 1884
+JOIN 1886 1885
+JOIN 1887 1886
+JOIN 1888 1887
+JOIN 1889 1888
+JOIN 1890 1889
+JOIN 1891 1890
+JOIN 1892 1891
+JOIN 1893 1892
+JOIN 1894 1893
+JOIN 1895 1894
+JOIN 1896 1895
+JOIN 1897 1896
+JOIN 1898 1897
+JOIN 1899 1898
+JOIN 1900 1899
+JOIN 1901 1900
+JOIN 1902 1901
+JOIN 1903 1902
+JOIN 1904 1903
+JOIN 1905 1904
+JOIN 1906 1905
+JOIN 1907 1906
+JOIN 1908 1907
+JOIN 1909 1908
+JOIN 1910 1909
+JOIN 1911 1910
+JOIN 1912 1911
+JOIN 1913 1912
+JOIN 1914 1913
+JOIN 1915 1914
+JOIN 1916 1915
+JOIN 1917 1916
+JOIN 1918 1917
+JOIN 1919 1918
+JOIN 1920 1919
+JOIN 1921 1920
+JOIN 1922 1921
+JOIN 1923 1922
+JOIN 1924 1923
+JOIN 1925 1924
+JOIN 1926 1925
+JOIN 1927 1926
+JOIN 1928 1927
+JOIN 1929 1928
+JOIN 1930 1929
+JOIN 1931 1930
+JOIN 1932 1931
+JOIN 1933 1932
+JOIN 1934 1933
+JOIN 1935 1934
+JOIN 1936 1935
+JOIN 1937 1936
+JOIN 1938 1937
+JOIN 1939 1938
+JOIN 1940 1939
+JOIN 1941 1940
+JOIN 1942 1941
+JOIN 1943 1942
+JOIN 1944 1943
+JOIN 1945 1944
+JOIN 1946 1945
+JOIN 1947 1946
+JOIN 1948 1947
+JOIN 1949 1948
+JOIN 1950 1949
+JOIN 1951 1950
+JOIN 1952 1951
+JOIN 1953 1952
+JOIN 1954 1953
+JOIN 1955 1954
+JOIN 1956 1955
+JOIN 1957 1956
+JOIN 1958 1957
+JOIN 1959 1958
+JOIN 1960 1959
+JOIN 1961 1960
+JOIN 1962 1961
+JOIN 1963 1962
+JOIN 1964 1963
+JOIN 1965 1964
+JOIN 1966 1965
+JOIN 1967 1966
+JOIN 1968 1967
+JOIN 1969 1968
+JOIN 1970 1969
+JOIN 1971 1970
+JOIN 1972 1971
+JOIN 1973 1972
+JOIN 1974 1973
+JOIN 1975 1974
+JOIN 1976 1975
+JOIN 1977 1976
+JOIN 1978 1977
+JOIN 1979 1978
+JOIN 1980 1979
+JOIN 1981 1980
+JOIN 1982 1981
+JOIN 1983 1982
+JOIN 1984 1983
+JOIN 1985 1984
+JOIN 1986 1985
+JOIN 1987 1986
+JOIN 1988 1987
+JOIN 1989 1988
+JOIN 1990 1989
+JOIN 1991 1990
+JOIN 1992 1991
+JOIN 1993 1992
+JOIN 1994 1993
+JOIN 1995 1994
+JOIN 1996 1995
+JOIN 1997 1996
+JOIN 1998 1997
+JOIN 1999 1998
+JOIN 2000 1999
+JOIN 2001 2000
+JOIN 2002 2001
+JOIN 2003 2002
+JOIN 2004 2003
+JOIN 2005 2004
+JOIN 2006 2005
+JOIN 2007 2006
+JOIN 2008 2007
+JOIN 2009 2008
+JOIN 2010 2009
+JOIN 2011 2010
+JOIN 2012 2011
+JOIN 2013 2012
+JOIN 2014 2013
+JOIN 2015 2014
+JOIN 2016 2015
+JOIN 2017 2016
+JOIN 2018 2017
+JOIN 2019 2018
+JOIN 2020 2019
+JOIN 2021 2020
+JOIN 2022 2021
+JOIN 2023 2022
+JOIN 2024 2023
+JOIN 2025 2024
+JOIN 2026 2025
+JOIN 2027 2026
+JOIN 2028 2027
+JOIN 2029 2028
+JOIN 2030 2029
+JOIN 2031 2030
+JOIN 2032 2031
+JOIN 2033 2032
+JOIN 2034 2033
+JOIN 2035 2034
+JOIN 2036 2035
+JOIN 2037 2036
+JOIN 2038 2037
+JOIN 2039 2038
+JOIN 2040 2039
+JOIN 2041 2040
+JOIN 2042 2041
+JOIN 2043 2042
+JOIN 2044 2043
+JOIN 2045 2044
+JOIN 2046 2045
+JOIN 2047 2046
+JOIN 2048 2047
+JOIN 2049 2048
+JOIN 2050 2049
+JOIN 2051 2050
+JOIN 2052 2051
+JOIN 2053 2052
+JOIN 2054 2053
+JOIN 2055 2054
+JOIN 2056 2055
+JOIN 2057 2056
+JOIN 2058 2057
+JOIN 2059 2058
+JOIN 2060 2059
+JOIN 2061 2060
+JOIN 2062 2061
+JOIN 2063 2062
+JOIN 2064 2063
+JOIN 2065 2064
+JOIN 2066 2065
+JOIN 2067 2066
+JOIN 2068 2067
+JOIN 2069 2068
+JOIN 2070 2069
+JOIN 2071 2070
+JOIN 2072 2071
+JOIN 2073 2072
+JOIN 2074 2073
+JOIN 2075 2074
+JOIN 2076 2075
+JOIN 2077 2076
+JOIN 2078 2077
+JOIN 2079 2078
+JOIN 2080 2079
+JOIN 2081 2080
+JOIN 2082 2081
+JOIN 2083 2082
+JOIN 2084 2083
+JOIN 2085 2084
+JOIN 2086 2085
+JOIN 2087 2086
+JOIN 2088 2087
+JOIN 2089 2088
+JOIN 2090 2089
+JOIN 2091 2090
+JOIN 2092 2091
+JOIN 2093 2092
+JOIN 2094 2093
+JOIN 2095 2094
+JOIN 2096 2095
+JOIN 2097 2096
+JOIN 2098 2097
+JOIN 2099 2098
+JOIN 2100 2099
+JOIN 2101 2100
+JOIN 2102 2101
+JOIN 2103 2102
+JOIN 2104 2103
+JOIN 2105 2104
+JOIN 2106 2105
+JOIN 2107 2106
+JOIN 2108 2107
+JOIN 2109 2108
+JOIN 2110 2109
+JOIN 2111 2110
+JOIN 2112 2111
+JOIN 2113 2112
+JOIN 2114 2113
+JOIN 2115 2114
+JOIN 2116 2115
+JOIN 2117 2116
+JOIN 2118 2117
+JOIN 2119 2118
+JOIN 2120 2119
+JOIN 2121 2120
+JOIN 2122 2121
+JOIN 2123 2122
+JOIN 2124 2123
+JOIN 2125 2124
+JOIN 2126 2125
+JOIN 2127 2126
+JOIN 2128 2127
+JOIN 2129 2128
+JOIN 2130 2129
+JOIN 2131 2130
+JOIN 2132 2131
+JOIN 2133 2132
+JOIN 2134 2133
+JOIN 2135 2134
+JOIN 2136 2135
+JOIN 2137 2136
+JOIN 2138 2137
+JOIN 2139 2138
+JOIN 2140 2139
+JOIN 2141 2140
+JOIN 2142 2141
+JOIN 2143 2142
+JOIN 2144 2143
+JOIN 2145 2144
+JOIN 2146 2145
+JOIN 2147 2146
+JOIN 2148 2147
+JOIN 2149 2148
+JOIN 2150 2149
+JOIN 2151 2150
+JOIN 2152 2151
+JOIN 2153 2152
+JOIN 2154 2153
+JOIN 2155 2154
+JOIN 2156 2155
+JOIN 2157 2156
+JOIN 2158 2157
+JOIN 2159 2158
+JOIN 2160 2159
+JOIN 2161 2160
+JOIN 2162 2161
+JOIN 2163 2162
+JOIN 2164 2163
+JOIN 2165 2164
+JOIN 2166 2165
+JOIN 2167 2166
+JOIN 2168 2167
+JOIN 2169 2168
+JOIN 2170 2169
+JOIN 2171 2170
+JOIN 2172 2171
+JOIN 2173 2172
+JOIN 2174 2173
+JOIN 2175 2174
+JOIN 2176 2175
+JOIN 2177 2176
+JOIN 2178 2177
+JOIN 2179 2178
+JOIN 2180 2179
+JOIN 2181 2180
+JOIN 2182 2181
+JOIN 2183 2182
+JOIN 2184 2183
+JOIN 2185 2184
+JOIN 2186 2185
+JOIN 2187 2186
+JOIN 2188 2187
+JOIN 2189 2188
+JOIN 2190 2189
+JOIN 2191 2190
+JOIN 2192 2191
+JOIN 2193 2192
+JOIN 2194 2193
+JOIN 2195 2194
+JOIN 2196 2195
+JOIN 2197 2196
+JOIN 2198 2197
+JOIN 2199 2198
+JOIN 2200 2199
+JOIN 2201 2200
+JOIN 2202 2201
+JOIN 2203 2202
+JOIN 2204 2203
+JOIN 2205 2204
+JOIN 2206 2205
+JOIN 2207 2206
+JOIN 2208 2207
+JOIN 2209 2208
+JOIN 2210 2209
+JOIN 2211 2210
+JOIN 2212 2211
+JOIN 2213 2212
+JOIN 2214 2213
+JOIN 2215 2214
+JOIN 2216 2215
+JOIN 2217 2216
+JOIN 2218 2217
+JOIN 2219 2218
+JOIN 2220 2219
+JOIN 2221 2220
+JOIN 2222 2221
+JOIN 2223 2222
+JOIN 2224 2223
+JOIN 2225 2224
+JOIN 2226 2225
+JOIN 2227 2226
+JOIN 2228 2227
+JOIN 2229 2228
+JOIN 2230 2229
+JOIN 2231 2230
+JOIN 2232 2231
+JOIN 2233 2232
+JOIN 2234 2233
+JOIN 2235 2234
+JOIN 2236 2235
+JOIN 2237 2236
+JOIN 2238 2237
+JOIN 2239 2238
+JOIN 2240 2239
+JOIN 2241 2240
+JOIN 2242 2241
+JOIN 2243 2242
+JOIN 2244 2243
+JOIN 2245 2244
+JOIN 2246 2245
+JOIN 2247 2246
+JOIN 2248 2247
+JOIN 2249 2248
+JOIN 2250 2249
+JOIN 2251 2250
+JOIN 2252 2251
+JOIN 2253 2252
+JOIN 2254 2253
+JOIN 2255 2254
+JOIN 2256 2255
+JOIN 2257 2256
+JOIN 2258 2257
+JOIN 2259 2258
+JOIN 2260 2259
+JOIN 2261 2260
+JOIN 2262 2261
+JOIN 2263 2262
+JOIN 2264 2263
+JOIN 2265 2264
+JOIN 2266 2265
+JOIN 2267 2266
+JOIN 2268 2267
+JOIN 2269 2268
+JOIN 2270 2269
+JOIN 2271 2270
+JOIN 2272 2271
+JOIN 2273 2272
+JOIN 2274 2273
+JOIN 2275 2274
+JOIN 2276 2275
+JOIN 2277 2276
+JOIN 2278 2277
+JOIN 2279 2278
+JOIN 2280 2279
+JOIN 2281 2280
+JOIN 2282 2281
+JOIN 2283 2282
+JOIN 2284 2283
+JOIN 2285 2284
+JOIN 2286 2285
+JOIN 2287 2286
+JOIN 2288 2287
+JOIN 2289 2288
+JOIN 2290 2289
+JOIN 2291 2290
+JOIN 2292 2291
+JOIN 2293 2292
+JOIN 2294 2293
+JOIN 2295 2294
+JOIN 2296 2295
+JOIN 2297 2296
+JOIN 2298 2297
+JOIN 2299 2298
+JOIN 2300 2299
+JOIN 2301 2300
+JOIN 2302 2301
+JOIN 2303 2302
+JOIN 2304 2303
+JOIN 2305 2304
+JOIN 2306 2305
+JOIN 2307 2306
+JOIN 2308 2307
+JOIN 2309 2308
+JOIN 2310 2309
+JOIN 2311 2310
+JOIN 2312 2311
+JOIN 2313 2312
+JOIN 2314 2313
+JOIN 2315 2314
+JOIN 2316 2315
+JOIN 2317 2316
+JOIN 2318 2317
+JOIN 2319 2318
+JOIN 2320 2319
+JOIN 2321 2320
+JOIN 2322 2321
+JOIN 2323 2322
+JOIN 2324 2323
+JOIN 2325 2324
+JOIN 2326 2325
+JOIN 2327 2326
+JOIN 2328 2327
+JOIN 2329 2328
+JOIN 2330 2329
+JOIN 2331 2330
+JOIN 2332 2331
+JOIN 2333 2332
+JOIN 2334 2333
+JOIN 2335 2334
+JOIN 2336 2335
+JOIN 2337 2336
+JOIN 2338 2337
+JOIN 2339 2338
+JOIN 2340 2339
+JOIN 2341 2340
+JOIN 2342 2341
+JOIN 2343 2342
+JOIN 2344 2343
+JOIN 2345 2344
+JOIN 2346 2345
+JOIN 2347 2346
+JOIN 2348 2347
+JOIN 2349 2348
+JOIN 2350 2349
+JOIN 2351 2350
+JOIN 2352 2351
+JOIN 2353 2352
+JOIN 2354 2353
+JOIN 2355 2354
+JOIN 2356 2355
+JOIN 2357 2356
+JOIN 2358 2357
+JOIN 2359 2358
+JOIN 2360 2359
+JOIN 2361 2360
+JOIN 2362 2361
+JOIN 2363 2362
+JOIN 2364 2363
+JOIN 2365 2364
+JOIN 2366 2365
+JOIN 2367 2366
+JOIN 2368 2367
+JOIN 2369 2368
+JOIN 2370 2369
+JOIN 2371 2370
+JOIN 2372 2371
+JOIN 2373 2372
+JOIN 2374 2373
+JOIN 2375 2374
+JOIN 2376 2375
+JOIN 2377 2376
+JOIN 2378 2377
+JOIN 2379 2378
+JOIN 2380 2379
+JOIN 2381 2380
+JOIN 2382 2381
+JOIN 2383 2382
+JOIN 2384 2383
+JOIN 2385 2384
+JOIN 2386 2385
+JOIN 2387 2386
+JOIN 2388 2387
+JOIN 2389 2388
+JOIN 2390 2389
+JOIN 2391 2390
+JOIN 2392 2391
+JOIN 2393 2392
+JOIN 2394 2393
+JOIN 2395 2394
+JOIN 2396 2395
+JOIN 2397 2396
+JOIN 2398 2397
+JOIN 2399 2398
+JOIN 2400 2399
+JOIN 2401 2400
+JOIN 2402 2401
+JOIN 2403 2402
+JOIN 2404 2403
+JOIN 2405 2404
+JOIN 2406 2405
+JOIN 2407 2406
+JOIN 2408 2407
+JOIN 2409 2408
+JOIN 2410 2409
+JOIN 2411 2410
+JOIN 2412 2411
+JOIN 2413 2412
+JOIN 2414 2413
+JOIN 2415 2414
+JOIN 2416 2415
+JOIN 2417 2416
+JOIN 2418 2417
+JOIN 2419 2418
+JOIN 2420 2419
+JOIN 2421 2420
+JOIN 2422 2421
+JOIN 2423 2422
+JOIN 2424 2423
+JOIN 2425 2424
+JOIN 2426 2425
+JOIN 2427 2426
+JOIN 2428 2427
+JOIN 2429 2428
+JOIN 2430 2429
+JOIN 2431 2430
+JOIN 2432 2431
+JOIN 2433 2432
+JOIN 2434 2433
+JOIN 2435 2434
+JOIN 2436 2435
+JOIN 2437 2436
+JOIN 2438 2437
+JOIN 2439 2438
+JOIN 2440 2439
+JOIN 2441 2440
+JOIN 2442 2441
+JOIN 2443 2442
+JOIN 2444 2443
+JOIN 2445 2444
+JOIN 2446 2445
+JOIN 2447 2446
+JOIN 2448 2447
+JOIN 2449 2448
+JOIN 2450 2449
+JOIN 2451 2450
+JOIN 2452 2451
+JOIN 2453 2452
+JOIN 2454 2453
+JOIN 2455 2454
+JOIN 2456 2455
+JOIN 2457 2456
+JOIN 2458 2457
+JOIN 2459 2458
+JOIN 2460 2459
+JOIN 2461 2460
+JOIN 2462 2461
+JOIN 2463 2462
+JOIN 2464 2463
+JOIN 2465 2464
+JOIN 2466 2465
+JOIN 2467 2466
+JOIN 2468 2467
+JOIN 2469 2468
+JOIN 2470 2469
+JOIN 2471 2470
+JOIN 2472 2471
+JOIN 2473 2472
+JOIN 2474 2473
+JOIN 2475 2474
+JOIN 2476 2475
+JOIN 2477 2476
+JOIN 2478 2477
+JOIN 2479 2478
+JOIN 2480 2479
+JOIN 2481 2480
+JOIN 2482 2481
+JOIN 2483 2482
+JOIN 2484 2483
+JOIN 2485 2484
+JOIN 2486 2485
+JOIN 2487 2486
+JOIN 2488 2487
+JOIN 2489 2488
+JOIN 2490 2489
+JOIN 2491 2490
+JOIN 2492 2491
+JOIN 2493 2492
+JOIN 2494 2493
+JOIN 2495 2494
+JOIN 2496 2495
+JOIN 2497 2496
+JOIN 2498 2497
+JOIN 2499 2498
+JOIN 2500 2499
+JOIN 2501 2500
+JOIN 2502 2501
+JOIN 2503 2502
+JOIN 2504 2503
+JOIN 2505 2504
+JOIN 2506 2505
+JOIN 2507 2506
+JOIN 2508 2507
+JOIN 2509 2508
+JOIN 2510 2509
+JOIN 2511 2510
+JOIN 2512 2511
+JOIN 2513 2512
+JOIN 2514 2513
+JOIN 2515 2514
+JOIN 2516 2515
+JOIN 2517 2516
+JOIN 2518 2517
+JOIN 2519 2518
+JOIN 2520 2519
+JOIN 2521 2520
+JOIN 2522 2521
+JOIN 2523 2522
+JOIN 2524 2523
+JOIN 2525 2524
+JOIN 2526 2525
+JOIN 2527 2526
+JOIN 2528 2527
+JOIN 2529 2528
+JOIN 2530 2529
+JOIN 2531 2530
+JOIN 2532 2531
+JOIN 2533 2532
+JOIN 2534 2533
+JOIN 2535 2534
+JOIN 2536 2535
+JOIN 2537 2536
+JOIN 2538 2537
+JOIN 2539 2538
+JOIN 2540 2539
+JOIN 2541 2540
+JOIN 2542 2541
+JOIN 2543 2542
+JOIN 2544 2543
+JOIN 2545 2544
+JOIN 2546 2545
+JOIN 2547 2546
+JOIN 2548 2547
+JOIN 2549 2548
+JOIN 2550 2549
+JOIN 2551 2550
+JOIN 2552 2551
+JOIN 2553 2552
+JOIN 2554 2553
+JOIN 2555 2554
+JOIN 2556 2555
+JOIN 2557 2556
+JOIN 2558 2557
+JOIN 2559 2558
+JOIN 2560 2559
+JOIN 2561 2560
+JOIN 2562 2561
+JOIN 2563 2562
+JOIN 2564 2563
+JOIN 2565 2564
+JOIN 2566 2565
+JOIN 2567 2566
+JOIN 2568 2567
+JOIN 2569 2568
+JOIN 2570 2569
+JOIN 2571 2570
+JOIN 2572 2571
+JOIN 2573 2572
+JOIN 2574 2573
+JOIN 2575 2574
+JOIN 2576 2575
+JOIN 2577 2576
+JOIN 2578 2577
+JOIN 2579 2578
+JOIN 2580 2579
+JOIN 2581 2580
+JOIN 2582 2581
+JOIN 2583 2582
+JOIN 2584 2583
+JOIN 2585 2584
+JOIN 2586 2585
+JOIN 2587 2586
+JOIN 2588 2587
+JOIN 2589 2588
+JOIN 2590 2589
+JOIN 2591 2590
+JOIN 2592 2591
+JOIN 2593 2592
+JOIN 2594 2593
+JOIN 2595 2594
+JOIN 2596 2595
+JOIN 2597 2596
+JOIN 2598 2597
+JOIN 2599 2598
+JOIN 2600 2599
+JOIN 2601 2600
+JOIN 2602 2601
+JOIN 2603 2602
+JOIN 2604 2603
+JOIN 2605 2604
+JOIN 2606 2605
+JOIN 2607 2606
+JOIN 2608 2607
+JOIN 2609 2608
+JOIN 2610 2609
+JOIN 2611 2610
+JOIN 2612 2611
+JOIN 2613 2612
+JOIN 2614 2613
+JOIN 2615 2614
+JOIN 2616 2615
+JOIN 2617 2616
+JOIN 2618 2617
+JOIN 2619 2618
+JOIN 2620 2619
+JOIN 2621 2620
+JOIN 2622 2621
+JOIN 2623 2622
+JOIN 2624 2623
+JOIN 2625 2624
+JOIN 2626 2625
+JOIN 2627 2626
+JOIN 2628 2627
+JOIN 2629 2628
+JOIN 2630 2629
+JOIN 2631 2630
+JOIN 2632 2631
+JOIN 2633 2632
+JOIN 2634 2633
+JOIN 2635 2634
+JOIN 2636 2635
+JOIN 2637 2636
+JOIN 2638 2637
+JOIN 2639 2638
+JOIN 2640 2639
+JOIN 2641 2640
+JOIN 2642 2641
+JOIN 2643 2642
+JOIN 2644 2643
+JOIN 2645 2644
+JOIN 2646 2645
+JOIN 2647 2646
+JOIN 2648 2647
+JOIN 2649 2648
+JOIN 2650 2649
+JOIN 2651 2650
+JOIN 2652 2651
+JOIN 2653 2652
+JOIN 2654 2653
+JOIN 2655 2654
+JOIN 2656 2655
+JOIN 2657 2656
+JOIN 2658 2657
+JOIN 2659 2658
+JOIN 2660 2659
+JOIN 2661 2660
+JOIN 2662 2661
+JOIN 2663 2662
+JOIN 2664 2663
+JOIN 2665 2664
+JOIN 2666 2665
+JOIN 2667 2666
+JOIN 2668 2667
+JOIN 2669 2668
+JOIN 2670 2669
+JOIN 2671 2670
+JOIN 2672 2671
+JOIN 2673 2672
+JOIN 2674 2673
+JOIN 2675 2674
+JOIN 2676 2675
+JOIN 2677 2676
+JOIN 2678 2677
+JOIN 2679 2678
+JOIN 2680 2679
+JOIN 2681 2680
+JOIN 2682 2681
+JOIN 2683 2682
+JOIN 2684 2683
+JOIN 2685 2684
+JOIN 2686 2685
+JOIN 2687 2686
+JOIN 2688 2687
+JOIN 2689 2688
+JOIN 2690 2689
+JOIN 2691 2690
+JOIN 2692 2691
+JOIN 2693 2692
+JOIN 2694 2693
+JOIN 2695 2694
+JOIN 2696 2695
+JOIN 2697 2696
+JOIN 2698 2697
+JOIN 2699 2698
+JOIN 2700 2699
+JOIN 2701 2700
+JOIN 2702 2701
+JOIN 2703 2702
+JOIN 2704 2703
+JOIN 2705 2704
+JOIN 2706 2705
+JOIN 2707 2706
+JOIN 2708 2707
+JOIN 2709 2708
+JOIN 2710 2709
+JOIN 2711 2710
+JOIN 2712 2711
+JOIN 2713 2712
+JOIN 2714 2713
+JOIN 2715 2714
+JOIN 2716 2715
+JOIN 2717 2716
+JOIN 2718 2717
+JOIN 2719 2718
+JOIN 2720 2719
+JOIN 2721 2720
+JOIN 2722 2721
+JOIN 2723 2722
+JOIN 2724 2723
+JOIN 2725 2724
+JOIN 2726 2725
+JOIN 2727 2726
+JOIN 2728 2727
+JOIN 2729 2728
+JOIN 2730 2729
+JOIN 2731 2730
+JOIN 2732 2731
+JOIN 2733 2732
+JOIN 2734 2733
+JOIN 2735 2734
+JOIN 2736 2735
+JOIN 2737 2736
+JOIN 2738 2737
+JOIN 2739 2738
+JOIN 2740 2739
+JOIN 2741 2740
+JOIN 2742 2741
+JOIN 2743 2742
+JOIN 2744 2743
+JOIN 2745 2744
+JOIN 2746 2745
+JOIN 2747 2746
+JOIN 2748 2747
+JOIN 2749 2748
+JOIN 2750 2749
+JOIN 2751 2750
+JOIN 2752 2751
+JOIN 2753 2752
+JOIN 2754 2753
+JOIN 2755 2754
+JOIN 2756 2755
+JOIN 2757 2756
+JOIN 2758 2757
+JOIN 2759 2758
+JOIN 2760 2759
+JOIN 2761 2760
+JOIN 2762 2761
+JOIN 2763 2762
+JOIN 2764 2763
+JOIN 2765 2764
+JOIN 2766 2765
+JOIN 2767 2766
+JOIN 2768 2767
+JOIN 2769 2768
+JOIN 2770 2769
+JOIN 2771 2770
+JOIN 2772 2771
+JOIN 2773 2772
+JOIN 2774 2773
+JOIN 2775 2774
+JOIN 2776 2775
+JOIN 2777 2776
+JOIN 2778 2777
+JOIN 2779 2778
+JOIN 2780 2779
+JOIN 2781 2780
+JOIN 2782 2781
+JOIN 2783 2782
+JOIN 2784 2783
+JOIN 2785 2784
+JOIN 2786 2785
+JOIN 2787 2786
+JOIN 2788 2787
+JOIN 2789 2788
+JOIN 2790 2789
+JOIN 2791 2790
+JOIN 2792 2791
+JOIN 2793 2792
+JOIN 2794 2793
+JOIN 2795 2794
+JOIN 2796 2795
+JOIN 2797 2796
+JOIN 2798 2797
+JOIN 2799 2798
+JOIN 2800 2799
+JOIN 2801 2800
+JOIN 2802 2801
+JOIN 2803 2802
+JOIN 2804 2803
+JOIN 2805 2804
+JOIN 2806 2805
+JOIN 2807 2806
+JOIN 2808 2807
+JOIN 2809 2808
+JOIN 2810 2809
+JOIN 2811 2810
+JOIN 2812 2811
+JOIN 2813 2812
+JOIN 2814 2813
+JOIN 2815 2814
+JOIN 2816 2815
+JOIN 2817 2816
+JOIN 2818 2817
+JOIN 2819 2818
+JOIN 2820 2819
+JOIN 2821 2820
+JOIN 2822 2821
+JOIN 2823 2822
+JOIN 2824 2823
+JOIN 2825 2824
+JOIN 2826 2825
+JOIN 2827 2826
+JOIN 2828 2827
+JOIN 2829 2828
+JOIN 2830 2829
+JOIN 2831 2830
+JOIN 2832 2831
+JOIN 2833 2832
+JOIN 2834 2833
+JOIN 2835 2834
+JOIN 2836 2835
+JOIN 2837 2836
+JOIN 2838 2837
+JOIN 2839 2838
+JOIN 2840 2839
+JOIN 2841 2840
+JOIN 2842 2841
+JOIN 2843 2842
+JOIN 2844 2843
+JOIN 2845 2844
+JOIN 2846 2845
+JOIN 2847 2846
+JOIN 2848 2847
+JOIN 2849 2848
+JOIN 2850 2849
+JOIN 2851 2850
+JOIN 2852 2851
+JOIN 2853 2852
+JOIN 2854 2853
+JOIN 2855 2854
+JOIN 2856 2855
+JOIN 2857 2856
+JOIN 2858 2857
+JOIN 2859 2858
+JOIN 2860 2859
+JOIN 2861 2860
+JOIN 2862 2861
+JOIN 2863 2862
+JOIN 2864 2863
+JOIN 2865 2864
+JOIN 2866 2865
+JOIN 2867 2866
+JOIN 2868 2867
+JOIN 2869 2868
+JOIN 2870 2869
+JOIN 2871 2870
+JOIN 2872 2871
+JOIN 2873 2872
+JOIN 2874 2873
+JOIN 2875 2874
+JOIN 2876 2875
+JOIN 2877 2876
+JOIN 2878 2877
+JOIN 2879 2878
+JOIN 2880 2879
+JOIN 2881 2880
+JOIN 2882 2881
+JOIN 2883 2882
+JOIN 2884 2883
+JOIN 2885 2884
+JOIN 2886 2885
+JOIN 2887 2886
+JOIN 2888 2887
+JOIN 2889 2888
+JOIN 2890 2889
+JOIN 2891 2890
+JOIN 2892 2891
+JOIN 2893 2892
+JOIN 2894 2893
+JOIN 2895 2894
+JOIN 2896 2895
+JOIN 2897 2896
+JOIN 2898 2897
+JOIN 2899 2898
+JOIN 2900 2899
+JOIN 2901 2900
+JOIN 2902 2901
+JOIN 2903 2902
+JOIN 2904 2903
+JOIN 2905 2904
+JOIN 2906 2905
+JOIN 2907 2906
+JOIN 2908 2907
+JOIN 2909 2908
+JOIN 2910 2909
+JOIN 2911 2910
+JOIN 2912 2911
+JOIN 2913 2912
+JOIN 2914 2913
+JOIN 2915 2914
+JOIN 2916 2915
+JOIN 2917 2916
+JOIN 2918 2917
+JOIN 2919 2918
+JOIN 2920 2919
+JOIN 2921 2920
+JOIN 2922 2921
+JOIN 2923 2922
+JOIN 2924 2923
+JOIN 2925 2924
+JOIN 2926 2925
+JOIN 2927 2926
+JOIN 2928 2927
+JOIN 2929 2928
+JOIN 2930 2929
+JOIN 2931 2930
+JOIN 2932 2931
+JOIN 2933 2932
+JOIN 2934 2933
+JOIN 2935 2934
+JOIN 2936 2935
+JOIN 2937 2936
+JOIN 2938 2937
+JOIN 2939 2938
+JOIN 2940 2939
+JOIN 2941 2940
+JOIN 2942 2941
+JOIN 2943 2942
+JOIN 2944 2943
+JOIN 2945 2944
+JOIN 2946 2945
+JOIN 2947 2946
+JOIN 2948 2947
+JOIN 2949 2948
+JOIN 2950 2949
+JOIN 2951 2950
+JOIN 2952 2951
+JOIN 2953 2952
+JOIN 2954 2953
+JOIN 2955 2954
+JOIN 2956 2955
+JOIN 2957 2956
+JOIN 2958 2957
+JOIN 2959 2958
+JOIN 2960 2959
+JOIN 2961 2960
+JOIN 2962 2961
+JOIN 2963 2962
+JOIN 2964 2963
+JOIN 2965 2964
+JOIN 2966 2965
+JOIN 2967 2966
+JOIN 2968 2967
+JOIN 2969 2968
+JOIN 2970 2969
+JOIN 2971 2970
+JOIN 2972 2971
+JOIN 2973 2972
+JOIN 2974 2973
+JOIN 2975 2974
+JOIN 2976 2975
+JOIN 2977 2976
+JOIN 2978 2977
+JOIN 2979 2978
+JOIN 2980 2979
+JOIN 2981 2980
+JOIN 2982 2981
+JOIN 2983 2982
+JOIN 2984 2983
+JOIN 2985 2984
+JOIN 2986 2985
+JOIN 2987 2986
+JOIN 2988 2987
+JOIN 2989 2988
+JOIN 2990 2989
+JOIN 2991 2990
+JOIN 2992 2991
+JOIN 2993 2992
+JOIN 2994 2993
+JOIN 2995 2994
+JOIN 2996 2995
+JOIN 2997 2996
+JOIN 2998 2997
+JOIN 2999 2998
+JOIN 3000 2999
+SAME 1 3000
+',
+                            'expected_output' => 'yes',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '5000 483
+JOIN 132 302
+JOIN 86 368
+JOIN 294 70
+JOIN 181 227
+JOIN 316 172
+JOIN 184 16
+JOIN 180 116
+JOIN 70 280
+JOIN 356 194
+JOIN 64 116
+JOIN 23 261
+JOIN 154 370
+JOIN 178 80
+JOIN 203 117
+JOIN 381 231
+JOIN 7 103
+JOIN 268 314
+JOIN 133 159
+JOIN 348 214
+JOIN 291 297
+JOIN 34 172
+JOIN 193 79
+JOIN 251 177
+JOIN 355 279
+JOIN 298 270
+JOIN 125 99
+JOIN 25 115
+JOIN 269 115
+JOIN 335 59
+JOIN 310 340
+JOIN 129 259
+JOIN 88 378
+JOIN 168 338
+JOIN 277 327
+JOIN 32 262
+JOIN 65 331
+JOIN 280 76
+JOIN 58 258
+JOIN 115 221
+JOIN 39 309
+JOIN 266 68
+JOIN 359 105
+JOIN 18 6
+JOIN 141 335
+JOIN 99 309
+JOIN 35 59
+JOIN 183 1
+JOIN 366 138
+JOIN 1 253
+JOIN 201 37
+JOIN 153 91
+JOIN 354 128
+JOIN 72 366
+JOIN 60 44
+JOIN 142 358
+JOIN 395 177
+JOIN 80 358
+JOIN 73 89
+JOIN 279 339
+JOIN 346 136
+JOIN 205 73
+JOIN 21 183
+JOIN 50 128
+JOIN 367 147
+JOIN 159 345
+JOIN 134 114
+JOIN 37 345
+JOIN 240 230
+JOIN 304 314
+JOIN 61 195
+JOIN 140 242
+JOIN 188 110
+JOIN 165 153
+JOIN 261 177
+JOIN 105 199
+JOIN 313 199
+JOIN 319 381
+JOIN 144 34
+JOIN 77 339
+JOIN 252 170
+JOIN 176 212
+JOIN 162 196
+JOIN 122 312
+JOIN 307 17
+JOIN 117 23
+JOIN 59 85
+JOIN 363 103
+JOIN 249 277
+JOIN 200 328
+JOIN 241 121
+JOIN 17 233
+JOIN 102 84
+JOIN 210 328
+JOIN 396 362
+JOIN 113 139
+JOIN 208 42
+JOIN 138 302
+JOIN 371 363
+JOIN 322 2
+JOIN 194 394
+JOIN 48 220
+JOIN 207 95
+JOIN 67 211
+JOIN 150 176
+JOIN 272 310
+JOIN 315 87
+JOIN 110 340
+JOIN 250 116
+JOIN 377 145
+JOIN 297 79
+JOIN 40 164
+JOIN 222 210
+JOIN 55 121
+JOIN 390 212
+JOIN 90 348
+JOIN 91 197
+JOIN 116 302
+JOIN 96 326
+JOIN 49 277
+JOIN 327 387
+JOIN 85 257
+JOIN 163 387
+JOIN 283 259
+JOIN 387 159
+JOIN 360 188
+JOIN 68 82
+JOIN 216 34
+JOIN 15 37
+JOIN 311 175
+JOIN 29 301
+JOIN 161 347
+JOIN 171 65
+JOIN 400 216
+JOIN 382 44
+JOIN 9 251
+JOIN 295 323
+JOIN 344 394
+JOIN 220 310
+JOIN 46 2
+JOIN 223 261
+JOIN 309 91
+JOIN 71 295
+JOIN 397 135
+JOIN 219 99
+JOIN 248 216
+JOIN 136 398
+JOIN 398 340
+JOIN 79 309
+JOIN 369 323
+JOIN 275 57
+JOIN 239 153
+JOIN 331 243
+JOIN 173 365
+JOIN 271 337
+JOIN 187 99
+JOIN 121 251
+JOIN 380 294
+JOIN 167 297
+JOIN 75 359
+JOIN 66 338
+JOIN 211 219
+JOIN 255 129
+JOIN 338 84
+JOIN 231 161
+JOIN 213 9
+JOIN 27 159
+JOIN 151 61
+JOIN 372 302
+JOIN 62 142
+JOIN 175 103
+JOIN 19 41
+JOIN 123 227
+JOIN 292 30
+JOIN 264 260
+JOIN 209 205
+JOIN 301 395
+JOIN 30 258
+JOIN 317 297
+JOIN 22 8
+JOIN 47 23
+JOIN 282 270
+JOIN 197 89
+JOIN 174 328
+JOIN 8 202
+JOIN 177 309
+JOIN 2 314
+JOIN 259 323
+JOIN 257 73
+JOIN 214 302
+JOIN 124 278
+JOIN 131 177
+JOIN 262 156
+JOIN 6 328
+JOIN 160 320
+JOIN 221 251
+JOIN 224 170
+JOIN 24 360
+JOIN 235 49
+JOIN 293 49
+JOIN 332 76
+JOIN 244 400
+JOIN 383 339
+JOIN 302 340
+JOIN 94 36
+JOIN 263 395
+JOIN 284 136
+JOIN 399 157
+JOIN 139 351
+JOIN 365 175
+JOIN 152 368
+JOIN 198 394
+JOIN 182 366
+JOIN 386 298
+JOIN 265 363
+JOIN 186 88
+JOIN 135 345
+JOIN 226 348
+JOIN 158 144
+JOIN 375 267
+JOIN 98 66
+JOIN 340 314
+JOIN 130 110
+JOIN 325 131
+JOIN 199 251
+JOIN 329 51
+JOIN 192 70
+JOIN 217 305
+JOIN 232 362
+JOIN 191 193
+JOIN 119 137
+JOIN 285 117
+JOIN 330 158
+JOIN 245 167
+JOIN 172 138
+JOIN 305 105
+JOIN 107 137
+JOIN 300 278
+JOIN 227 161
+JOIN 234 158
+JOIN 51 259
+JOIN 336 190
+JOIN 155 237
+JOIN 306 8
+JOIN 308 320
+JOIN 326 34
+JOIN 111 219
+JOIN 230 326
+JOIN 385 23
+JOIN 189 325
+JOIN 92 314
+JOIN 4 114
+JOIN 137 215
+JOIN 20 24
+JOIN 296 76
+JOIN 206 110
+JOIN 42 136
+JOIN 267 325
+JOIN 84 368
+JOIN 212 58
+JOIN 76 304
+JOIN 149 91
+JOIN 145 315
+JOIN 11 39
+JOIN 384 108
+JOIN 170 360
+JOIN 101 111
+JOIN 373 303
+JOIN 195 117
+JOIN 343 167
+JOIN 345 197
+JOIN 63 89
+JOIN 328 38
+JOIN 120 354
+JOIN 376 70
+JOIN 106 264
+JOIN 190 400
+JOIN 108 146
+JOIN 388 316
+JOIN 392 138
+JOIN 246 28
+JOIN 290 6
+JOIN 281 341
+JOIN 109 37
+JOIN 12 64
+JOIN 69 315
+JOIN 351 97
+JOIN 185 295
+JOIN 3 281
+JOIN 215 97
+JOIN 368 302
+JOIN 81 227
+JOIN 289 133
+JOIN 352 236
+JOIN 14 188
+JOIN 254 384
+JOIN 337 99
+JOIN 44 304
+JOIN 339 11
+JOIN 100 102
+JOIN 126 362
+JOIN 166 108
+JOIN 204 390
+JOIN 242 76
+JOIN 97 261
+JOIN 378 220
+JOIN 358 2
+JOIN 341 53
+JOIN 370 90
+JOIN 78 194
+JOIN 274 70
+JOIN 112 318
+JOIN 196 46
+JOIN 379 287
+JOIN 148 8
+JOIN 95 325
+JOIN 237 53
+JOIN 278 214
+JOIN 26 316
+JOIN 10 314
+JOIN 103 63
+JOIN 143 339
+JOIN 87 149
+JOIN 273 193
+JOIN 357 125
+JOIN 43 185
+JOIN 74 368
+JOIN 118 310
+JOIN 179 73
+JOIN 38 322
+JOIN 333 365
+JOIN 247 239
+JOIN 57 245
+JOIN 229 99
+JOIN 53 243
+JOIN 41 365
+JOIN 393 189
+JOIN 276 372
+JOIN 31 41
+JOIN 56 76
+JOIN 127 187
+JOIN 318 326
+JOIN 342 360
+JOIN 147 287
+JOIN 33 157
+JOIN 364 76
+JOIN 54 116
+JOIN 303 91
+JOIN 389 323
+JOIN 287 45
+JOIN 16 104
+JOIN 286 172
+JOIN 93 399
+JOIN 323 263
+JOIN 299 77
+JOIN 353 271
+JOIN 253 315
+JOIN 225 177
+JOIN 394 314
+JOIN 350 374
+JOIN 156 46
+JOIN 36 398
+JOIN 320 76
+JOIN 256 318
+JOIN 349 347
+JOIN 347 91
+JOIN 236 258
+JOIN 13 159
+JOIN 104 326
+JOIN 334 382
+JOIN 243 131
+JOIN 374 398
+JOIN 83 399
+JOIN 146 160
+JOIN 82 194
+JOIN 28 92
+JOIN 312 8
+JOIN 228 254
+JOIN 169 203
+JOIN 52 34
+JOIN 45 325
+JOIN 128 46
+JOIN 321 361
+JOIN 260 270
+JOIN 270 34
+JOIN 288 272
+JOIN 164 322
+JOIN 391 39
+JOIN 258 322
+JOIN 157 199
+JOIN 114 94
+JOIN 233 23
+JOIN 202 36
+JOIN 5 147
+JOIN 361 227
+JOIN 324 70
+JOIN 218 38
+JOIN 362 196
+JOIN 238 272
+SAME 361 378
+SAME 349 13
+SAME 18 190
+SAME 399 264
+SAME 207 85
+SAME 206 206
+SAME 159 368
+SAME 349 21
+SAME 160 260
+SAME 381 92
+SAME 185 13
+SAME 48 220
+SAME 69 308
+SAME 365 43
+SAME 92 228
+SAME 37 292
+SAME 35 1
+SAME 48 222
+SAME 7 296
+SAME 83 117
+SAME 58 204
+SAME 385 240
+SAME 229 89
+SAME 192 400
+SAME 215 254
+SAME 263 331
+SAME 116 198
+SAME 101 304
+SAME 229 201
+SAME 302 214
+SAME 41 168
+SAME 199 267
+SAME 366 296
+SAME 335 30
+SAME 287 33
+SAME 326 60
+SAME 253 314
+SAME 165 359
+SAME 350 88
+SAME 261 140
+SAME 397 307
+SAME 30 192
+SAME 221 346
+SAME 49 329
+SAME 34 196
+SAME 321 272
+SAME 65 35
+SAME 208 378
+SAME 61 66
+SAME 99 247
+SAME 100 194
+SAME 85 66
+SAME 249 183
+SAME 302 162
+SAME 81 140
+SAME 377 13
+SAME 130 348
+SAME 239 2
+SAME 169 237
+SAME 24 74
+SAME 1 4999
+JOIN 141 150
+SAME 50 347
+SAME 370 323
+SAME 228 205
+SAME 138 259
+SAME 2 183
+SAME 70 201
+SAME 118 75
+SAME 396 165
+SAME 174 115
+SAME 194 327
+SAME 364 341
+SAME 102 243
+SAME 220 3
+SAME 14 221
+SAME 136 367
+SAME 162 297
+SAME 356 347
+SAME 314 343
+SAME 80 249
+SAME 344 203
+JOIN 304 309
+SAME 5000 2
+SAME 5000 5000
+',
+                            'expected_output' => 'no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+no
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+yes
+no
+yes',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'minimum-spanning-tree',
+                'title' => 'Minimum spanning tree',
+                'problem' => [
+                    'title' => 'Minimum spanning tree',
+                    'description' => 'An undirected graph has n nodes, numbered 1 to n, and m weighted edges. A spanning tree is n - 1 of the edges that connect all the nodes. Print the smallest total weight of a spanning tree, or -1 if the graph is not connected (some node cannot be reached from another). With n = 1 the answer is 0.
+
+Input
+Line 1: n and m, separated by a space.
+Next m lines: u v w, an edge between u and v with weight w (no more lines when m = 0).
+
+Output
+One line with the total weight, or -1.
+
+Constraints
+1 <= n <= 1000
+0 <= m <= 3000
+1 <= u, v <= n
+1 <= w <= 1000000000
+The same pair can have several edges, and u can equal v.',
+                    'difficulty' => 'hard',
+                    'test_cases' => [
+                        [
+                            'input' => '4 5
+1 2 4
+2 3 2
+1 3 3
+3 4 5
+2 4 7
+',
+                            'expected_output' => '10',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '1 0
+',
+                            'expected_output' => '0',
+                            'is_hidden' => false,
+                        ],
+                        [
+                            'input' => '2 0
+',
+                            'expected_output' => '-1',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '6 7
+1 2 3
+2 3 1
+3 1 2
+4 5 6
+5 6 4
+6 4 5
+4 4 1
+',
+                            'expected_output' => '-1',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '7 6
+1 2 9
+1 3 4
+2 4 7
+2 5 1
+3 6 3
+3 7 8
+',
+                            'expected_output' => '32',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '5 12
+1 1 1
+3 3 1
+1 2 8
+1 2 2
+2 3 2
+1 3 2
+3 4 5
+4 5 9
+4 5 6
+2 5 6
+5 5 2
+4 4 3
+',
+                            'expected_output' => '15',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '150 450
+44 48 999328604
+44 143 999169018
+83 143 999954116
+48 113 999563771
+132 10 999663093
+127 96 999791669
+56 111 999433945
+130 101 999503160
+140 22 999648461
+57 19 999571634
+117 47 999631207
+98 61 999087898
+63 1 999812270
+118 93 999772318
+49 16 999575324
+3 147 999657670
+113 60 999327753
+8 102 999136286
+44 126 999228607
+43 135 999821822
+5 80 999600237
+35 111 999829346
+99 53 999840321
+77 103 999149013
+90 142 999915081
+30 75 999858920
+24 17 999448071
+117 59 999027394
+3 1 999340820
+19 103 999738243
+28 135 999125491
+125 16 999593649
+25 125 999868177
+128 58 999657429
+85 48 999900202
+93 16 999220237
+7 5 999455794
+81 48 999187234
+4 42 999074252
+80 31 999175472
+12 50 999252760
+115 138 999173890
+52 127 999190650
+20 4 999547324
+27 21 999808538
+11 2 999820395
+56 126 999267470
+150 119 999902219
+98 2 999943479
+119 116 999858979
+71 53 999644023
+72 125 999404387
+92 39 999922869
+47 56 999009767
+12 42 999861643
+141 77 999212157
+14 6 999613917
+27 16 999204270
+110 40 999851227
+60 16 999301691
+11 98 999420719
+148 99 999725386
+111 42 999366481
+137 85 999661007
+138 85 999899760
+103 93 999550790
+105 57 999801250
+115 31 999953702
+57 56 999442368
+20 111 999350444
+126 15 999097238
+104 71 999728220
+94 35 999304810
+110 102 999870744
+100 17 999659781
+101 109 999327113
+82 20 999367935
+38 24 999109739
+95 41 999162835
+30 83 999691851
+67 63 999693639
+104 132 999252237
+90 64 999416406
+89 121 999891937
+149 140 999450510
+103 3 999738139
+133 67 999475134
+139 63 999744815
+44 118 999219214
+149 127 999985327
+143 2 999573056
+103 102 999053015
+82 118 999032226
+119 96 999437488
+75 32 999289768
+21 62 999438061
+48 82 999543538
+124 111 999553075
+115 79 999092622
+43 42 999791484
+38 136 999679911
+61 82 999004557
+143 98 999318637
+100 43 999183112
+13 3 999400043
+115 76 999563484
+132 93 999295329
+19 56 999247058
+128 97 999982783
+2 1 999103382
+4 2 999048376
+45 14 999810134
+99 88 999290567
+97 95 999603341
+51 43 999576427
+52 150 999241982
+15 14 999511767
+122 12 999038001
+141 147 999970665
+122 71 999441542
+102 63 999652752
+54 49 999106281
+40 132 999480595
+78 34 999951258
+49 26 999640401
+112 83 999375351
+111 84 999051049
+105 119 999449186
+12 11 999528817
+77 53 999340767
+46 22 999139799
+119 119 999459992
+96 82 999412888
+66 139 999613250
+8 5 999901894
+78 32 999873763
+93 55 999229047
+64 38 999069245
+2 105 999920681
+2 110 999770827
+56 93 999954074
+74 44 999791332
+44 35 999746949
+66 17 999730698
+29 46 999928409
+9 6 999163563
+97 57 999515394
+54 33 999886027
+84 70 999023742
+81 29 999456102
+115 23 999469869
+46 32 999041508
+131 51 999841356
+70 67 999235344
+144 21 999295658
+22 97 999845835
+119 23 999024365
+48 9 999470059
+100 92 999862245
+66 106 999521012
+11 148 999074083
+78 75 999449672
+135 103 999139368
+21 17 999104385
+87 22 999240718
+145 149 999640758
+107 100 999353096
+144 26 999010308
+60 58 999803569
+102 35 999755814
+53 138 999011725
+17 72 999602798
+83 21 999625420
+111 46 999857795
+39 3 999404121
+87 94 999266525
+18 27 999182740
+38 14 999182679
+71 107 999926578
+77 71 999206896
+22 144 999328646
+76 7 999655853
+17 4 999822504
+1 109 999681121
+86 85 999034436
+37 83 999101129
+102 127 999113513
+79 5 999913671
+114 71 999933585
+122 100 999093386
+7 25 999080084
+49 37 999505749
+118 46 999881746
+38 140 999721442
+41 10 999042439
+97 147 999809909
+62 37 999117463
+27 101 999913849
+27 13 999390592
+33 14 999598824
+109 54 999127192
+68 42 999129427
+68 84 999357534
+78 126 999622993
+86 92 999900618
+30 85 999067339
+47 13 999119921
+148 134 999353895
+102 127 999754262
+10 82 999134507
+54 62 999419583
+150 144 999275471
+80 28 999917070
+79 10 999768793
+63 36 999668569
+62 66 999481923
+135 99 999643628
+23 6 999063285
+13 118 999056933
+51 39 999627223
+135 79 999777437
+43 135 999678026
+24 102 999831258
+51 105 999199574
+148 56 999461450
+71 126 999512891
+42 52 999146697
+107 83 999209145
+18 22 999380851
+53 14 999487924
+125 15 999565724
+63 140 999048423
+80 2 999675744
+121 59 999005073
+105 110 999818367
+88 30 999032870
+61 42 999999697
+72 70 999628363
+77 68 999557967
+121 18 999165395
+44 32 999477412
+108 102 999559083
+58 136 999933423
+73 26 999364548
+25 24 999788361
+80 96 999611660
+87 34 999386603
+102 44 999319319
+81 74 999190939
+55 8 999933446
+5 3 999455405
+134 115 999363859
+23 150 999896275
+136 67 999259231
+32 26 999630962
+75 14 999703428
+30 33 999532136
+31 55 999526495
+107 105 999524541
+89 76 999341952
+1 94 999531387
+143 80 999193685
+115 136 999213262
+80 67 999953291
+106 126 999564862
+132 127 999793761
+49 7 999045723
+124 78 999031626
+46 10 999490695
+51 115 999171963
+75 14 999886530
+145 108 999780632
+36 16 999970378
+105 148 999567513
+91 93 999827257
+26 85 999234620
+39 125 999435695
+35 7 999195710
+54 35 999110543
+133 61 999777859
+12 6 999027345
+147 30 999418649
+59 136 999402114
+29 144 999776853
+131 46 999839567
+86 123 999638139
+38 106 999359005
+140 77 999318802
+67 4 999657231
+11 17 999681319
+11 10 999579806
+50 21 999761965
+75 22 999445599
+123 9 999357301
+143 75 999386729
+102 48 999828241
+2 141 999564225
+15 17 999339603
+65 4 999672114
+8 82 999823711
+26 24 999181336
+23 2 999205655
+33 119 999414787
+5 62 999595183
+109 149 999619407
+106 12 999388815
+129 98 999239512
+100 92 999426165
+120 20 999343467
+116 43 999920675
+29 24 999222522
+25 131 999215485
+123 71 999301921
+31 17 999884026
+142 55 999501216
+94 13 999257237
+129 111 999366165
+67 20 999833720
+139 30 999274551
+70 136 999110949
+52 39 999721384
+112 49 999195539
+29 150 999246217
+49 65 999747211
+112 79 999876664
+46 110 999153935
+141 97 999857573
+87 53 999809190
+73 45 999224520
+103 85 999815415
+47 30 999629696
+46 142 999255736
+69 28 999420845
+26 125 999288430
+16 46 999864368
+83 74 999919417
+149 143 999868823
+76 72 999003502
+100 38 999698503
+99 80 999138777
+120 113 999784904
+18 17 999141679
+30 6 999536804
+62 74 999524956
+15 133 999288097
+37 5 999963017
+139 30 999878828
+19 16 999213477
+56 74 999932560
+105 94 999923749
+24 2 999177347
+18 26 999172274
+81 31 999054472
+127 45 999845821
+42 18 999001834
+52 4 999677819
+147 46 999731796
+58 96 999194167
+59 129 999373917
+56 134 999285953
+31 113 999552143
+127 97 999307508
+17 132 999033505
+23 33 999147147
+51 148 999180530
+105 81 999333835
+26 101 999014618
+30 57 999306249
+59 43 999845652
+76 1 999961056
+47 10 999964146
+135 67 999848625
+48 145 999446854
+126 68 999610034
+136 46 999835181
+34 3 999599586
+5 143 999121565
+52 149 999591735
+47 48 999099742
+129 74 999415436
+84 40 999651171
+79 16 999540935
+48 104 999246819
+107 90 999777640
+101 28 999237681
+31 47 999142965
+113 17 999513323
+130 58 999100005
+40 2 999750078
+134 32 999574657
+72 97 999546740
+111 118 999504486
+53 72 999422890
+54 75 999971589
+67 135 999758285
+85 40 999391449
+127 134 999001234
+57 150 999697827
+128 60 999790520
+58 42 999137650
+16 15 999540521
+81 3 999149968
+138 144 999347809
+63 44 999326260
+34 71 999632627
+119 102 999546676
+66 93 999068027
+98 27 999136516
+149 140 999250842
+63 55 999832392
+75 119 999451486
+66 24 999612291
+56 1 999290892
+126 89 999958638
+91 71 999110945
+97 71 999716167
+6 2 999961264
+28 26 999163641
+22 4 999925932
+57 134 999707052
+65 95 999124771
+10 8 999521837
+128 31 999584682
+131 130 999035689
+52 88 999633675
+111 122 999526138
+91 39 999778130
+9 125 999775604
+105 123 999711637
+2 136 999313157
+120 93 999339592
+146 30 999198947
+86 28 999206844
+41 5 999859051
+104 91 999523369
+77 51 999672616
+113 81 999412158
+73 64 999897922
+72 20 999458339
+24 127 999979924
+75 108 999446358
+68 35 999731163
+145 119 999506920
+137 22 999152587
+46 88 999697013
+57 5 999361489
+68 92 999710489
+64 92 999656889
+28 2 999809956
+89 85 999742434
+',
+                            'expected_output' => '148879070371',
+                            'is_hidden' => true,
+                        ],
+                        [
+                            'input' => '1000 3000
+219 173 95
+714 703 79
+671 650 39
+597 870 22
+980 169 84
+740 300 49
+91 67 89
+91 482 73
+121 17 40
+241 432 73
+414 869 17
+41 18 99
+13 8 50
+617 294 73
+846 863 22
+533 333 73
+3 2 10
+217 77 98
+411 163 76
+245 968 24
+163 323 46
+188 449 6
+906 528 11
+70 216 70
+701 963 59
+928 264 5
+411 515 49
+955 93 10
+433 275 30
+510 292 94
+100 82 59
+658 585 56
+966 679 31
+825 570 55
+656 553 97
+40 14 42
+524 127 41
+287 892 89
+787 470 62
+756 438 12
+793 116 53
+35 32 99
+325 391 82
+39 258 16
+350 223 63
+973 917 70
+869 313 72
+784 340 34
+252 787 99
+196 136 37
+926 701 69
+774 109 82
+393 828 71
+978 441 78
+99 29 76
+450 395 49
+323 210 53
+690 256 81
+755 294 63
+633 484 7
+937 698 7
+809 86 42
+959 471 95
+225 473 44
+244 19 30
+542 55 98
+486 744 100
+347 615 63
+7 2 92
+261 423 98
+33 153 97
+805 420 6
+169 989 26
+892 759 14
+9 796 83
+338 151 72
+839 502 77
+876 357 28
+650 574 31
+890 380 57
+589 152 12
+82 70 15
+909 169 9
+276 611 95
+220 60 1
+120 725 37
+337 974 9
+366 501 19
+910 753 42
+704 392 81
+964 747 75
+806 230 46
+788 115 46
+981 323 72
+64 58 54
+760 600 9
+55 551 16
+252 210 68
+588 820 8
+199 852 87
+684 862 40
+934 375 54
+361 17 45
+535 524 31
+643 295 77
+790 299 64
+7 837 5
+749 633 23
+53 41 22
+159 77 49
+700 308 78
+844 371 69
+882 425 39
+592 247 79
+735 16 48
+506 174 59
+884 864 42
+899 114 85
+982 165 37
+302 465 25
+627 417 37
+4 3 35
+769 357 95
+326 274 85
+380 385 39
+421 137 42
+955 639 88
+531 561 91
+611 91 2
+823 627 97
+491 904 51
+771 703 98
+551 237 4
+172 353 39
+6 692 78
+127 27 76
+106 420 81
+296 75 28
+77 26 21
+17 2 10
+986 775 58
+85 377 2
+373 704 23
+385 466 62
+359 327 39
+493 976 21
+68 144 16
+897 494 68
+863 474 85
+887 82 9
+268 39 35
+74 343 85
+269 104 42
+587 798 21
+870 957 100
+70 816 74
+198 714 24
+748 340 18
+573 492 38
+542 408 38
+455 959 93
+600 371 91
+751 131 71
+404 314 74
+576 985 66
+389 52 43
+275 457 51
+517 936 79
+49 8 34
+422 414 49
+670 212 44
+322 803 75
+941 146 89
+795 924 57
+106 633 15
+454 152 77
+917 696 25
+738 27 92
+162 93 11
+669 324 16
+13 713 74
+489 9 24
+7 387 66
+325 13 94
+483 678 56
+371 307 28
+971 575 85
+514 689 43
+200 528 91
+92 394 7
+970 785 41
+496 287 8
+953 207 34
+395 89 49
+540 57 78
+993 357 12
+34 7 44
+614 952 49
+640 118 73
+261 60 9
+492 344 39
+701 562 29
+636 127 80
+346 15 72
+366 124 27
+746 288 35
+881 932 7
+707 898 16
+205 167 67
+111 75 30
+412 223 48
+808 380 90
+260 509 92
+896 168 62
+625 535 7
+924 424 71
+770 39 39
+501 451 81
+982 254 33
+427 274 22
+226 571 83
+375 613 37
+24 267 40
+873 915 85
+952 339 93
+969 273 25
+156 17 28
+287 576 60
+930 641 70
+593 209 13
+609 79 13
+886 678 91
+646 819 51
+137 843 86
+410 331 65
+825 345 11
+447 687 12
+522 118 78
+145 734 98
+115 604 32
+737 648 84
+833 400 68
+855 606 21
+103 384 100
+195 47 87
+929 257 74
+908 593 65
+766 165 54
+162 78 88
+808 356 95
+619 121 74
+628 368 86
+628 261 9
+340 336 30
+257 313 95
+166 379 44
+836 972 70
+853 238 19
+859 795 49
+98 259 1
+338 425 55
+618 803 52
+134 493 47
+680 53 79
+392 194 61
+73 83 40
+559 213 1
+947 76 84
+871 300 97
+65 25 55
+379 37 28
+742 516 1
+103 92 65
+729 487 25
+504 344 33
+529 295 4
+473 741 23
+231 139 23
+865 552 89
+939 754 32
+700 162 65
+299 150 79
+546 430 93
+614 956 82
+329 680 61
+644 436 93
+432 172 15
+508 66 84
+598 327 7
+660 724 36
+266 881 69
+723 459 63
+63 927 100
+431 595 23
+421 685 95
+670 466 1
+220 852 46
+696 283 80
+286 180 57
+596 232 15
+518 897 99
+380 77 26
+6 5 87
+601 714 3
+642 502 31
+615 411 49
+443 385 32
+351 157 85
+555 56 46
+778 313 5
+462 424 82
+513 789 44
+564 428 20
+887 705 54
+780 369 49
+19 7 38
+138 198 8
+814 145 65
+490 443 99
+708 89 32
+758 129 69
+612 618 15
+652 551 54
+826 482 44
+541 218 84
+152 129 95
+632 453 81
+615 37 47
+663 572 35
+184 346 15
+840 852 63
+257 965 13
+511 760 2
+907 952 7
+61 408 64
+655 718 72
+98 50 26
+288 22 1
+767 603 93
+212 169 96
+508 411 74
+337 221 39
+714 232 48
+646 456 63
+19 304 26
+867 566 64
+859 147 42
+84 567 7
+970 214 82
+176 990 31
+751 283 55
+301 281 99
+315 294 74
+653 480 88
+349 311 2
+454 508 79
+209 863 49
+752 1 21
+736 266 69
+2 476 86
+956 821 44
+678 292 25
+975 328 84
+136 128 63
+492 250 25
+308 10 12
+895 619 48
+743 739 86
+844 124 52
+131 27 81
+161 754 46
+110 977 81
+248 103 6
+251 706 11
+62 331 81
+853 173 9
+184 846 6
+253 33 13
+420 908 15
+453 961 31
+920 59 99
+375 316 94
+441 174 76
+752 689 21
+392 233 29
+42 37 98
+154 49 94
+351 292 27
+910 934 86
+834 708 6
+747 346 36
+958 742 57
+228 105 68
+54 908 43
+361 459 69
+399 500 59
+341 137 57
+828 714 12
+122 81 54
+879 263 15
+530 118 25
+300 709 25
+205 804 48
+51 150 25
+632 445 69
+451 105 69
+218 311 17
+398 931 50
+151 5 95
+523 435 73
+25 878 16
+480 157 74
+286 295 98
+876 650 81
+762 607 91
+395 123 7
+920 109 28
+332 97 26
+567 969 28
+614 448 4
+111 252 100
+167 360 81
+456 31 30
+925 668 86
+973 990 95
+385 699 18
+161 176 84
+520 464 30
+856 426 81
+22 30 59
+672 597 70
+324 90 8
+272 174 72
+921 54 10
+489 108 27
+953 917 95
+543 176 53
+326 294 78
+852 271 86
+193 145 81
+522 278 47
+271 228 36
+397 590 50
+680 390 85
+144 372 26
+942 109 76
+73 595 28
+133 584 75
+24 568 98
+7 366 43
+867 565 54
+677 288 76
+515 415 75
+5 2 29
+569 183 50
+157 1 23
+138 116 5
+749 496 89
+611 168 70
+972 586 91
+284 460 6
+657 186 70
+289 47 70
+532 316 60
+741 330 78
+647 137 35
+409 259 6
+377 184 12
+877 335 98
+505 275 38
+335 701 89
+482 818 89
+934 388 4
+980 714 3
+286 145 83
+619 279 7
+129 86 74
+955 799 94
+894 488 80
+770 314 82
+664 680 76
+613 279 57
+955 432 16
+859 798 64
+487 243 26
+568 345 99
+341 581 64
+189 701 19
+173 476 5
+431 200 66
+450 334 71
+210 42 22
+661 194 62
+988 124 62
+702 449 97
+890 323 72
+867 359 1
+288 596 63
+788 690 82
+309 272 11
+610 568 57
+264 242 92
+811 361 48
+115 562 59
+521 563 66
+798 300 83
+318 769 65
+75 35 15
+820 640 28
+489 315 41
+567 226 90
+556 85 3
+864 48 11
+278 335 76
+774 250 34
+205 138 89
+656 461 79
+176 89 17
+868 334 5
+137 820 85
+841 307 14
+983 779 62
+991 501 39
+425 801 57
+95 710 47
+774 871 14
+826 176 13
+662 235 65
+228 380 40
+285 22 68
+31 670 51
+803 221 21
+145 5 85
+855 585 30
+956 634 17
+250 76 73
+476 942 22
+704 385 59
+196 441 92
+780 94 36
+246 111 99
+858 188 71
+713 528 93
+524 695 2
+525 501 80
+268 260 2
+375 334 4
+651 371 28
+22 15 80
+172 475 96
+747 983 45
+699 279 1
+952 17 43
+368 945 79
+270 245 45
+544 62 20
+27 350 91
+826 95 29
+502 437 46
+748 155 82
+369 20 31
+393 79 99
+549 299 58
+72 979 38
+416 452 51
+444 164 39
+336 731 13
+778 390 55
+782 607 71
+320 561 56
+54 31 38
+638 676 34
+909 904 69
+732 232 52
+65 729 94
+319 860 69
+103 318 86
+970 261 42
+814 898 24
+709 908 70
+146 73 28
+148 198 72
+56 21 72
+97 24 18
+772 489 99
+123 391 73
+415 243 69
+233 229 59
+518 362 30
+10 158 91
+221 152 51
+930 465 34
+627 125 61
+457 788 71
+107 410 18
+56 916 11
+856 113 68
+995 155 78
+804 903 36
+442 451 75
+826 167 86
+763 378 1
+665 736 75
+858 889 19
+955 9 56
+522 358 63
+757 232 53
+780 973 86
+334 1 54
+251 321 46
+607 543 72
+618 299 88
+641 481 54
+16 414 70
+390 977 25
+607 182 98
+789 670 81
+797 352 45
+365 777 24
+475 283 86
+474 397 53
+883 34 2
+922 900 7
+745 682 92
+205 827 59
+16 530 17
+322 233 6
+471 164 18
+694 422 54
+620 461 38
+104 89 28
+327 49 52
+789 384 55
+512 28 6
+695 7 34
+712 661 87
+81 46 8
+478 27 38
+650 8 100
+683 65 30
+866 758 28
+798 870 62
+451 232 64
+429 399 29
+436 324 30
+883 64 75
+27 834 34
+772 761 76
+172 122 5
+721 638 87
+557 266 48
+930 339 97
+704 729 83
+409 45 26
+519 344 84
+957 233 92
+685 489 22
+991 170 66
+276 690 5
+473 693 66
+576 108 59
+622 386 12
+348 996 23
+79 48 42
+699 846 55
+185 210 72
+576 92 66
+738 674 90
+119 84 91
+681 597 23
+211 616 61
+336 811 42
+261 89 26
+272 438 38
+212 185 16
+226 32 92
+484 443 80
+763 308 95
+603 245 41
+709 423 15
+140 40 11
+174 346 14
+357 807 80
+113 673 54
+219 508 1
+848 413 79
+552 3 37
+694 798 25
+689 645 4
+384 35 28
+224 909 8
+77 42 31
+281 164 58
+424 275 75
+573 443 75
+762 517 20
+279 832 43
+495 62 62
+338 827 28
+318 256 29
+878 857 12
+955 635 11
+618 96 12
+210 434 32
+223 846 44
+819 299 30
+820 933 52
+952 478 93
+815 555 79
+653 455 65
+801 256 40
+549 353 75
+837 524 52
+214 520 94
+174 360 9
+73 271 2
+167 162 44
+337 93 22
+581 60 12
+803 370 33
+804 151 34
+155 990 13
+954 949 99
+483 782 41
+114 407 50
+49 445 75
+712 611 64
+141 591 27
+314 202 15
+428 146 40
+968 935 95
+238 168 11
+637 64 92
+845 782 32
+994 810 57
+612 382 94
+32 567 87
+673 723 13
+117 694 79
+724 399 93
+998 836 63
+720 295 26
+405 201 50
+789 426 100
+501 553 8
+769 708 29
+1 211 78
+757 674 98
+89 240 22
+957 568 75
+595 224 99
+749 276 64
+872 623 48
+325 209 20
+513 845 23
+306 797 92
+591 916 70
+359 126 39
+188 776 90
+280 912 66
+47 112 66
+980 248 58
+466 121 99
+283 731 87
+517 447 50
+327 907 78
+820 238 94
+382 137 43
+562 648 67
+776 560 99
+113 803 62
+881 840 47
+682 399 11
+504 262 38
+762 702 78
+984 430 23
+372 135 20
+116 73 50
+189 787 26
+448 189 71
+584 614 23
+380 727 63
+971 30 48
+527 783 21
+273 962 87
+122 498 8
+591 780 57
+822 486 58
+827 626 64
+851 838 57
+629 835 100
+345 835 46
+160 1 52
+18 11 44
+946 450 32
+643 261 38
+248 435 17
+824 763 2
+677 275 16
+365 183 22
+933 628 62
+687 882 6
+211 485 87
+734 159 89
+873 539 48
+978 937 33
+179 520 40
+360 989 42
+559 681 16
+255 420 16
+204 188 29
+108 931 4
+403 522 99
+314 940 100
+30 9 89
+347 221 70
+767 459 54
+583 336 96
+548 76 85
+618 500 4
+857 939 87
+534 225 13
+103 351 79
+56 57 85
+189 60 69
+985 892 65
+643 596 53
+746 547 95
+554 147 7
+764 296 99
+168 658 59
+628 714 41
+20 458 65
+811 675 2
+389 188 12
+595 34 37
+117 901 89
+567 693 44
+813 525 96
+90 329 63
+188 144 87
+642 743 15
+674 334 100
+211 50 73
+149 559 27
+134 110 58
+35 580 4
+379 904 80
+276 69 36
+725 769 48
+21 10 81
+650 794 96
+667 549 92
+110 106 52
+210 830 89
+548 230 69
+392 385 51
+798 608 54
+213 174 60
+988 358 35
+385 313 28
+13 368 17
+759 547 21
+209 353 37
+35 334 97
+782 967 77
+971 550 67
+202 852 58
+651 349 91
+195 632 46
+346 150 60
+471 662 50
+455 299 54
+728 106 51
+603 689 71
+242 176 32
+199 871 99
+911 730 60
+347 502 80
+183 872 18
+352 222 34
+684 976 98
+896 645 100
+55 391 97
+87 29 54
+112 296 81
+954 14 41
+364 205 44
+266 257 42
+291 24 39
+754 80 43
+534 636 34
+680 447 28
+347 487 52
+707 428 19
+315 71 3
+115 13 62
+686 538 21
+153 885 27
+595 253 2
+460 697 87
+735 422 16
+345 293 21
+736 906 95
+371 500 89
+166 147 46
+86 37 32
+232 43 50
+728 29 98
+208 396 95
+684 685 22
+175 295 46
+761 416 69
+944 784 14
+899 817 34
+219 714 56
+284 185 58
+434 619 27
+500 124 50
+464 258 46
+388 975 76
+289 568 27
+177 99 60
+574 957 61
+201 443 20
+560 278 4
+490 708 68
+943 732 18
+939 995 79
+421 601 17
+518 667 59
+784 39 31
+876 791 62
+924 426 52
+189 945 19
+26 136 41
+355 255 33
+764 763 12
+649 542 99
+589 129 6
+614 876 79
+148 74 96
+454 740 32
+393 149 18
+134 122 98
+914 183 26
+80 993 59
+800 727 77
+945 441 72
+370 263 9
+688 488 100
+318 74 60
+174 829 88
+61 1 68
+524 486 20
+914 923 29
+614 772 74
+773 276 92
+960 43 59
+344 33 37
+60 338 13
+694 309 88
+436 340 19
+402 218 63
+791 67 32
+131 841 17
+325 188 27
+122 909 13
+175 636 36
+69 3 16
+986 328 97
+609 271 2
+820 331 41
+163 504 85
+395 903 65
+122 942 89
+448 584 35
+689 624 51
+822 458 75
+781 653 78
+357 340 70
+374 52 47
+332 327 82
+71 48 37
+616 70 28
+307 248 22
+340 391 33
+715 301 46
+520 353 57
+497 723 78
+545 1 17
+630 297 95
+406 472 87
+451 310 5
+108 10 88
+636 448 2
+549 782 68
+68 849 9
+172 290 63
+865 960 17
+442 55 83
+804 637 89
+331 725 5
+106 964 31
+836 533 28
+67 515 7
+107 929 1
+521 197 19
+706 74 38
+947 923 29
+378 29 38
+878 934 69
+699 411 83
+368 988 7
+474 390 37
+370 868 38
+610 329 81
+473 74 36
+852 49 70
+301 581 67
+6 517 92
+335 16 47
+827 690 38
+106 53 85
+114 100 50
+820 765 27
+855 32 2
+542 986 86
+288 549 55
+913 910 59
+164 76 2
+979 541 9
+865 512 2
+696 762 14
+770 270 5
+394 33 22
+78 18 31
+166 128 7
+712 136 66
+274 126 44
+797 435 72
+992 418 4
+849 517 90
+322 135 84
+724 217 13
+627 197 44
+842 349 52
+26 3 39
+46 32 68
+780 221 50
+634 264 46
+306 46 73
+584 563 99
+943 986 40
+495 121 51
+832 184 62
+301 240 20
+487 90 33
+169 602 35
+242 120 25
+398 217 68
+387 141 100
+203 619 26
+600 297 37
+260 259 15
+248 305 88
+376 544 51
+706 607 86
+83 715 6
+506 362 59
+601 918 28
+409 74 26
+710 905 29
+153 687 12
+949 902 72
+662 951 81
+194 80 38
+616 15 11
+42 74 48
+231 133 44
+868 285 79
+621 114 27
+749 187 97
+217 962 95
+97 290 9
+484 311 56
+120 17 45
+68 983 66
+109 562 69
+303 975 58
+930 528 57
+464 79 80
+561 470 48
+414 35 85
+923 371 85
+951 472 50
+798 114 80
+909 491 86
+166 271 48
+83 4 28
+90 73 12
+562 91 33
+870 755 97
+597 36 41
+423 281 28
+74 53 64
+664 476 8
+339 347 66
+722 265 74
+452 518 4
+235 221 59
+704 216 100
+798 565 71
+902 575 13
+169 367 39
+168 368 90
+670 688 51
+741 893 93
+488 688 61
+575 119 30
+976 163 94
+895 464 85
+750 195 51
+281 277 3
+649 420 40
+397 844 32
+533 65 51
+282 229 49
+361 282 35
+284 101 96
+972 805 63
+959 131 19
+885 687 79
+737 606 39
+891 320 96
+669 656 25
+931 44 94
+472 756 68
+483 664 56
+839 684 32
+252 584 54
+614 489 63
+836 815 22
+614 361 44
+917 976 75
+327 967 20
+956 72 79
+341 39 57
+725 868 3
+607 635 36
+668 568 24
+407 118 33
+990 600 99
+665 719 91
+965 611 66
+43 19 100
+277 175 31
+151 564 5
+540 370 95
+494 367 47
+282 268 21
+969 150 71
+214 389 33
+815 695 54
+367 127 28
+801 482 83
+836 252 57
+758 267 86
+282 357 91
+922 73 65
+215 139 99
+606 548 70
+710 633 84
+493 490 74
+101 563 28
+33 24 27
+77 698 78
+501 325 48
+566 473 58
+802 634 10
+937 673 12
+435 177 20
+163 176 66
+368 53 100
+528 216 72
+230 88 44
+728 608 19
+144 217 2
+597 442 16
+835 582 16
+978 999 98
+670 46 97
+558 410 79
+827 694 76
+41 774 15
+741 107 71
+221 377 74
+334 307 78
+875 419 53
+627 420 29
+322 921 11
+591 979 67
+410 324 81
+717 265 82
+551 791 64
+863 448 83
+11 6 21
+335 543 28
+168 485 45
+654 489 77
+980 592 55
+39 271 27
+957 985 51
+806 460 22
+171 156 17
+823 601 58
+323 43 42
+605 320 80
+513 124 66
+615 269 69
+413 831 91
+708 192 98
+775 767 84
+34 980 71
+181 347 59
+880 443 36
+821 128 6
+483 404 59
+447 424 81
+497 789 17
+606 955 1
+460 346 63
+385 934 1
+871 40 50
+817 539 74
+259 157 44
+924 791 38
+345 209 94
+39 15 14
+874 448 25
+589 189 93
+24 581 25
+37 438 56
+483 627 32
+514 162 63
+849 103 79
+409 117 73
+363 24 24
+545 483 59
+605 738 77
+613 968 7
+549 596 21
+426 20 16
+47 5 85
+294 41 76
+398 500 96
+644 161 21
+684 11 67
+716 722 7
+915 167 98
+921 300 59
+358 78 11
+665 644 47
+787 301 66
+300 15 25
+68 47 60
+63 56 89
+454 321 38
+430 356 86
+281 116 32
+287 487 34
+254 150 80
+456 766 38
+509 62 37
+739 682 54
+799 36 34
+137 98 98
+920 357 24
+218 602 8
+880 474 83
+960 479 5
+425 752 20
+483 456 8
+982 223 48
+960 600 11
+858 703 49
+124 68 38
+47 809 10
+16 169 44
+546 620 23
+975 901 87
+692 959 20
+73 40 87
+338 85 56
+38 613 89
+772 680 65
+528 366 16
+420 795 89
+946 654 14
+342 60 1
+543 330 78
+365 50 74
+891 798 84
+374 33 13
+383 295 68
+877 462 63
+128 453 2
+544 774 29
+109 792 74
+905 397 5
+181 136 29
+819 320 35
+480 864 76
+325 787 33
+615 259 41
+309 688 66
+246 848 100
+25 707 73
+847 687 75
+109 996 86
+567 318 83
+503 119 98
+690 619 83
+915 194 89
+486 540 60
+541 469 38
+645 275 28
+679 532 55
+906 685 48
+497 463 64
+293 729 53
+892 317 28
+232 247 92
+968 994 49
+761 456 6
+935 281 53
+370 155 26
+763 466 31
+403 766 80
+169 6 97
+976 738 70
+445 335 23
+842 417 52
+463 12 61
+405 339 36
+80 233 16
+441 231 12
+38 8 65
+618 617 82
+904 738 86
+372 663 29
+331 210 83
+936 85 64
+36 221 8
+860 72 43
+999 100 61
+794 242 36
+365 737 40
+319 289 17
+255 11 23
+582 387 88
+889 36 52
+317 830 80
+449 302 60
+311 707 52
+199 358 53
+221 40 35
+711 964 27
+200 603 35
+27 715 25
+354 282 90
+186 834 64
+564 562 65
+630 959 75
+414 199 40
+165 12 46
+515 435 25
+233 581 45
+898 360 14
+390 270 59
+13 784 85
+435 258 50
+467 101 51
+807 491 42
+727 213 57
+914 11 19
+853 922 76
+372 506 11
+127 963 14
+833 643 34
+404 42 45
+400 379 79
+651 375 77
+853 233 61
+328 262 88
+907 423 67
+320 389 64
+561 254 70
+652 311 72
+469 293 34
+458 460 72
+149 39 96
+179 86 28
+245 486 2
+900 484 98
+811 555 73
+51 1 69
+52 655 63
+961 158 95
+307 782 33
+125 849 45
+884 989 39
+534 449 97
+499 610 52
+594 934 92
+889 791 52
+555 224 7
+927 715 49
+999 161 1
+630 495 19
+722 656 42
+984 423 87
+623 490 93
+841 321 37
+130 623 23
+764 289 24
+769 31 95
+387 161 83
+893 21 82
+846 902 3
+738 869 58
+783 760 97
+458 286 31
+638 595 60
+828 201 4
+463 474 42
+303 20 83
+225 730 19
+645 142 77
+720 405 54
+165 57 31
+908 592 19
+327 244 17
+674 860 16
+784 894 67
+630 832 74
+941 849 14
+926 672 84
+743 336 53
+912 61 94
+198 83 23
+987 1 45
+859 36 1
+39 266 3
+293 641 58
+93 376 54
+491 578 44
+614 287 15
+829 683 70
+565 212 48
+201 229 33
+275 193 100
+856 480 76
+381 507 76
+778 292 38
+138 897 99
+437 72 78
+711 77 79
+987 667 52
+153 93 91
+809 774 34
+314 277 4
+155 3 51
+212 641 33
+534 330 70
+396 114 23
+259 784 50
+550 985 10
+234 121 18
+601 375 41
+677 745 19
+981 974 38
+276 535 87
+809 974 33
+922 449 52
+864 283 44
+147 43 73
+903 897 12
+469 831 67
+459 470 7
+797 100 32
+367 239 43
+348 569 93
+725 114 22
+6 337 7
+126 529 6
+902 592 52
+527 282 24
+724 321 76
+459 937 35
+239 41 79
+900 149 27
+464 712 84
+526 135 11
+420 308 55
+694 633 42
+955 395 11
+49 735 32
+512 969 34
+544 47 38
+849 375 69
+202 713 86
+890 203 38
+315 842 1
+754 417 30
+650 348 60
+995 332 92
+285 948 5
+458 770 40
+777 514 85
+690 468 66
+488 22 34
+360 193 6
+302 231 81
+612 814 99
+143 108 34
+38 353 88
+782 661 8
+194 648 47
+735 681 3
+596 379 1
+50 279 63
+708 655 99
+480 515 90
+439 319 83
+850 466 2
+262 822 52
+851 231 52
+569 713 24
+998 635 72
+40 996 38
+571 502 43
+241 323 56
+871 978 49
+881 175 38
+470 324 15
+442 318 35
+456 731 31
+213 438 45
+425 16 26
+45 902 97
+565 280 74
+810 102 1
+75 916 85
+424 75 38
+742 620 64
+505 269 66
+197 622 9
+206 628 79
+287 245 29
+975 642 79
+404 638 58
+190 244 18
+241 872 19
+795 673 46
+75 24 60
+329 50 81
+819 231 11
+586 416 22
+277 126 68
+19 357 24
+94 19 64
+92 872 40
+211 382 85
+100 103 86
+460 878 5
+856 223 70
+348 601 69
+555 625 79
+848 791 65
+243 879 80
+680 966 25
+927 30 2
+348 742 91
+681 58 61
+584 566 15
+155 314 12
+622 572 61
+319 277 48
+812 748 76
+271 949 5
+638 775 25
+556 608 95
+214 122 45
+481 353 6
+621 653 77
+26 532 40
+828 167 3
+358 109 80
+231 303 52
+382 441 10
+948 138 54
+878 423 6
+15 260 7
+250 530 73
+118 36 7
+885 440 56
+427 375 85
+501 417 23
+874 58 28
+74 516 6
+161 998 69
+625 96 38
+450 915 69
+923 688 74
+25 168 9
+306 335 57
+222 55 34
+342 123 92
+999 875 96
+880 251 2
+713 87 97
+594 342 28
+354 311 38
+594 260 9
+684 926 9
+591 340 81
+963 340 60
+70 976 69
+790 126 11
+613 382 61
+796 878 81
+838 641 86
+358 364 85
+547 327 52
+581 235 73
+441 645 35
+705 402 15
+318 144 32
+295 873 89
+667 135 6
+945 591 99
+5 815 72
+794 409 19
+2 132 48
+723 691 53
+741 38 48
+902 318 12
+776 859 94
+861 980 92
+550 180 29
+390 176 83
+229 153 59
+172 957 88
+116 111 63
+469 846 64
+129 832 43
+192 25 58
+31 30 87
+346 179 25
+159 660 19
+165 366 42
+666 814 40
+665 546 86
+918 33 9
+250 717 43
+149 70 98
+831 124 89
+167 562 54
+962 417 17
+285 421 78
+386 277 48
+931 995 48
+66 328 42
+626 453 34
+321 60 94
+986 595 71
+300 481 37
+507 353 94
+676 730 6
+856 60 8
+982 189 33
+415 523 4
+931 799 86
+839 698 18
+142 898 72
+397 959 85
+574 200 41
+998 757 8
+28 25 22
+892 730 20
+312 92 55
+979 233 95
+758 174 85
+390 463 6
+588 171 50
+708 521 41
+266 845 87
+297 4 99
+845 227 20
+757 84 15
+168 99 62
+606 689 23
+895 671 87
+625 63 64
+690 734 86
+193 373 25
+174 30 99
+882 737 38
+981 421 72
+243 143 99
+292 581 77
+888 609 38
+309 549 82
+414 212 87
+343 204 30
+268 874 33
+486 320 64
+180 152 82
+149 560 42
+944 692 74
+183 147 33
+274 69 6
+753 183 39
+102 929 25
+806 193 41
+175 142 11
+935 186 19
+374 110 22
+267 180 91
+873 129 38
+601 236 31
+136 72 100
+873 745 46
+458 187 61
+505 891 78
+536 460 96
+346 91 66
+294 965 73
+366 761 85
+158 28 68
+162 911 61
+704 547 45
+480 522 18
+413 256 89
+27 11 49
+439 891 93
+141 21 2
+47 734 55
+128 368 68
+478 53 93
+967 990 59
+510 161 77
+754 36 22
+102 907 29
+566 402 35
+575 519 61
+515 503 8
+446 263 84
+875 437 22
+277 135 16
+229 192 32
+327 89 90
+838 335 75
+117 314 64
+325 584 71
+830 725 2
+460 794 28
+868 499 8
+857 158 88
+195 799 54
+476 381 61
+974 562 97
+811 509 49
+990 827 30
+737 576 84
+93 50 20
+972 267 91
+983 716 65
+941 802 4
+984 126 56
+21 877 22
+428 762 46
+607 33 100
+1000 127 76
+832 313 40
+598 179 61
+28 90 3
+101 24 59
+975 386 20
+384 636 44
+493 610 31
+65 227 69
+372 321 3
+789 12 33
+721 417 64
+493 21 99
+274 729 59
+943 757 12
+939 333 91
+649 855 93
+803 346 68
+932 599 70
+201 282 24
+678 926 60
+150 68 87
+541 44 78
+520 552 5
+710 483 24
+264 482 67
+113 50 87
+452 413 42
+81 436 33
+433 384 43
+91 794 60
+911 427 8
+951 560 43
+930 61 68
+920 996 96
+938 632 51
+867 850 32
+417 22 34
+546 234 35
+176 752 62
+634 747 78
+11 919 26
+19 63 85
+568 867 58
+838 813 77
+484 82 21
+23 229 28
+664 749 73
+98 586 21
+399 487 52
+645 373 92
+976 351 37
+807 618 71
+946 622 39
+265 37 65
+667 821 42
+466 839 48
+523 742 26
+935 876 78
+147 276 51
+727 994 86
+820 396 48
+879 31 83
+615 724 86
+495 5 24
+396 327 86
+190 359 19
+559 602 91
+256 59 74
+877 771 92
+742 836 66
+463 58 83
+906 363 21
+624 509 1
+219 892 17
+650 76 77
+143 987 43
+835 732 61
+731 769 82
+627 635 98
+719 511 23
+283 164 78
+780 913 22
+813 748 98
+38 966 68
+298 102 50
+394 826 5
+565 468 57
+362 353 39
+69 216 6
+478 308 35
+742 593 8
+674 718 91
+306 127 10
+60 882 89
+587 235 49
+263 108 88
+926 487 66
+247 923 74
+340 254 87
+617 855 56
+568 532 85
+207 355 42
+7 436 88
+821 328 14
+100 249 62
+680 144 31
+572 362 21
+290 251 31
+803 777 18
+11 400 15
+446 325 25
+737 90 36
+728 950 17
+71 345 57
+464 64 72
+249 46 52
+300 234 1
+105 563 67
+328 203 36
+980 53 76
+426 910 43
+205 110 44
+937 304 65
+156 905 17
+792 68 56
+378 224 77
+91 791 75
+744 199 70
+854 342 83
+528 94 70
+97 649 15
+253 359 97
+191 89 56
+711 459 15
+343 47 92
+519 621 45
+295 76 61
+546 66 88
+843 243 21
+70 21 58
+839 347 5
+215 233 53
+901 153 46
+154 924 82
+84 828 42
+487 309 85
+127 112 70
+978 121 66
+613 846 28
+73 165 26
+749 645 19
+923 659 64
+686 301 12
+499 90 82
+490 385 84
+337 104 52
+574 354 78
+950 667 13
+795 543 21
+282 36 74
+718 335 69
+120 812 96
+515 264 50
+534 703 22
+246 427 98
+182 761 34
+876 619 2
+354 387 50
+897 478 89
+718 131 39
+430 387 2
+313 84 75
+743 774 31
+674 771 97
+68 583 19
+137 935 4
+967 389 62
+778 769 4
+181 98 70
+271 103 18
+399 354 58
+784 639 34
+806 723 53
+798 704 93
+691 262 98
+582 252 54
+233 482 34
+367 258 87
+447 402 60
+91 701 50
+865 445 42
+330 116 85
+789 900 81
+923 914 74
+38 715 54
+182 777 7
+359 167 63
+286 718 69
+549 867 23
+811 847 70
+851 652 8
+950 582 32
+194 498 74
+897 845 26
+440 140 33
+124 179 78
+132 82 26
+317 864 49
+729 865 50
+482 288 89
+796 994 40
+735 847 38
+394 434 16
+778 987 56
+607 200 3
+318 889 34
+30 568 26
+585 33 84
+966 798 19
+494 265 73
+253 18 60
+506 993 81
+991 377 50
+965 123 82
+80 19 97
+891 999 38
+705 273 97
+846 113 76
+348 701 30
+894 585 29
+380 214 75
+479 163 51
+795 610 31
+682 633 61
+806 710 100
+683 970 27
+285 504 90
+335 604 14
+613 178 23
+76 41 73
+21 566 74
+335 347 57
+919 896 88
+918 375 88
+464 793 49
+343 74 5
+94 395 46
+845 206 6
+616 42 96
+225 201 29
+405 892 93
+914 380 47
+257 22 25
+996 527 88
+310 249 61
+975 577 8
+938 12 28
+344 881 6
+797 471 95
+243 600 76
+963 689 37
+344 146 68
+218 175 82
+112 675 35
+586 590 76
+367 663 66
+69 270 11
+403 361 78
+817 416 47
+148 652 68
+158 999 30
+894 51 71
+27 526 38
+634 410 2
+988 316 74
+578 960 71
+316 23 38
+376 369 71
+343 276 41
+633 677 95
+346 325 40
+29 19 12
+685 253 78
+125 530 47
+962 19 47
+898 532 76
+943 942 63
+209 107 81
+969 604 80
+960 623 87
+417 683 53
+673 248 92
+507 314 44
+703 688 15
+476 30 12
+277 599 41
+466 32 27
+998 86 92
+590 494 65
+474 250 40
+635 52 12
+932 531 11
+388 670 20
+262 701 71
+499 458 53
+554 675 54
+688 656 72
+307 4 84
+408 543 89
+782 227 53
+448 510 5
+923 272 40
+984 976 2
+676 258 54
+174 807 81
+772 612 55
+824 554 12
+662 433 89
+491 466 8
+974 960 83
+907 798 65
+723 233 40
+825 146 19
+655 366 91
+560 504 68
+375 396 64
+221 219 4
+635 736 10
+139 5 61
+740 507 76
+860 970 26
+33 316 44
+744 946 13
+703 285 94
+480 647 77
+439 275 74
+985 821 4
+698 163 100
+452 544 41
+95 617 77
+987 186 73
+703 640 49
+419 746 29
+391 15 7
+770 687 78
+112 277 32
+360 112 29
+750 432 31
+229 495 83
+893 150 5
+2 1 49
+353 321 87
+782 388 30
+26 194 7
+760 839 4
+936 807 45
+845 836 46
+877 392 52
+424 889 1
+264 845 62
+457 958 93
+335 342 52
+406 988 28
+622 290 33
+734 923 12
+500 82 48
+134 681 89
+534 291 50
+620 456 19
+744 580 11
+602 302 68
+705 804 48
+817 909 13
+653 684 80
+186 111 25
+430 38 37
+537 74 40
+381 49 85
+623 769 32
+334 775 89
+971 523 99
+240 170 76
+13 987 71
+88 397 48
+390 971 7
+98 432 21
+42 58 27
+686 932 25
+27 404 40
+109 349 70
+404 163 76
+742 319 42
+500 846 82
+889 983 73
+196 58 41
+342 577 26
+232 71 90
+20 603 81
+935 207 75
+370 188 52
+522 318 48
+599 792 10
+516 255 79
+677 534 99
+578 457 41
+958 624 19
+824 475 50
+788 534 1
+927 914 34
+503 435 16
+182 23 29
+937 909 67
+931 317 84
+729 393 81
+262 110 79
+172 35 16
+748 301 79
+191 664 71
+470 214 2
+666 389 41
+848 6 50
+58 587 97
+906 481 76
+433 930 3
+958 55 95
+216 46 7
+358 287 64
+321 351 88
+347 188 39
+95 531 76
+657 346 79
+386 268 74
+813 659 63
+278 109 48
+279 181 82
+738 390 12
+330 382 32
+652 121 92
+989 814 66
+219 100 36
+805 165 82
+33 990 97
+923 593 84
+475 294 24
+488 661 77
+348 39 35
+236 94 74
+860 7 13
+16 423 62
+32 2 52
+741 337 14
+42 464 94
+62 47 17
+86 447 34
+944 262 56
+8 5 94
+845 233 35
+697 635 5
+694 483 2
+105 77 12
+585 31 41
+862 599 1
+4 558 18
+474 275 17
+591 21 59
+579 441 45
+450 577 33
+366 744 67
+339 177 91
+20 11 87
+342 522 61
+592 898 77
+199 616 75
+999 75 24
+198 9 93
+137 737 81
+820 250 88
+853 652 70
+452 796 47
+183 234 31
+596 788 15
+575 402 59
+676 340 26
+248 74 30
+790 232 15
+350 469 86
+207 101 52
+119 66 57
+731 693 73
+246 148 57
+356 292 2
+744 583 33
+768 749 72
+650 384 79
+877 662 9
+905 80 36
+293 276 95
+905 297 95
+843 929 100
+574 549 24
+308 4 93
+682 354 60
+980 147 57
+633 342 3
+528 99 59
+988 333 24
+82 826 48
+714 428 28
+796 170 3
+585 364 63
+206 69 8
+602 586 24
+736 438 64
+249 801 89
+135 114 13
+784 256 13
+681 884 17
+166 729 59
+443 259 68
+408 116 84
+48 39 47
+453 228 72
+418 233 31
+145 607 51
+441 820 31
+40 13 84
+802 941 66
+44 136 31
+73 706 92
+908 599 34
+814 11 69
+202 221 91
+752 228 59
+190 124 60
+584 643 63
+953 604 8
+273 145 59
+963 194 44
+458 161 66
+577 111 25
+573 89 47
+716 840 28
+328 773 24
+100 654 7
+183 892 68
+602 698 61
+615 855 5
+227 210 84
+991 622 93
+131 847 96
+234 314 35
+191 341 61
+944 546 19
+250 828 64
+203 119 24
+391 715 66
+105 945 51
+247 169 48
+758 30 80
+571 410 88
+899 159 5
+341 778 73
+940 252 89
+185 139 40
+133 25 65
+1000 804 85
+855 208 59
+109 44 5
+777 53 50
+26 858 49
+79 681 58
+508 714 62
+906 432 46
+780 675 48
+701 245 68
+406 272 68
+539 512 72
+163 622 34
+553 267 42
+350 578 35
+631 259 71
+821 768 43
+57 660 54
+873 437 52
+390 141 42
+10 3 55
+668 198 89
+710 804 60
+78 688 72
+967 253 98
+629 341 64
+301 128 69
+241 907 23
+581 325 77
+752 138 63
+964 508 82
+341 239 66
+209 113 50
+29 19 49
+847 52 73
+422 408 89
+171 895 68
+933 895 87
+245 166 98
+910 599 29
+401 896 20
+459 69 25
+397 321 18
+733 760 32
+908 979 53
+854 566 78
+199 368 87
+810 512 54
+640 38 75
+502 246 18
+97 660 43
+743 539 67
+319 272 100
+518 190 77
+233 147 42
+801 415 10
+459 10 79
+109 204 60
+897 327 8
+130 111 60
+290 93 60
+560 124 71
+268 253 64
+678 981 36
+698 540 13
+587 842 25
+447 520 38
+50 22 78
+163 127 32
+639 228 3
+72 41 78
+394 281 12
+292 286 84
+807 117 44
+461 388 23
+911 631 88
+106 684 51
+842 889 40
+92 451 34
+627 370 64
+661 846 75
+875 908 84
+593 784 98
+821 855 27
+873 591 23
+573 625 52
+699 174 66
+84 42 91
+66 45 45
+80 953 19
+359 594 98
+671 845 46
+52 832 52
+484 826 43
+956 95 33
+708 209 59
+742 77 96
+483 301 41
+717 616 68
+939 330 4
+730 422 26
+251 188 56
+954 405 4
+230 84 18
+284 704 60
+344 253 56
+480 783 90
+49 776 72
+101 837 30
+201 152 39
+377 65 77
+583 239 84
+479 811 83
+10 545 48
+709 824 96
+200 119 39
+364 868 49
+637 723 45
+604 832 34
+95 42 67
+413 93 59
+248 878 46
+648 258 82
+34 522 43
+27 448 67
+207 878 50
+547 991 33
+276 642 98
+959 575 50
+437 388 86
+9 1 27
+752 673 67
+865 634 21
+562 412 48
+774 835 58
+45 30 12
+176 573 63
+861 828 9
+506 808 59
+762 812 77
+697 914 29
+437 948 69
+142 122 86
+241 61 68
+698 537 39
+93 880 25
+463 928 32
+35 819 38
+697 579 20
+667 523 80
+386 705 73
+12 9 8
+916 784 33
+701 463 99
+237 194 10
+525 697 19
+650 838 20
+988 900 6
+37 396 72
+58 38 98
+841 79 98
+199 67 96
+199 756 7
+373 353 23
+775 496 27
+258 54 99
+48 461 38
+735 740 33
+186 733 50
+14 4 70
+657 194 45
+883 38 65
+58 301 12
+696 924 32
+563 197 67
+496 96 82
+760 507 26
+518 597 31
+995 46 74
+58 7 50
+321 736 37
+840 696 20
+730 280 15
+8 339 39
+926 267 11
+850 153 52
+323 69 30
+552 244 33
+911 177 48
+488 976 66
+575 596 4
+730 519 19
+668 873 53
+776 419 75
+254 147 58
+157 183 94
+89 500 27
+629 409 53
+416 285 64
+348 111 36
+317 270 98
+653 394 9
+203 678 49
+376 351 51
+342 8 80
+465 92 78
+982 211 6
+24 15 93
+223 27 69
+893 262 2
+887 848 43
+168 420 29
+521 440 72
+335 1 35
+115 830 93
+278 946 2
+55 11 50
+787 470 6
+105 824 18
+828 365 41
+861 456 7
+88 30 44
+375 260 54
+280 95 86
+169 88 23
+834 654 33
+954 580 55
+859 739 83
+613 233 98
+44 1 10
+344 248 8
+787 217 53
+691 94 39
+259 800 23
+837 316 46
+59 369 89
+298 121 56
+555 644 68
+832 282 2
+692 259 59
+64 969 67
+309 286 46
+768 8 66
+887 373 12
+717 650 33
+654 796 36
+543 741 84
+431 577 12
+96 85 17
+604 339 82
+901 397 28
+538 216 35
+135 918 20
+975 14 95
+521 587 47
+849 291 21
+119 614 10
+395 911 88
+460 188 47
+661 335 92
+732 24 71
+34 664 62
+477 840 100
+992 528 54
+823 201 59
+932 166 50
+395 230 65
+310 160 35
+757 669 19
+502 855 88
+826 786 91
+424 68 61
+112 711 13
+721 731 78
+104 279 3
+518 522 26
+536 825 67
+727 508 73
+212 284 46
+401 358 94
+803 494 91
+629 115 35
+675 111 67
+323 156 61
+130 104 83
+299 655 96
+97 13 12
+272 67 31
+568 454 28
+663 447 80
+657 535 78
+491 190 28
+654 868 80
+886 433 36
+582 288 97
+314 625 79
+107 20 58
+687 77 12
+23 1 6
+926 170 19
+820 773 14
+664 248 84
+237 468 89
+729 520 45
+510 853 43
+830 796 74
+896 42 20
+727 684 28
+693 595 61
+892 730 42
+856 78 27
+144 36 42
+839 784 33
+777 663 57
+457 446 65
+705 897 63
+372 911 73
+942 352 76
+598 746 62
+336 310 54
+163 377 60
+861 676 4
+463 754 29
+477 131 61
+746 720 71
+125 41 94
+184 549 15
+37 12 52
+362 156 92
+577 98 35
+884 225 43
+208 180 4
+284 930 12
+915 520 75
+184 127 7
+236 77 89
+99 497 69
+949 408 70
+808 20 48
+597 78 51
+670 397 15
+631 969 93
+415 723 81
+11 22 7
+440 523 46
+997 421 8
+407 987 97
+291 82 57
+229 209 10
+332 610 60
+808 370 91
+85 81 39
+586 166 87
+125 782 34
+196 784 60
+918 447 70
+126 125 51
+661 724 64
+234 46 21
+882 507 66
+666 559 18
+730 314 79
+729 809 91
+577 619 50
+741 427 2
+884 204 59
+680 637 25
+149 718 22
+642 331 45
+197 119 36
+575 518 80
+793 415 97
+574 503 52
+706 454 67
+785 579 1
+25 8 67
+170 123 25
+914 436 82
+783 216 43
+361 512 56
+775 924 92
+791 918 51
+117 19 38
+524 461 68
+254 224 69
+762 429 27
+52 25 43
+166 784 73
+692 140 100
+259 740 64
+420 281 25
+773 237 70
+726 508 98
+424 648 89
+868 967 98
+973 775 20
+449 821 96
+67 51 30
+89 80 87
+15 7 75
+882 193 35
+786 451 60
+885 365 38
+146 530 37
+195 952 48
+734 755 34
+521 622 41
+104 121 53
+625 972 88
+562 992 35
+267 167 84
+305 899 57
+126 11 2
+898 911 6
+717 735 100
+633 28 80
+519 421 54
+570 510 71
+46 712 95
+241 546 54
+830 544 92
+252 142 20
+36 423 80
+869 868 47
+8 814 84
+416 999 26
+59 33 75
+954 370 27
+62 850 88
+921 289 10
+703 373 12
+173 608 42
+891 692 61
+277 99 9
+52 147 51
+128 38 44
+92 62 39
+477 389 47
+755 974 22
+192 940 25
+779 70 45
+112 77 2
+505 609 49
+470 323 74
+802 2 16
+288 993 27
+54 320 74
+272 452 98
+214 201 11
+378 953 63
+228 509 33
+251 941 44
+226 394 2
+716 511 89
+574 138 22
+445 648 43
+904 980 67
+435 159 40
+72 208 92
+555 905 37
+211 890 5
+850 153 39
+123 29 13
+643 192 53
+971 616 43
+487 932 62
+36 32 46
+718 992 82
+573 347 21
+977 960 43
+922 837 93
+883 736 48
+531 217 36
+311 125 32
+469 353 51
+797 336 57
+309 829 37
+630 936 18
+599 62 41
+696 465 4
+150 617 61
+874 639 17
+838 550 24
+659 209 31
+789 446 64
+12 901 94
+224 34 64
+468 77 33
+288 167 9
+320 621 46
+472 475 85
+4 964 70
+816 605 30
+184 456 98
+60 4 21
+694 353 46
+565 544 11
+654 475 7
+655 500 73
+233 488 30
+715 578 24
+651 908 49
+868 658 81
+281 38 19
+182 29 47
+496 829 20
+586 962 39
+434 316 38
+183 955 85
+229 952 88
+756 764 19
+765 747 47
+567 35 84
+216 403 100
+362 84 25
+863 536 33
+328 301 37
+194 745 63
+779 977 19
+36 370 28
+6 31 35
+156 38 64
+234 362 45
+252 530 85
+668 584 97
+749 608 47
+687 763 72
+881 949 31
+978 469 56
+612 219 94
+734 49 14
+660 179 71
+969 899 92
+186 83 37
+979 122 60
+472 319 16
+320 149 22
+755 425 22
+603 275 100
+771 475 12
+16 10 62
+388 31 36
+713 912 81
+943 226 20
+411 343 88
+271 344 49
+837 584 42
+911 309 7
+304 3 33
+173 130 2
+515 587 75
+719 873 71
+28 26 35
+419 358 40
+869 513 74
+202 917 34
+364 983 85
+202 65 62
+383 260 36
+886 285 100
+305 36 6
+511 182 99
+349 31 48
+229 240 67
+979 564 56
+399 43 50
+15 12 38
+929 241 95
+174 750 86
+180 65 92
+178 82 3
+828 285 31
+926 799 90
+865 586 28
+535 367 21
+102 24 30
+366 289 91
+541 214 29
+53 479 42
+642 568 51
+493 239 26
+733 421 97
+57 10 99
+848 891 3
+580 509 3
+200 683 46
+321 310 22
+903 407 15
+669 355 91
+526 12 5
+324 263 50
+812 346 11
+599 488 93
+39 980 36
+195 171 21
+608 285 94
+795 715 13
+167 142 21
+878 508 40
+923 801 21
+485 421 34
+45 423 37
+100 29 59
+818 800 59
+640 300 62
+498 348 75
+165 891 100
+607 496 80
+226 219 46
+690 906 23
+472 346 26
+278 882 54
+705 539 64
+187 47 64
+787 944 71
+655 379 3
+320 269 64
+30 600 75
+744 400 99
+776 378 7
+444 897 71
+812 724 33
+355 299 27
+476 82 39
+520 88 22
+912 834 60
+34 98 19
+338 209 41
+161 123 13
+333 307 95
+522 827 6
+870 540 67
+438 220 10
+903 304 16
+287 609 68
+626 124 59
+735 986 33
+158 300 76
+571 26 46
+538 954 6
+935 523 21
+924 693 46
+913 493 94
+593 70 71
+566 230 52
+466 33 37
+218 910 12
+978 163 32
+118 929 7
+599 25 87
+',
+                            'expected_output' => '21295',
+                            'is_hidden' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
         'slug' => 'sorting-and-searching',
         'title' => 'Sorting and searching',
         'track' => 'algorithms',
