@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\SubmissionController;
@@ -13,6 +14,8 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:lo
 Route::get('/modules', [LessonController::class, 'modules']);
 Route::get('/lessons/{slug}', [LessonController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+Route::get('/challenges', [ChallengeController::class, 'index']);
+Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

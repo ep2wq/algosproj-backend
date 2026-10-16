@@ -30,18 +30,7 @@ class LessonController extends Controller
             'slug' => $lesson->slug,
             'title' => $lesson->title,
             'body' => $lesson->body,
-            'problems' => $lesson->problems->map(fn ($problem) => [
-                'id' => $problem->id,
-                'title' => $problem->title,
-                'description' => $problem->description,
-                'difficulty' => $problem->difficulty,
-                'points' => $problem->points,
-                'test_cases' => $problem->visibleTestCases->map(fn ($testCase) => [
-                    'id' => $testCase->id,
-                    'input' => $testCase->input,
-                    'expected_output' => $testCase->expected_output,
-                ]),
-            ]),
+            'problems' => $lesson->problems->map(fn ($problem) => $problem->editorData()),
         ]);
     }
 }

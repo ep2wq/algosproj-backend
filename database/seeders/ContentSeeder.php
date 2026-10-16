@@ -37,6 +37,8 @@ class ContentSeeder extends Seeder
 
                 $problemData = $lessonData['problem'];
                 $problem = $lesson->problems()->create([
+                    // One problem per lesson, so the lesson slug is the challenge slug.
+                    'slug' => $lessonData['slug'],
                     'title' => $problemData['title'],
                     'description' => $problemData['description'],
                     'difficulty' => $problemData['difficulty'],

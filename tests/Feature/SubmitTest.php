@@ -85,6 +85,27 @@ class SubmitTest extends TestCase
         $this->assertDatabaseCount('submissions', 2);
     }
 
+    public function test_standalone_problem_without_a_lesson_can_be_solved_once(): void
+    {
+        $this->problem = Problem::create(['slug' => 'standalone', 'title' => 'Standalone', 'description' => 'No lesson', 'difficulty' => 'hard', 'points' => 30]);
+        $this->problem->testCases()->createMany([
+            ['input' => 'VISIBLE-INPUT-1', 'expected_output' => 'VISIBLE-EXPECTED-1', 'is_hidden' => false],
+            ['input' => 'HIDDEN-INPUT-MARKER-1', 'expected_output' => 'HIDDEN-EXPECTED-MARKER-1', 'is_hidden' => true],
+            ['input' => 'HIDDEN-INPUT-MARKER-2', 'expected_output' => 'HIDDEN-EXPECTED-MARKER-2', 'is_hidden' => true],
+        ]);
+        $this->assertNull($this->problem->lesson_id);
+        $this->sandboxReturns('passed', [true, true, true]);
+
+        $this->submit()->assertOk()
+            ->assertJsonPath('status', 'passed')
+            ->assertJsonPath('points_awarded', 30);
+        $this->submit()->assertOk()->assertJsonPath('points_awarded', 0);
+
+        $this->assertSame(30, $this->user->fresh()->points);
+        $this->assertDatabaseHas('completions', ['user_id' => $this->user->id, 'problem_id' => $this->problem->id]);
+        $this->assertDatabaseCount('completions', 1);
+    }
+
     public function test_failed_submission_awards_nothing(): void
     {
         $this->sandboxReturns('failed', [true, false, true]);
