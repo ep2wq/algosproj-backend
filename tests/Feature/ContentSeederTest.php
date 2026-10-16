@@ -13,15 +13,15 @@ class ContentSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeds_thirteen_modules_and_forty_three_problems_with_enough_tests(): void
+    public function test_seeds_fourteen_modules_and_forty_six_problems_with_enough_tests(): void
     {
         $this->seed(ContentSeeder::class);
 
         $this->assertSame(
-            ['basics', 'programming-basics', 'core-programming', 'oop', 'algorithm-basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'trees-and-bsts', 'recursion-and-backtracking', 'graphs', 'sorting-and-searching'],
+            ['basics', 'programming-basics', 'core-programming', 'oop', 'algorithm-basics', 'arrays-and-strings', 'stacks-and-queues', 'linked-lists', 'hash-tables', 'trees-and-bsts', 'heaps', 'recursion-and-backtracking', 'graphs', 'sorting-and-searching'],
             Module::orderBy('sort_order')->pluck('slug')->all(),
         );
-        $this->assertSame(43, Problem::count());
+        $this->assertSame(46, Problem::count());
 
         foreach (Problem::with('testCases')->get() as $problem) {
             $this->assertGreaterThanOrEqual(2, $problem->testCases->where('is_hidden', false)->count(), $problem->title);
@@ -34,7 +34,7 @@ class ContentSeederTest extends TestCase
     {
         $this->seed(ContentSeeder::class);
 
-        $this->assertSame(43, Lesson::count());
+        $this->assertSame(46, Lesson::count());
 
         foreach (Lesson::all() as $lesson) {
             $words = count(preg_split('/\s+/', trim((string) $lesson->body), -1, PREG_SPLIT_NO_EMPTY));
