@@ -2041,8 +2041,8 @@ Dynamic programming (DP) builds an answer from answers to smaller versions of th
 Your last move to step n was 1 step, from n - 1, or 2 steps, from n - 2. So ways(n) = ways(n - 1) + ways(n - 2), with ways(0) = ways(1) = 1.
 
 ## Example
-n:    0 1 2 3 4 5 6
-ways: 1 1 2 3 5 8 13
+    n:    0 1 2 3 4 5 6
+    ways: 1 1 2 3 5 8 13
 For n = 4: 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2.
 
 ## How to think about it
@@ -2091,8 +2091,8 @@ best[x] is the fewest coins making amount x. The last coin is some c <= x, so be
 
 ## Example
 Coins 1 3 4, amount 6:
-x:    0 1 2 3 4 5 6
-best: 0 1 2 1 1 2 2
+    x:    0 1 2 3 4 5 6
+    best: 0 1 2 1 1 2 2
 best[6] = 1 + best[3] = 2 (3 + 3); greedy, from the Greedy lesson, takes 4 + 1 + 1.
 
 ## How to think about it
@@ -2150,8 +2150,8 @@ The state, in words: best[i] is the largest total using only the first i houses.
 
 ## Example
 5 1 1 5:
-i:    0 1 2 3 4
-best: 0 5 5 6 10
+    i:    0 1 2 3 4
+    best: 0 5 5 6 10
 best[4] = max(6, 5 + 5) = 10: the two 5s, skipping two houses in between.
 
 ## How to think about it
@@ -2199,8 +2199,8 @@ A subsequence keeps elements in their order but may skip some: 2 3 7 is one of 1
 best[i] is the longest increasing subsequence that ends at element i. It is 1 + the largest best[j] over earlier j with a[j] < a[i], or 1 if there is none. The answer is the largest best[i].
 
 ## Example
-a:    10 9 2 5 3 7 101 18
-best:  1 1 1 2 2 3   4  4
+    a:    10 9 2 5 3 7 101 18
+    best:  1 1 1 2 2 3   4  4
 For 7: 2, 5 and 3 are smaller; best[3] = 2, so best[5] = 3. Answer 4: 2 5 7 101.
 
 ## How to think about it
