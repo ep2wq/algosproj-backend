@@ -2761,4 +2761,224 @@ O(n x m) time and space: 250,000 cells for 500 letters each.
 - Base cases: "" to abcde is 5, not 0.
 - Without replace, each change costs a delete plus an insert: horse to ros gives 4, not 3.
 TEXT,
+
+    'count-set-bits' => <<<'TEXT'
+Five operators work on bits:
+
+- & (and): 1 where both are 1. 12 & 10 = 8 (1100 & 1010 = 1000).
+- | (or): 1 where either is 1. 12 | 10 = 14 (1110).
+- ^ (xor): 1 where they differ. 12 ^ 10 = 6 (0110).
+- << (left shift): adds 0s at the bottom. 3 << 2 = 12 (11 to 1100).
+- >> (right shift): drops the lowest bits. 12 >> 2 = 3 (1100 to 11).
+
+Bit i of n is (n >> i) & 1.
+
+## Example
+Counting the 1 bits of 12 with n & (n - 1):
+
+        1100   n = 12
+      & 1011   11
+      = 1000   8, count 1
+      & 0111   7
+      = 0000   0, count 2
+
+## How to think about it
+Testing all 32 bits works, but n - 1 turns the lowest 1 into 0 and the 0s below it into 1s, so n & (n - 1) removes exactly that bit.
+
+## Python
+    c = 0
+    while n:
+        n &= n - 1
+        c += 1
+
+## Java
+    long n = Long.parseLong(line.trim());
+    int c = 0;
+    while (n != 0) { n &= n - 1; c++; }
+
+## JavaScript
+    let c = 0
+    while (n !== 0) { n = (n & (n - 1)) >>> 0; c++ }
+
+## C++
+    unsigned int n;
+    cin >> n;
+    int c = 0;
+    while (n) { n &= n - 1; c++; }
+
+## Complexity
+Testing every bit: 32 steps. n & (n - 1): one per 1 bit, so 1 for 2147483648.
+
+## Watch out for
+- n reaches 4294967295, past the int maximum 2147483647. Java: use long (or Integer.bitCount((int) n): the cast keeps the bits). C++: unsigned int.
+- JavaScript bitwise operators use signed 32 bits: 4294967295 >> 1 is -1, so a loop on n > 0 prints 1. Add >>> 0 or use BigInt.
+- In Java and C++, 2147483648 in an int is negative; >> copies the sign bit, so it never reaches 0: an endless loop.
+TEXT,
+
+    'single-number' => <<<'TEXT'
+XOR has two rules: x ^ x = 0 and x ^ 0 = x. The order does not matter either, so XOR-ing a whole list cancels every pair, wherever its two copies are, and leaves only the number that appears once.
+
+## Example
+4 1 2 1 2, one number at a time:
+
+    x            = 000
+    x ^ 100  (4) = 100
+    x ^ 001  (1) = 101
+    x ^ 010  (2) = 111
+    x ^ 001  (1) = 110
+    x ^ 010  (2) = 100   = 4
+
+The second 1 removes the first 1's bit, and the second 2 removes the first 2's bit. Regrouped: 4 ^ (1 ^ 1) ^ (2 ^ 2) = 4 ^ 0 ^ 0 = 4.
+
+## How to think about it
+Each bit position is counted separately: a bit of x ends up 1 when an odd number of values have that bit set. Pairs add an even number to every position, so only the single number's bits survive.
+
+## Python
+    x = 0
+    for v in vals:
+        x ^= v
+
+## Java
+    int x = 0;
+    for (int v : vals) x ^= v;
+
+## JavaScript
+    let x = 0
+    for (const v of vals) x ^= v
+
+## C++
+    int x = 0;
+    for (int v : vals) x ^= v;
+
+## Complexity
+One XOR per number: O(n) time, 2001 steps for the largest input, and no extra memory beyond x. Counting with a hash map also works but stores up to n values.
+
+## Watch out for
+- It only works because every other number appears exactly twice. A number that appears three times survives: 3 ^ 3 ^ 3 = 3.
+- Summing does not work: 4 1 2 1 2 adds up to 10, not 4. Pairs cancel under XOR, not under +.
+- Negative numbers are fine. XOR works on their bits like any other, and a pair is still two equal bit patterns: -1 -2 -1 -3 -3 gives -2.
+TEXT,
+
+    'subset-sum-count' => <<<'TEXT'
+Each number from 0 to 2^n - 1 is a subset of n items: bit i set means item i is in. Try every mask; count those summing to the target.
+
+## Example
+Items 2 3 5, target 5:
+
+    bits  subset   sum
+    000   {}         0
+    001   {2}        2
+    010   {3}        3
+    011   {2,3}      5  <-
+    100   {5}        5  <-
+    101   {2,5}      7
+    110   {3,5}      8
+    111   {2,3,5}   10
+
+## How to think about it
+(mask >> i) & 1 is the counting lesson's bit test. Equal numbers at different positions are different items (different bits).
+
+## Python
+    count = 0
+    for mask in range(1 << n):
+        total = sum(a[i] for i in range(n) if (mask >> i) & 1)
+        count += total == target
+
+## Java
+    int count = 0;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        long total = 0;
+        for (int i = 0; i < n; i++)
+            if (((mask >> i) & 1) == 1) total += a[i];
+        if (total == target) count++;
+    }
+
+## JavaScript
+    let count = 0
+    for (let mask = 0; mask < (1 << n); mask++) {
+      let total = 0
+      for (let i = 0; i < n; i++)
+        if ((mask >> i) & 1) total += a[i]
+      if (total === target) count++
+    }
+
+## C++
+    int count = 0;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        long long total = 0;
+        for (int i = 0; i < n; i++)
+            if ((mask >> i) & 1) total += a[i];
+        if (total == target) count++;
+    }
+
+## Complexity
+O(2^n x n), so only small n: a million steps for n = 16, 21 million for n = 20.
+
+## Watch out for
+- Sums reach 1.6 x 10^10 > 2^31: use long (long long in C++).
+- Outside Python, 1 << n is 32-bit; JavaScript gives 1 << 32 = 1. Fine for n <= 16; beyond, use 1LL << n (C++) or 2 ** n (JavaScript).
+- The empty subset (sum 0) counts: start at mask 0. Sixteen zeros: 65536.
+TEXT,
+
+    'power-mod' => <<<'TEXT'
+Multiplying b times is slow. Faster: while b > 0, if b is odd multiply the result by a; square a; halve b.
+
+## Example
+3^13 mod 7. 13 is 1101 in binary, so 3^13 = 3^8 x 3^4 x 3^1:
+
+    b     odd?  result  a squared
+    1101  yes   3       3 -> 2
+    110   no    3       2 -> 4
+    11    yes   5       4 -> 2
+    1     yes   3       2 -> 4
+
+a holds 3^1, 3^2, 3^4, 3^8 mod 7; the 1 bits of b (counting lesson) pick which join the result.
+
+## How to think about it
+(x * y) mod m = ((x mod m) * (y mod m)) mod m, so a mod after each multiplication keeps the answer, and every number below m.
+
+## Python
+    result = 1 % m
+    a %= m
+    while b > 0:
+        if b & 1:
+            result = result * a % m
+        a = a * a % m
+        b //= 2
+
+## Java
+    long result = 1 % m;
+    a %= m;
+    while (b > 0) {
+        if ((b & 1) == 1) result = result * a % m;
+        a = a * a % m;
+        b /= 2;
+    }
+
+## JavaScript
+    let result = 1n % m
+    a %= m
+    while (b > 0n) {
+      if (b & 1n) result = result * a % m
+      a = a * a % m
+      b /= 2n
+    }
+
+## C++
+    long long result = 1 % m;
+    a %= m;
+    while (b > 0) {
+        if (b & 1) result = result * a % m;
+        a = a * a % m;
+        b /= 2;
+    }
+
+## Complexity
+O(log b): one step per bit of b, 60 for 10^18. The simple loop: 10^18 steps, a timeout.
+
+## Watch out for
+- Products reach about 10^18: int overflows; use long (long long in C++).
+- JavaScript Numbers lose precision past 2^53 (889472742, not 259616729, for 10^9 10^18 10^9+7): use BigInt.
+- m = 1 gives 0: start at 1 % m, not 1. Otherwise a^0 = 1, even 0^0.
+TEXT,
 ];
