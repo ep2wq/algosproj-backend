@@ -9,6 +9,7 @@ use App\Models\Problem;
 use App\Models\TestCase as ProblemTestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -17,9 +18,16 @@ class AdminTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $owner;
+
     private User $admin;
 
     private User $user;
+
+    // Normal users the user routes act on; recreated with the content.
+    private User $target;
+
+    private User $bannedTarget;
 
     private Module $module;
 
@@ -37,9 +45,16 @@ class AdminTest extends TestCase
     {
         parent::setUp();
 
+        $this->owner = User::factory()->create(['role' => 'owner']);
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->user = User::factory()->create();
         $this->setUpContent();
+    }
+
+    private function setUpTargets(): void
+    {
+        $this->target = User::factory()->create(['points' => 20]);
+        $this->bannedTarget = User::factory()->create(['banned_at' => now(), 'ban_reason' => 'Spam']);
     }
 
     // A module with a lesson with a problem with one visible and one hidden test, plus an
@@ -53,6 +68,7 @@ class AdminTest extends TestCase
         $this->problem = $this->lesson->problems()->create(['slug' => 'warm-up', 'title' => 'Double', 'description' => 'Double it', 'difficulty' => 'easy', 'points' => 10]);
         $this->testCase = $this->problem->testCases()->create(['input' => 'VISIBLE-IN', 'expected_output' => 'VISIBLE-OUT', 'is_hidden' => false]);
         $this->problem->testCases()->create(['input' => 'HIDDEN-IN', 'expected_output' => 'HIDDEN-OUT', 'is_hidden' => true]);
+        $this->setUpTargets();
     }
 
     // Each request starts clean: no token from an earlier request and no cached user.
@@ -72,39 +88,52 @@ class AdminTest extends TestCase
         return $this->send($method, $uri, $data, $this->admin);
     }
 
-    // Every admin route with a valid request and the status an admin gets.
-    private function routes(): array
+    // Every admin route with a valid request, the status an admin gets and the status an owner gets.
+    public function routes(): array
     {
         $m = $this->module->id;
         $l = $this->lesson->id;
         $p = $this->problem->id;
         $t = $this->testCase->id;
+        $u = $this->target->id;
 
         return [
-            ['GET', '/api/admin/modules', [], 200],
-            ['POST', '/api/admin/modules', ['title' => 'Graphs', 'slug' => 'graphs', 'sort_order' => 3], 201],
-            ['PUT', "/api/admin/modules/$m", ['title' => 'Start here', 'slug' => 'basics', 'sort_order' => 1], 200],
-            ['DELETE', "/api/admin/modules/{$this->emptyModule->id}", [], 204],
-            ['GET', "/api/admin/modules/$m/lessons", [], 200],
-            ['POST', '/api/admin/lessons', ['module_id' => $m, 'title' => 'New', 'slug' => 'new-lesson', 'body' => 'Text', 'sort_order' => 3], 201],
-            ['GET', "/api/admin/lessons/$l", [], 200],
-            ['PUT', "/api/admin/lessons/$l", ['module_id' => $m, 'title' => 'Warm-up!', 'slug' => 'warm-up', 'body' => 'New text', 'sort_order' => 1], 200],
-            ['DELETE', "/api/admin/lessons/{$this->emptyLesson->id}", [], 204],
-            ['GET', '/api/admin/problems', [], 200],
-            ['POST', '/api/admin/problems', ['title' => 'Triple', 'slug' => 'triple', 'description' => 'Triple it', 'difficulty' => 'hard'], 201],
-            ['GET', "/api/admin/problems/$p", [], 200],
-            ['PUT', "/api/admin/problems/$p", ['lesson_id' => $l, 'title' => 'Double it', 'slug' => 'warm-up', 'description' => 'Double', 'difficulty' => 'easy'], 200],
-            ['DELETE', "/api/admin/problems/$p", [], 204],
-            ['GET', "/api/admin/problems/$p/test-cases", [], 200],
-            ['POST', "/api/admin/problems/$p/test-cases", ['input' => '1', 'expected_output' => '2', 'is_hidden' => true], 201],
-            ['PUT', "/api/admin/problems/$p/test-cases/$t", ['input' => '3', 'expected_output' => '6', 'is_hidden' => false], 200],
-            ['DELETE', "/api/admin/problems/$p/test-cases/$t", [], 204],
+            ['GET', '/api/admin/modules', [], 200, 200],
+            ['POST', '/api/admin/modules', ['title' => 'Graphs', 'slug' => 'graphs', 'sort_order' => 3], 201, 201],
+            ['PUT', "/api/admin/modules/$m", ['title' => 'Start here', 'slug' => 'basics', 'sort_order' => 1], 200, 200],
+            ['DELETE', "/api/admin/modules/{$this->emptyModule->id}", [], 204, 204],
+            ['GET', "/api/admin/modules/$m/lessons", [], 200, 200],
+            ['POST', '/api/admin/lessons', ['module_id' => $m, 'title' => 'New', 'slug' => 'new-lesson', 'body' => 'Text', 'sort_order' => 3], 201, 201],
+            ['GET', "/api/admin/lessons/$l", [], 200, 200],
+            ['PUT', "/api/admin/lessons/$l", ['module_id' => $m, 'title' => 'Warm-up!', 'slug' => 'warm-up', 'body' => 'New text', 'sort_order' => 1], 200, 200],
+            ['DELETE', "/api/admin/lessons/{$this->emptyLesson->id}", [], 204, 204],
+            ['GET', '/api/admin/problems', [], 200, 200],
+            ['POST', '/api/admin/problems', ['title' => 'Triple', 'slug' => 'triple', 'description' => 'Triple it', 'difficulty' => 'hard'], 201, 201],
+            ['GET', "/api/admin/problems/$p", [], 200, 200],
+            ['PUT', "/api/admin/problems/$p", ['lesson_id' => $l, 'title' => 'Double it', 'slug' => 'warm-up', 'description' => 'Double', 'difficulty' => 'easy'], 200, 200],
+            ['DELETE', "/api/admin/problems/$p", [], 204, 204],
+            ['GET', "/api/admin/problems/$p/test-cases", [], 200, 200],
+            ['POST', "/api/admin/problems/$p/test-cases", ['input' => '1', 'expected_output' => '2', 'is_hidden' => true], 201, 201],
+            ['PUT', "/api/admin/problems/$p/test-cases/$t", ['input' => '3', 'expected_output' => '6', 'is_hidden' => false], 200, 200],
+            ['DELETE', "/api/admin/problems/$p/test-cases/$t", [], 204, 204],
+            ['GET', '/api/admin/users', [], 200, 200],
+            ['GET', "/api/admin/users/$u", [], 200, 200],
+            ['POST', "/api/admin/users/$u/ban", ['reason' => 'Spam'], 200, 200],
+            ['POST', "/api/admin/users/{$this->bannedTarget->id}/unban", [], 200, 200],
+            ['POST', "/api/admin/users/$u/logout-everywhere", [], 200, 200],
+            ['PUT', "/api/admin/users/$u/role", ['role' => 'admin'], 403, 200],
+            ['POST', "/api/admin/users/$u/points", ['amount' => 5, 'reason' => 'Bonus'], 403, 200],
+            ['POST', "/api/admin/users/$u/reset-progress", [], 403, 200],
+            ['DELETE', "/api/admin/users/$u", ['confirm_email' => $this->target->email], 403, 204],
         ];
     }
 
-    private function contentSnapshot(): array
+    private function snapshot(): array
     {
-        return [Module::all()->toArray(), Lesson::all()->toArray(), Problem::all()->toArray(), ProblemTestCase::all()->toArray()];
+        return [
+            Module::all()->toArray(), Lesson::all()->toArray(), Problem::all()->toArray(), ProblemTestCase::all()->toArray(),
+            DB::table('users')->orderBy('id')->get()->map(fn ($row) => (array) $row)->all(), Completion::all()->toArray(),
+        ];
     }
 
     public function test_the_route_list_covers_every_admin_route(): void
@@ -115,24 +144,31 @@ class AdminTest extends TestCase
             ->sort()->values()->all();
 
         $tested = collect($this->routes())
-            ->map(fn ($route) => $route[0].' '.preg_replace(['/modules\/\d+/', '/lessons\/\d+/', '/problems\/\d+/', '/test-cases\/\d+/'], ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}'], $route[1]))
+            ->map(fn ($route) => $route[0].' '.preg_replace(['/modules\/\d+/', '/lessons\/\d+/', '/problems\/\d+/', '/test-cases\/\d+/', '/users\/\d+/'], ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}'], $route[1]))
             ->sort()->values()->all();
 
         $this->assertSame($registered, $tested);
     }
 
-    public function test_every_admin_route_is_401_for_guests_403_for_users_and_works_for_admins(): void
+    public function test_every_admin_route_is_401_for_guests_403_for_users_and_works_for_admins_and_owners(): void
     {
         for ($i = 0; $i < count($this->routes()); $i++) {
-            // Built again each time: the content (and its ids) is recreated after every route.
-            [$method, $uri, $data, $status] = $this->routes()[$i];
-            $before = $this->contentSnapshot();
+            // Built again each time: the content and target users (and their ids) are recreated.
+            [$method, $uri, $data, $adminStatus] = $this->routes()[$i];
+            $before = $this->snapshot();
 
             $this->send($method, $uri, $data)->assertStatus(401);
             $this->send($method, $uri, $data, $this->user)->assertStatus(403);
-            $this->assertSame($before, $this->contentSnapshot(), "$method $uri changed content for a non-admin");
+            $this->assertSame($before, $this->snapshot(), "$method $uri changed data for a non-admin");
 
-            $this->asAdmin($method, $uri, $data)->assertStatus($status);
+            $this->asAdmin($method, $uri, $data)->assertStatus($adminStatus);
+            if ($adminStatus === 403) {
+                $this->assertSame($before, $this->snapshot(), "$method $uri changed data for an admin on an owner-only route");
+            }
+
+            $this->refreshContent();
+            [$method, $uri, $data, , $ownerStatus] = $this->routes()[$i];
+            $this->send($method, $uri, $data, $this->owner)->assertStatus($ownerStatus);
 
             // Start the next route from the original content.
             $this->refreshContent();
@@ -145,6 +181,7 @@ class AdminTest extends TestCase
         Problem::query()->delete();
         Lesson::query()->delete();
         Module::query()->delete();
+        User::whereKey([$this->target->id, $this->bannedTarget->id])->delete();
         $this->setUpContent();
     }
 

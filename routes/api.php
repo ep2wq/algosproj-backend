@@ -29,7 +29,7 @@ Route::middleware(['auth:sanctum', 'not-banned'])->group(function () {
         ->middleware('throttle:10,1');
 });
 
-// Content editing. Guests get 401, users who are not admins 403 (the admin middleware).
+// The admin area. Guests get 401, users who are neither admin nor owner 403 (the admin middleware).
 Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->group(function () {
     Route::get('/modules', [Admin\ModuleController::class, 'index']);
     Route::post('/modules', [Admin\ModuleController::class, 'store']);
@@ -54,5 +54,20 @@ Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->gro
         Route::post('/problems/{problem}/test-cases', [Admin\TestCaseController::class, 'store']);
         Route::put('/problems/{problem}/test-cases/{testCase}', [Admin\TestCaseController::class, 'update']);
         Route::delete('/problems/{problem}/test-cases/{testCase}', [Admin\TestCaseController::class, 'destroy']);
+    });
+
+    // Users. Admins may only ban, unban and log out normal users; the controller checks the target.
+    Route::get('/users', [Admin\UserController::class, 'index']);
+    Route::get('/users/{user}', [Admin\UserController::class, 'show']);
+    Route::post('/users/{user}/ban', [Admin\UserController::class, 'ban']);
+    Route::post('/users/{user}/unban', [Admin\UserController::class, 'unban']);
+    Route::post('/users/{user}/logout-everywhere', [Admin\UserController::class, 'logoutEverywhere']);
+
+    // Owners only: other admins get 403 (the owner middleware, also checked before route binding).
+    Route::middleware('owner')->group(function () {
+        Route::put('/users/{user}/role', [Admin\UserController::class, 'updateRole']);
+        Route::post('/users/{user}/points', [Admin\UserController::class, 'adjustPoints']);
+        Route::post('/users/{user}/reset-progress', [Admin\UserController::class, 'resetProgress']);
+        Route::delete('/users/{user}', [Admin\UserController::class, 'destroy']);
     });
 });
