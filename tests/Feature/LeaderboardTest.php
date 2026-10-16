@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class LeaderboardTest extends TestCase
@@ -99,5 +100,14 @@ class LeaderboardTest extends TestCase
     public function test_leaderboard_me_requires_auth(): void
     {
         $this->getJson('/api/leaderboard/me')->assertUnauthorized();
+    }
+
+    public function test_users_table_has_the_leaderboard_index(): void
+    {
+        $index = collect(Schema::getIndexes('users'))->firstWhere('name', 'users_leaderboard_index');
+
+        $this->assertNotNull($index);
+        $this->assertSame(['points', 'created_at'], $index['columns']);
+        $this->assertFalse($index['unique']);
     }
 }
