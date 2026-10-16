@@ -1775,6 +1775,313 @@ Space: O(r * c) for dist and the queue.
 Write the queue and the dist grid in the problem below.
 TEXT,
 
+    'prefix-count' => <<<'TEXT'
+A trie stores words as paths: each edge is a letter, so a path from the root spells a prefix. Each node counts the words passing through it; a flag marks where a word ends.
+
+## Example
+Add app and apple; counts shown:
+
+    root
+      a 2
+        p 2
+          p 2  end
+            l 1
+              e 1  end
+
+COUNT ap walks a, p: 2. COUNT b finds no edge: 0. Adding apple again finds its flag set: no change.
+
+## How to think about it
+ADD creates missing nodes along the word. If the last is flagged, stop; else flag it and add 1 to each count on the path. COUNT returns the count at the prefix's last node. In Python, "#" holds the count and "$" the flag.
+
+## Python
+    def add(word):
+        node = root
+        for ch in word:
+            node = node.setdefault(ch, {"#": 0})
+        if "$" in node:
+            return
+        node["$"] = True
+        node = root
+        for ch in word:
+            node = node[ch]
+            node["#"] += 1
+
+## Java
+    static void add(String word) {
+        Node node = root;
+        for (char c : word.toCharArray())
+            node = node.next.computeIfAbsent(c, k -> new Node());
+        if (node.end) return;
+        node.end = true;
+        node = root;
+        for (char c : word.toCharArray()) {
+            node = node.next.get(c);
+            node.count++;
+        }
+    }
+
+## JavaScript
+    function add(word) {
+      let node = root
+      for (const c of word) node = node.next[c] ??= { next: {}, count: 0 }
+      if (node.end) return
+      node.end = true
+      node = root
+      for (const c of word) {
+        node = node.next[c]
+        node.count++
+      }
+    }
+
+## C++
+    void add(const string& word) {
+        Node* node = root;
+        for (char c : word) {
+            if (!node->next[c]) node->next[c] = new Node();
+            node = node->next[c];
+        }
+        if (node->end) return;
+        node->end = true;
+        node = root;
+        for (char c : word) {
+            node = node->next[c];
+            node->count++;
+        }
+    }
+
+## Complexity
+O(length of the word) per operation, however many words are stored.
+
+## Watch out for
+- Reading the flag counts only words ending there: COUNT ap gives 0, not 2.
+- Without the flag check, a second ADD apple makes COUNT app 3.
+TEXT,
+
+    'dictionary-with-wildcards' => <<<'TEXT'
+The same trie, without counts. In a pattern a letter follows one edge, and a dot matches exactly one letter, any letter. So at a dot the search tries every child, depth first, until one matches.
+
+## Example
+Stored: bad, bed, dab. SEARCH .a.:
+
+    pattern  node  step
+    .        b     first child
+    a        ba    edge found
+    .        bad   end flag: yes
+
+SEARCH b. reaches ba and be; no word ends at either: no.
+
+## How to think about it
+search(node, p, i) asks whether the pattern from i on matches from this node. At the pattern's end the answer is the end flag. In Python, "$" marks the end.
+
+## Python
+    def search(node, p, i):
+        if i == len(p):
+            return "$" in node
+        if p[i] != ".":
+            return p[i] in node and search(node[p[i]], p, i + 1)
+        return any(search(kid, p, i + 1)
+                   for ch, kid in node.items() if ch != "$")
+
+## Java
+    static boolean search(Node node, String p, int i) {
+        if (node == null) return false;
+        if (i == p.length()) return node.end;
+        char c = p.charAt(i);
+        if (c != '.') return search(node.next.get(c), p, i + 1);
+        for (Node kid : node.next.values())
+            if (search(kid, p, i + 1)) return true;
+        return false;
+    }
+
+## JavaScript
+    function search(node, p, i) {
+      if (!node) return false
+      if (i === p.length) return node.end
+      if (p[i] !== '.') return search(node.next[p[i]], p, i + 1)
+      return Object.values(node.next).some(kid => search(kid, p, i + 1))
+    }
+
+## C++
+    bool search(Node* node, const string& p, int i) {
+        if (i == (int)p.size()) return node->end;
+        if (p[i] != '.') return node->next.count(p[i]) && search(node->next[p[i]], p, i + 1);
+        for (auto [ch, kid] : node->next)
+            if (search(kid, p, i + 1)) return true;
+        return false;
+    }
+
+## Complexity
+No dots: O(length). Each dot can branch 26 ways, so k dots can visit up to 26^k paths, capped by the trie's size; all dots may walk most of the trie.
+
+## Watch out for
+- With apple stored, SEARCH app ends inside apple: no.
+- A dot is one letter, never none: six dots do not match apple.
+TEXT,
+
+    'friend-groups' => <<<'TEXT'
+Union-find tracks merging groups. Each person points to a parent; following parents ends at the group's leader. Merging points one leader at the other.
+
+## Example
+JOIN 1 2, JOIN 3 4, JOIN 2 4:
+
+    person  1  2  3  4  5
+    parent  1  1  1  3  5
+
+SAME 4 2: both reach 1, yes.
+
+## How to think about it
+find walks to the leader, pointing each person passed at their grandparent (path halving). join hangs the smaller group under the bigger (union by size).
+
+## Python
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def join(a, b):
+        a, b = find(a), find(b)
+        if a == b:
+            return
+        if size[a] < size[b]:
+            a, b = b, a
+        parent[b] = a
+        size[a] += size[b]
+
+## Java
+    static int find(int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+        }
+        return x;
+    }
+
+    static void join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return;
+        if (size[a] < size[b]) { int t = a; a = b; b = t; }
+        parent[b] = a;
+        size[a] += size[b];
+    }
+
+## JavaScript
+    function find(x) {
+      while (parent[x] !== x) {
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+      }
+      return x
+    }
+
+    function join(a, b) {
+      a = find(a)
+      b = find(b)
+      if (a === b) return
+      if (size[a] < size[b]) [a, b] = [b, a]
+      parent[b] = a
+      size[a] += size[b]
+    }
+
+## C++
+    int find(int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+        }
+        return x;
+    }
+
+    void join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return;
+        if (sz[a] < sz[b]) swap(a, b);
+        parent[b] = a;
+        sz[a] += sz[b];
+    }
+
+## Complexity
+Nearly constant per operation. Tests are small; skipping compression would pass, but matters at millions of operations.
+
+## Watch out for
+- Compare leaders, not people.
+- Without union by size, JOIN 1 2, JOIN 2 3, ... can build a 3000-long path; a recursive find overflows Python's default limit of 1000 calls.
+TEXT,
+
+    'minimum-spanning-tree' => <<<'TEXT'
+A spanning tree connects all n nodes with n - 1 edges, no cycle; a minimum one has the least total weight. Kruskal's algorithm is greedy, like the Greedy module: sort edges by weight, take each edge joining two groups (union-find, from Friend groups), stop at n - 1 edges.
+
+## Example
+Four nodes, edges sorted by weight:
+
+    edge  weight  take?
+    2-3   2       yes
+    1-3   3       yes
+    1-2   4       no, same group
+    3-4   5       yes
+
+Total: 2 + 3 + 5 = 10.
+
+## How to think about it
+The lightest edge between two groups is always safe. An edge inside one group, self-loops included, would close a cycle. Of parallel edges the lighter comes first.
+
+## Python
+    edges.sort()
+    total = taken = 0
+    for w, u, v in edges:
+        if find(u) != find(v):
+            join(u, v)
+            total += w
+            taken += 1
+    print(total if taken == n - 1 else -1)
+
+## Java
+    Arrays.sort(edges, (x, y) -> Integer.compare(x[2], y[2]));
+    long total = 0;
+    int taken = 0;
+    for (int[] e : edges)
+        if (find(e[0]) != find(e[1])) {
+            join(e[0], e[1]);
+            total += e[2];
+            taken++;
+        }
+    System.out.println(taken == n - 1 ? total : -1);
+
+## JavaScript
+    edges.sort((x, y) => x[2] - y[2])
+    let total = 0, taken = 0
+    for (const [u, v, w] of edges)
+      if (find(u) !== find(v)) {
+        join(u, v)
+        total += w
+        taken++
+      }
+    console.log(taken === n - 1 ? total : -1)
+
+## C++
+    sort(edges.begin(), edges.end());
+    long long total = 0;
+    int taken = 0;
+    for (auto [w, u, v] : edges)
+        if (find(u) != find(v)) {
+            join(u, v);
+            total += w;
+            taken++;
+        }
+    cout << (taken == n - 1 ? total : -1) << "\n";
+
+## Complexity
+O(m log m) for the sort; each union-find step is nearly constant.
+
+## Watch out for
+- No group check: 2 + 3 + 4 = 9 above, a cycle missing node 4.
+- Heaviest first gives the maximum spanning tree.
+- 999 edges near 10^9 pass 32 bits: use long (long long in C++).
+- Fewer than n - 1 taken: not connected, print -1.
+TEXT,
+
     'sort-an-array' => <<<'TEXT'
 Sorting puts numbers in order, smallest first. The three methods here are the same three as in the visualization section on this page; watch each one there on a small array before you code it.
 
