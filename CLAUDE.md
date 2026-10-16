@@ -48,7 +48,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   Seed: 19 modules, 65 lessons, one problem each (`data/lessons.php`; 2 visible + 3-10
   hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
   Module `basics` is titled "Getting started" (was "Basics"; slug unchanged). Lesson text
-  (316-450 words, section headings) in `data/lesson_bodies.php`. 40 tests pass (SQLite in
+  (316-450 words, section headings) in `data/lesson_bodies.php`. 41 tests pass (SQLite in
   memory, `Http::fake()` for the sandbox).
 - Next: AI hint endpoint and the `ai_hints` table.
 - Decisions: any sandbox failure returns 503 and stores no submission; logs never include

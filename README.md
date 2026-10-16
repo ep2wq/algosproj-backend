@@ -58,6 +58,29 @@ by the other two heap lessons and by Connect ropes. Minimum spanning tree reuses
 
 Run the tests with `php artisan test`.
 
+## Database indexes
+
+Indexes on the tables the API reads, besides each primary key:
+
+- `users_email_unique`: login and the register uniqueness check look a user up by email.
+- `users_points_index`: `/leaderboard/me` counts the users with more points.
+- `users_leaderboard_index` (`points desc, created_at`): `/leaderboard` reads the top rows
+  already in its order (points down, then oldest account, then id) instead of sorting every
+  user; with 20,000 users it read 51 rows instead of about 20,000.
+- `modules_slug_unique`, `lessons_slug_unique`: lesson pages are fetched by slug.
+- Foreign key indexes (`lessons.module_id`, `problems.lesson_id`, `test_cases.problem_id`,
+  `submissions.user_id`, `submissions.problem_id`, `completions.problem_id`): MySQL creates
+  them for each foreign key; they serve the lesson, modules and submit lookups.
+- `completions_user_id_problem_id_unique`: one completion per user and problem; it also
+  answers the "already completed?" check on submit.
+
+To add an index later, measure first: fill a temporary database with realistic volume, run
+`EXPLAIN` / `EXPLAIN ANALYZE` on the query the app really sends, add the index there and
+keep it only if rows read or time drop. Don't copy an index that already exists (foreign keys
+and unique constraints have one). In MySQL, an index starting with a foreign key column
+replaces that foreign key's own index, which matters if you later drop it. Add it in a new
+migration with a name and a `down()` that drops it.
+
 ## Environment variables
 
 On top of the usual Laravel `APP_*` and `DB_*` settings:
