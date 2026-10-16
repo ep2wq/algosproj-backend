@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminAuditLog;
 use App\Models\User;
+use App\Models\UserActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -86,6 +87,7 @@ class UserController extends Controller
             $user->forceFill(['banned_at' => now(), 'ban_reason' => $data['reason']])->save();
             $user->tokens()->delete();
             AdminAuditLog::record($request->user(), 'user.ban', $user, $user->email, ['reason' => AdminAuditLog::short($data['reason'])]);
+            UserActivityLog::write($user, $user->email, 'banned_by_admin');
         });
 
         return $this->rowResponse($user);
@@ -103,6 +105,7 @@ class UserController extends Controller
             $reason = $user->ban_reason;
             $user->forceFill(['banned_at' => null, 'ban_reason' => null])->save();
             AdminAuditLog::record($request->user(), 'user.unban', $user, $user->email, ['ban_reason' => AdminAuditLog::short($reason)]);
+            UserActivityLog::write($user, $user->email, 'unbanned');
         });
 
         return $this->rowResponse($user);

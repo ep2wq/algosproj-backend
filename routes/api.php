@@ -62,6 +62,7 @@ Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->gro
     Route::post('/users/{user}/ban', [Admin\UserController::class, 'ban']);
     Route::post('/users/{user}/unban', [Admin\UserController::class, 'unban']);
     Route::post('/users/{user}/logout-everywhere', [Admin\UserController::class, 'logoutEverywhere']);
+    Route::get('/users/{user}/activity', [Admin\ActivityController::class, 'forUser']);
 
     // Owners only: other admins get 403 (the owner middleware, also checked before route binding).
     Route::middleware('owner')->group(function () {
@@ -70,5 +71,6 @@ Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->gro
         Route::post('/users/{user}/reset-progress', [Admin\UserController::class, 'resetProgress']);
         Route::delete('/users/{user}', [Admin\UserController::class, 'destroy']);
         Route::get('/audit-log', [Admin\AuditLogController::class, 'index']);
+        Route::get('/activity', [Admin\ActivityController::class, 'index']);
     });
 });

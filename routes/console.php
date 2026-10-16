@@ -2,6 +2,7 @@
 
 use App\Models\AdminAuditLog;
 use App\Models\User;
+use App\Models\UserActivityLog;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -43,3 +44,19 @@ Artisan::command('user:make-admin {email} {--owner : Make the user an owner} {--
 
     return 0;
 })->purpose('Make a user an admin, an owner with --owner, or a normal user with --remove');
+
+// Not scheduled yet: run it daily in production (README "Deploy checklist").
+Artisan::command('activity:prune {--days=90 : Delete rows older than this many days}', function () {
+    $days = $this->option('days');
+
+    if (! ctype_digit((string) $days) || (int) $days < 1) {
+        $this->error('--days must be a whole number of at least 1.');
+
+        return 1;
+    }
+
+    $deleted = UserActivityLog::where('created_at', '<', now()->subDays((int) $days))->delete();
+    $this->info("Deleted $deleted activity rows older than $days days.");
+
+    return 0;
+})->purpose('Delete user activity log rows older than --days (default 90)');

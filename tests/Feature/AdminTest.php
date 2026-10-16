@@ -130,7 +130,9 @@ class AdminTest extends TestCase
             ['POST', "/api/admin/users/$u/points", ['amount' => 5, 'reason' => 'Bonus'], 403, 200],
             ['POST', "/api/admin/users/$u/reset-progress", [], 403, 200],
             ['DELETE', "/api/admin/users/$u", ['confirm_email' => $this->target->email], 403, 204],
+            ['GET', "/api/admin/users/$u/activity", [], 200, 200],
             ['GET', '/api/admin/audit-log', [], 403, 200],
+            ['GET', '/api/admin/activity', [], 403, 200],
         ];
     }
 

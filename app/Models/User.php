@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Completion::class);
     }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(UserActivityLog::class);
+    }
 }
