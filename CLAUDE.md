@@ -16,10 +16,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Laravel (PHP 8.3+), MySQL 8 in Docker (`algosproj-mysql`, host port 3307), Sanctum
   personal access tokens (not cookie mode: the frontend is on another domain).
-- Tables: `users` (`points`), `modules`, `lessons`, `problems`, `test_cases` (`is_hidden`),
-  `submissions`, `completions` (unique `user_id` + `problem_id`). Planned: `ai_hints`.
-- Endpoints in `routes/api.php` (README "API"). Plain controllers, inline validation, no
-  service layer. `throttle` on submit and (planned) hint.
+- Tables: `users` (`points`, `role` user/admin, not fillable), `modules`, `lessons`,
+  `problems`, `test_cases` (`is_hidden`), `submissions`, `completions`. Planned: `ai_hints`.
+- `routes/api.php` (README "API", "Admin API"); plain controllers, inline validation. Admin:
+  `/api/admin/*`, `auth:sanctum` + `admin` middleware (401 guest, 403 non-admin),
+  `Controllers/Admin/*`. Role only via `php artisan user:make-admin {email} [--remove]`.
 - `.env`: `SANDBOX_URL`, `SANDBOX_SECRET` (`config('services.sandbox')`), `FRONTEND_URL`
   (the only CORS origin). Dockerfile: PHP 8.4 + Apache, config via env vars (README).
 - Commands: `composer install`, `php artisan serve`, `php artisan migrate`, `php artisan test`.
@@ -44,17 +45,16 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits.
-  Seed: 19 modules, 65 lessons, one problem each (`data/lessons.php`; 2 visible + 3-10
-  hidden tests; easy 10 / medium 20 / hard 30), all passing through the real sandbox.
-  Module `basics` is titled "Getting started" (was "Basics"; slug unchanged). Lesson text
-  (316-450 words, section headings) in `data/lesson_bodies.php`. 49 tests pass (SQLite in
-  memory, `Http::fake()` for the sandbox).
+- Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits, admin
+  CRUD for modules/lessons/problems/test cases. Seed: 19 modules, 65 lessons, one problem
+  each (2 visible + 3-10 hidden tests). 78 tests pass (SQLite in memory, `Http::fake()`).
+- Content lives in the DB. `ContentSeeder` imports `data/lessons.php` + `lesson_bodies.php`
+  only when `modules` is empty, otherwise does nothing; never make it overwrite.
 - Next: AI hint endpoint and the `ai_hints` table.
-- Decisions: any sandbox failure returns 503 and stores no submission; logs never include
-  code, tests or the secret. Leaderboard ties share a rank. Code size max 65536 bytes.
-  Lesson text uses a tiny format (`## ` headings, `- ` lists, 4-space code, paragraphs);
-  see README "Lesson text format". The frontend parses it; no markdown library.
-- Gotchas: `docker start algosproj-mysql` before `migrate` or `serve`. Run the sandbox on
-  8001 (both default to 8000). Seed expected outputs must match trimmed stdout exactly and
-  come from a reference solution, never by hand (some answers span several lines).
+- Decisions: sandbox failure = 503, no submission stored; logs never hold code, tests or
+  the secret. Ties share a rank. Code max 65536 bytes. Points from difficulty (10/20/30),
+  never from a request. Admin delete is 409 for a module with lessons, a lesson with
+  problems, a solved problem; tests always delete. Tests: max 50, 20,000 bytes per field,
+  25,000 total, `input`/`expected_output` untrimmed. Lesson text: README; no markdown lib.
+- Gotchas: `docker start algosproj-mysql` before `migrate`/`serve`. Sandbox on 8001. Expected
+  outputs must match trimmed stdout and come from a reference solution, never by hand.

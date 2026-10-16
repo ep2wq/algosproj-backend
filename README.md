@@ -19,6 +19,31 @@ php artisan migrate --seed   # seeds 19 modules with 65 lessons, one problem eac
 php artisan serve
 ```
 
+### Content lives in the database
+
+After launch the database is the source of truth for modules, lessons, problems and test
+cases. Edit them in the admin area (frontend `/admin`, API below). `lessons.php` and
+`lesson_bodies.php` are only the initial import: `ContentSeeder` imports them only when the
+`modules` table is empty. If any module exists it changes nothing and prints
+`Content not imported: modules already exist.`, so running the seeder again (on purpose or
+by accident) never overwrites admin edits. Editing the seed files after launch does nothing
+to a live database. For a clean dev copy, `php artisan migrate:fresh --seed` still works:
+it empties every table, so the import runs again.
+
+### Admins
+
+`users.role` is `user` (the default) or `admin`. It is not mass-assignable, so register,
+login and any future profile update can never set it, and no endpoint changes it. Only this
+command does:
+
+```bash
+php artisan user:make-admin you@example.com            # make an admin
+php artisan user:make-admin you@example.com --remove   # back to a normal user
+```
+
+An unknown email prints `No user has the email ...` and exits with 1. The role is in the
+user object of login, register and `/api/me`; no public response includes it.
+
 Seed content lives in `database/seeders/data/lessons.php`: Getting started (slug `basics`;
 titled Basics until the Programming basics module was added), Programming basics, Core programming, Object-oriented programming (slug `oop`), Algorithm basics, Arrays and strings,
 Stacks and queues, Linked lists, Hash tables, Trees and BSTs, Heaps and priority queues (slug `heaps`), Recursion and backtracking, Graphs, Tries and union-find (slug `tries-union-find`), Sorting and searching, Greedy algorithms (slug `greedy`), Dynamic programming basics (slug `dp-basics`), Dynamic programming: tables (slug `dp-tables`), Bit manipulation and math (slug `bits-math`). Each problem has 2 visible and 3-6 hidden tests (Make change has 10, one per amount it must cover; Count set bits has 10, one per required value),
@@ -32,8 +57,8 @@ accept code up to about 38 KB and 48 KB, not the full 64 KB.
 
 ### Lesson text format
 
-Lesson text (`lessons.body`) lives in `database/seeders/data/lesson_bodies.php`, keyed by
-lesson slug. The frontend parses a small subset of markdown, nothing more (no bold, links
+Lesson text (`lessons.body`) was first imported from `database/seeders/data/lesson_bodies.php`
+(keyed by lesson slug) and is now edited in the admin area. The frontend parses a small subset of markdown, nothing more (no bold, links
 or numbered lists):
 
 - A line starting with `## ` is a section heading.
@@ -108,7 +133,8 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
 | GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
 
-Hidden test cases are never returned. In a submit response they only show `{"passed": bool}`.
+Hidden test cases are never returned by the public routes. In a submit response they only
+show `{"passed": bool}`. Only the admin routes below return them.
 
 Challenges are the problems themselves, so a problem solved from `/challenges` or from its
 lesson is the same completion and earns points once. `topic` is `{slug, title}` of the
@@ -152,6 +178,59 @@ Submit details:
   The failure is logged with `Log::error` (status code, at most 300 characters of the body,
   the exception message), never with the code, test cases or secret.
 - Going over a rate limit returns 429.
+
+## Admin API
+
+All under `/api/admin`, behind `auth:sanctum` plus the `admin` middleware
+(`EnsureUserIsAdmin`): no token is 401, a non-admin is 403 (checked before route model
+binding, so a non-admin gets 403 even for an id that does not exist), an admin passes. The
+frontend hides its admin pages from non-admins, but that is only convenience; these checks
+are the security. Ids, not slugs, in the paths. Edits show on the public routes at once.
+
+| Method | Path | Body | Result |
+|---|---|---|---|
+| GET | `/modules` | | Modules in order, each with its `lessons` (no body) |
+| POST | `/modules` | `title`, `slug`, `sort_order` | 201; new modules get track `algorithms` |
+| PUT | `/modules/{module}` | `title`, `slug`, `sort_order` | The module (track unchanged) |
+| DELETE | `/modules/{module}` | | 204, or 409 if it has lessons |
+| GET | `/modules/{module}/lessons` | | Its lessons (no body) |
+| POST | `/lessons` | `module_id`, `title`, `slug`, `body`, `sort_order` | 201 |
+| GET | `/lessons/{lesson}` | | The lesson with its full `body` |
+| PUT | `/lessons/{lesson}` | as POST | The lesson |
+| DELETE | `/lessons/{lesson}` | | 204, or 409 if it has problems |
+| GET | `/problems` | | All problems (no description) |
+| POST | `/problems` | `lesson_id` (optional), `title`, `slug`, `description`, `difficulty` | 201 |
+| GET | `/problems/{problem}` | | The problem |
+| PUT | `/problems/{problem}` | as POST | The problem |
+| DELETE | `/problems/{problem}` | | 204 (its tests and submissions go with it), or 409 if anyone has a completion |
+| GET | `/problems/{problem}/test-cases` | | All its tests, hidden ones and expected outputs included |
+| POST | `/problems/{problem}/test-cases` | `input`, `expected_output`, `is_hidden` | 201 |
+| PUT | `/problems/{problem}/test-cases/{testCase}` | as POST | The test case |
+| DELETE | `/problems/{problem}/test-cases/{testCase}` | | 204, always allowed |
+
+Rules (422 with a message per field unless noted):
+
+- Slugs: required, unique in their table, only `a-z`, `0-9` and `-`, at most 100 characters.
+- Titles at most 255 characters; `sort_order` an integer 0-100000; lesson `body` optional,
+  at most 20,000 characters (and 65,535 bytes, the TEXT column); problem `description`
+  required, at most 5,000 characters; `difficulty` is `easy`, `medium` or `hard`.
+- `points` is never accepted: the server sets it from difficulty (easy 10, medium 20, hard
+  30) on create and update. Changing difficulty does not change points already awarded.
+- Test cases: `input` may be empty, `expected_output` is required, each at most 20,000
+  bytes. Both are stored exactly as sent (excluded from Laravel's TrimStrings; every seed
+  input ends with a newline and some start with spaces). A problem has at most 50 tests,
+  and all its inputs plus expected outputs total at most 25,000 bytes, checked on create and
+  update; both return 422 under `test_cases`. This keeps the sandbox payload (base64 JSON,
+  about 120 KB) safe next to 64 KB of code. Six seed problems are already over 25,000
+  bytes (friend-groups 49,482, count-connected-components 46,060, sort-an-array 41,569,
+  minimum-spanning-tree 39,551, delete-from-a-bst 29,693, diagonal-sums 26,186): their tests
+  can be deleted but not added or edited until the total is under the limit. Seven seed
+  problems (those above except delete-from-a-bst, plus linear-search and binary-search) have
+  a test over 20,000 bytes, which cannot be saved again as it is. Problem fields can always
+  be edited.
+- Deleting: a module with lessons, a lesson with problems, or a problem that anyone has
+  solved returns 409 with a message. Edit things users have solved instead of deleting them.
+- Nested test-case routes use scoped binding: a test case of another problem is a 404.
 
 ## Docker
 
