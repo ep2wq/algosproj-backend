@@ -15,6 +15,14 @@ class ContentSeeder extends Seeder
 
     public function run(): void
     {
+        // The first import only. After that the database is the source of truth (content is
+        // edited in the admin area), so a later run must not touch it.
+        if (Module::exists()) {
+            $this->command?->warn('Content not imported: modules already exist. Edit content in the admin area.');
+
+            return;
+        }
+
         // Modules, lessons (one problem each) and test cases live in data/lessons.php;
         // lesson text lives in data/lesson_bodies.php, keyed by slug.
         $bodies = require __DIR__.'/data/lesson_bodies.php';
