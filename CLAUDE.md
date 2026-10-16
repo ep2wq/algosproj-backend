@@ -16,11 +16,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Laravel (PHP 8.3+), MySQL 8 in Docker (`algosproj-mysql`, host port 3307), Sanctum
   personal access tokens (not cookie mode: the frontend is on another domain).
-- Tables: `users` (`points`, `role` user/admin, not fillable), `modules`, `lessons`,
-  `problems`, `test_cases` (`is_hidden`), `submissions`, `completions`. Planned: `ai_hints`.
-- `routes/api.php` (README "API", "Admin API"); plain controllers, inline validation. Admin:
-  `/api/admin/*`, `auth:sanctum` + `admin` middleware (401 guest, 403 non-admin),
-  `Controllers/Admin/*`. Role only via `php artisan user:make-admin {email} [--remove]`.
+- Tables: `users` (`points`, `role` user/admin/owner and `banned_at`/`ban_reason`, none
+  fillable), `modules`, `lessons`, `problems`, `test_cases` (`is_hidden`), `submissions`,
+  `completions`, `admin_audit_logs`, `user_activity_logs` (both append-only). Planned: `ai_hints`.
+- `routes/api.php` (README "API", "Admin API", "Roles", "Bans", "Logs"); plain controllers,
+  inline validation. `/api/admin/*`: `auth:sanctum` + `not-banned` + `admin` (admin or owner),
+  owner-only routes add `owner`; all run before route binding. `Controllers/Admin/*`. Owners
+  only via `php artisan user:make-admin {email} [--owner|--remove]`.
 - `.env`: `SANDBOX_URL`, `SANDBOX_SECRET` (`config('services.sandbox')`), `FRONTEND_URL`
   (the only CORS origin). Dockerfile: PHP 8.4 + Apache, config via env vars (README).
 - Commands: `composer install`, `php artisan serve`, `php artisan migrate`, `php artisan test`.
@@ -45,16 +47,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: auth, lessons, submit (sandbox, points once), leaderboard, CORS, rate limits, admin
-  CRUD for modules/lessons/problems/test cases. Seed: 19 modules, 65 lessons, one problem
-  each (2 visible + 3-10 hidden tests). 78 tests pass (SQLite in memory, `Http::fake()`).
+- Done: auth, lessons, submit, leaderboard, rate limits, admin content CRUD, owner role, bans,
+  user endpoints, audit + activity logs. 111 tests pass (SQLite, `Http::fake()`).
 - Content lives in the DB. `ContentSeeder` imports `data/lessons.php` + `lesson_bodies.php`
-  only when `modules` is empty, otherwise does nothing; never make it overwrite.
-- Next: AI hint endpoint and the `ai_hints` table.
+  only when `modules` is empty; never make it overwrite. Next: AI hints (`ai_hints`).
 - Decisions: sandbox failure = 503, no submission stored; logs never hold code, tests or
-  the secret. Ties share a rank. Code max 65536 bytes. Points from difficulty (10/20/30),
-  never from a request. Admin delete is 409 for a module with lessons, a lesson with
-  problems, a solved problem; tests always delete. Tests: max 50, 20,000 bytes per field,
-  25,000 total, `input`/`expected_output` untrimmed. Lesson text: README; no markdown lib.
+  the secret. Ties share a rank. Code max 65536 bytes. Points from difficulty, never from a
+  request. Admin delete is 409 for a module with lessons, a lesson with problems, a solved
+  problem. Tests: max 50, 20,000 bytes per field, 25,000 total, untrimmed. Every admin write
+  calls `AdminAuditLog::record()` in its transaction (`AdminTest` checks `AUDIT_ACTIONS`).
 - Gotchas: `docker start algosproj-mysql` before `migrate`/`serve`. Sandbox on 8001. Expected
   outputs must match trimmed stdout and come from a reference solution, never by hand.

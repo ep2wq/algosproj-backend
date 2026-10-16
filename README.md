@@ -30,19 +30,80 @@ by accident) never overwrites admin edits. Editing the seed files after launch d
 to a live database. For a clean dev copy, `php artisan migrate:fresh --seed` still works:
 it empties every table, so the import runs again.
 
-### Admins
+### Roles
 
-`users.role` is `user` (the default) or `admin`. It is not mass-assignable, so register,
-login and any future profile update can never set it, and no endpoint changes it. Only this
-command does:
+`users.role` is `user` (the default), `admin` or `owner`; an owner is above an admin. It is
+not mass-assignable, so register, login and any future profile update can never set it. An
+owner can switch other accounts between `user` and `admin` through the API; nothing in the
+API can make or change an owner. Only this command can:
 
 ```bash
 php artisan user:make-admin you@example.com            # make an admin
+php artisan user:make-admin you@example.com --owner    # make an owner
 php artisan user:make-admin you@example.com --remove   # back to a normal user
 ```
 
-An unknown email prints `No user has the email ...` and exits with 1. The role is in the
-user object of login, register and `/api/me`; no public response includes it.
+The account must already exist (register first). An unknown email prints `No user has the
+email ...` and exits with 1; `--owner` with `--remove` is refused. Each run writes an audit
+row with actor `console`. The role is in the user object of login, register and `/api/me`;
+no public response includes it.
+
+| | user | admin | owner |
+|---|---|---|---|
+| Content (modules, lessons, problems, test cases) | | yes | yes |
+| View users, a user's detail and activity | | yes | yes |
+| Ban, unban, log out everywhere | | normal users only | normal users and admins |
+| Change role (user/admin), adjust points, reset progress, delete a user | | | yes |
+| Read the audit log and the global activity feed | | | yes |
+
+Enforced on the server for every request: nobody can ban, change the role of, delete, reset
+or adjust the points of their own account; nobody can act on an owner through the API at
+all (owners change only through the command); an admin can only act on accounts with role
+`user`. Each refusal is a 403 with a message. Middleware order: `auth:sanctum`, `not-banned`,
+`admin`, then `owner` on owner routes, all before route model binding, so a refused user
+gets 403 even for an id that does not exist.
+
+### Bans
+
+`users.banned_at` (set while banned) and `users.ban_reason` (required, at most 255
+characters). Banning deletes all the user's tokens in the same transaction. The `not-banned`
+middleware on every authenticated route also refuses a banned user's token if one survived:
+403 `{"message": "This account is banned.", "reason": "..."}`. Login answers the same 403
+(after the password check, so the reason only reaches the account holder) and issues no
+token. Register with that email still fails (the row exists). Banned users are left out of
+`/leaderboard` and of the rank counts in `/leaderboard/me`. Unban clears both columns;
+points, completions and submissions are kept through a ban and an unban. Neither column
+appears in the user object of login, register or `/api/me`.
+
+### Logs
+
+Both logs are append-only: no endpoint, page or code path edits or deletes rows, except
+`activity:prune` for the activity log. Neither ever holds a password, a token, a request
+body, a lesson body or a test.
+
+- `admin_audit_logs` (what admins do): `actor_id` (null after the actor is deleted, or for
+  the command), `actor_email` (snapshot, `console` for the command), `action` (such as
+  `user.ban`, `lesson.update`), `target_type`, `target_id`, `target_label` (snapshot: the
+  email or the title), `details` (JSON), `ip`, `created_at`. One row for every successful
+  admin write (content create, update and delete, every user action) and every
+  `user:make-admin` run, written in the same transaction as the change; a refused request
+  (403, 409, 422) writes none. Updates store `details.changes`: each changed field with
+  `old` and `new` cut to 200 characters, or just `"changed"` for a lesson body and a test's
+  input and expected output.
+- `user_activity_logs` (what users do): `user_id` (null after the user is deleted, or for a
+  failed login with an unknown email), `email` (snapshot, or the attempted email cut to 255
+  characters), `event`, `ip`, `user_agent` (cut to 255), `created_at`. Events: `register`,
+  `login`, `login_failed`, `login_blocked_banned`, `logout`, and `banned_by_admin` /
+  `unbanned`, which are written in the ban's transaction and have no IP or browser (the
+  request was the admin's; the audit log has the admin's IP). Not logged: throttled 429s,
+  validation errors, page views, submissions (the `submissions` table has those). Each of
+  register, login and logout adds one INSERT; if it fails, the request still succeeds and
+  the error goes to the Laravel log.
+- Retention: `php artisan activity:prune` deletes activity rows older than 90 days
+  (`--days=30` for another limit). It is not scheduled; see "Deploy checklist".
+- `ip` is the request IP. Locally it is `127.0.0.1`. Behind Cloudflare or another proxy it is
+  the proxy's IP until trusted proxies are configured (see "Deploy checklist"). Both logs
+  store IP addresses and emails, which the privacy policy must cover.
 
 Seed content lives in `database/seeders/data/lessons.php`: Getting started (slug `basics`;
 titled Basics until the Programming basics module was added), Programming basics, Core programming, Object-oriented programming (slug `oop`), Algorithm basics, Arrays and strings,
@@ -98,10 +159,15 @@ Run the tests with `php artisan test`.
 Indexes on the tables the API reads, besides each primary key:
 
 - `users_email_unique`: login and the register uniqueness check look a user up by email.
-- `users_points_index`: `/leaderboard/me` counts the users with more points.
+- `users_rank_index` (`banned_at, points`): `/leaderboard/me` counts the users who are not
+  banned and have more points, from the index alone. It replaced `users_points_index`: with
+  the banned filter that index stopped covering the count and MySQL scanned all 20,000 rows
+  (3.1 ms); with this one it reads only the matching rows (1.2 ms for 7,992 rows).
 - `users_leaderboard_index` (`points desc, created_at`): `/leaderboard` reads the top rows
   already in its order (points down, then oldest account, then id) instead of sorting every
-  user; with 20,000 users it read 51 rows instead of about 20,000.
+  user; with 20,000 users it read 51 rows instead of about 20,000. The banned filter is
+  checked on those rows, so it still reads about the limit plus the banned ones among them.
+- `user_activity_logs.created_at`: `activity:prune` deletes by age.
 - `modules_slug_unique`, `lessons_slug_unique`: lesson pages are fetched by slug.
 - Foreign key indexes (`lessons.module_id`, `problems.lesson_id`, `test_cases.problem_id`,
   `submissions.user_id`, `submissions.problem_id`, `completions.problem_id`): MySQL creates
@@ -132,13 +198,13 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | POST | `/api/register` | | Create a user (`name`, `email`, `password`); returns `token` and `user`; 5 per minute per IP |
-| POST | `/api/login` | | `email`, `password`; returns `token` and `user` (401 on a wrong password); 5 per minute per IP and email |
+| POST | `/api/login` | | `email`, `password`; returns `token` and `user` (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
 | POST | `/api/logout` | yes | Deletes the current token |
 | GET | `/api/me` | yes | The current user, with `points` |
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson with its problems and their visible test cases |
 | POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
-| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
+| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
 | GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
@@ -191,11 +257,13 @@ Submit details:
 
 ## Admin API
 
-All under `/api/admin`, behind `auth:sanctum` plus the `admin` middleware
-(`EnsureUserIsAdmin`): no token is 401, a non-admin is 403 (checked before route model
-binding, so a non-admin gets 403 even for an id that does not exist), an admin passes. The
-frontend hides its admin pages from non-admins, but that is only convenience; these checks
-are the security. Ids, not slugs, in the paths. Edits show on the public routes at once.
+All under `/api/admin`, behind `auth:sanctum`, `not-banned` and the `admin` middleware
+(`EnsureUserIsAdmin`): no token is 401, a user who is neither admin nor owner is 403
+(checked before route model binding, so they get 403 even for an id that does not exist),
+admins and owners pass. Owner-only routes add the `owner` middleware (`EnsureUserIsOwner`,
+403 for admins). The frontend hides these pages from others, but that is only convenience;
+these checks are the security. Ids, not slugs, in the paths. Edits show on the public routes
+at once. Every successful write is in the audit log (see "Logs").
 
 | Method | Path | Body | Result |
 |---|---|---|---|
@@ -217,6 +285,22 @@ are the security. Ids, not slugs, in the paths. Edits show on the public routes 
 | POST | `/problems/{problem}/test-cases` | `input`, `expected_output`, `is_hidden` | 201 |
 | PUT | `/problems/{problem}/test-cases/{testCase}` | as POST | The test case |
 | DELETE | `/problems/{problem}/test-cases/{testCase}` | | 204, always allowed |
+| GET | `/users?search=&role=&banned=&page=` | | 25 per page, newest first: `id, name, email, role, points, banned_at, created_at, solved_count`; `search` matches name or email (`%` and `_` are literal), `role` is user/admin/owner, `banned` 1 or 0 |
+| GET | `/users/{user}` | | The fields above plus `ban_reason`, `solved` (`title, slug, solved_at`) and the last 20 `submissions` (`problem, language, status, passed_count, total_count, runtime_ms, created_at`; never the code) |
+| GET | `/users/{user}/activity?page=` | | The user's activity, 25 per page, newest first |
+| POST | `/users/{user}/ban` | `reason` (required, max 255) | The user row; 409 if already banned |
+| POST | `/users/{user}/unban` | | The user row; 409 if not banned |
+| POST | `/users/{user}/logout-everywhere` | | The user row; all their tokens are deleted |
+| PUT | `/users/{user}/role` | `role`: `user` or `admin` | Owner only. The user row |
+| POST | `/users/{user}/points` | `amount` (non-zero integer, -1,000,000 to 1,000,000), `reason` (max 255) | Owner only. The user row; 422 if points would go below 0 |
+| POST | `/users/{user}/reset-progress` | | Owner only. Deletes their completions and sets points to 0 (submissions stay) |
+| DELETE | `/users/{user}` | `confirm_email` (the exact email) | Owner only. 204, or 422 if the email does not match. Deletes their tokens; foreign keys delete their submissions and completions and set them to null in both logs |
+| GET | `/audit-log?action=&actor=&from=&to=&page=` | | Owner only. 50 per page, newest first; `actor` is an id, an email or `console`; `from`/`to` are `YYYY-MM-DD` UTC days, both included |
+| GET | `/activity?event=&user=&from=&to=&page=` | | Owner only. 50 per page, newest first; `user` is an id or an email |
+
+User actions (everything above that changes a user) follow the rules in "Roles"; ban, unban,
+log out everywhere, role, points, reset and delete never accept a password, a token or the
+role `owner`, and unknown fields are ignored.
 
 Rules (422 with a message per field unless noted):
 
@@ -264,3 +348,15 @@ docker run -d --name algosproj-backend -p 8080:80 \
   (or a Docker network name), not `127.0.0.1`.
 - Migrations are not run by the image. Run them with
   `docker exec <container> php artisan migrate --force`.
+
+## Deploy checklist
+
+- Run `php artisan migrate --force`, then make the first owner with
+  `php artisan user:make-admin <email> --owner` (the account must be registered first).
+- Run `php artisan activity:prune` once a day (cron or the Laravel scheduler); it is not
+  scheduled in the code yet.
+- Configure trusted proxies when running behind Cloudflare or any other proxy
+  (`$middleware->trustProxies(...)` in `bootstrap/app.php`). Until then the request IP is the
+  proxy's, so both logs record the wrong IP and the login and register rate limits, which key
+  on the IP, count every user behind the same proxy together.
+- The logs store IP addresses and emails; cover that in the privacy policy before launch.
