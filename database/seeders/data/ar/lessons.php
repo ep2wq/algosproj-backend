@@ -789,4 +789,228 @@ TEXT,
 استخدام `if` على اسم طريقة الدفع يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يرى إلا الأعداد.
 TEXT,
     ],
+    'linear-search' => [
+        'title' => 'Linear search',
+        'body' => <<<'TEXT'
+الـ~linear search~ ينظر في العناصر واحدًا تلو الآخر، من البداية، حتى يجد الـ~target~ أو تنتهي العناصر. يعمل على أي ~list~، مرتبًا كان أم لا.
+
+## مثال
+ابحث عن `8` في `3 8 -2 8 5`.
+الـ~index~ `0`: `3` ليس `8`.
+الـ~index~ `1`: `8` هو الـ~target~. توقف: الإجابة `1`.
+أما `8` الثاني، عند الـ~index~ `3`، فلا يُفحص أبدًا.
+ابحث عن `4` في الـ~list~ نفسه: تُفحص العناصر كلها وعددها `5`، ولا يطابق أي منها، لذا الإجابة `-1`.
+
+## طريقة التفكير في الحل
+مُرّ على الـ~indexes~ من `0` إلى `n - 1`، وأرجِع أول ~index~ يساوي عنصره الـ~target~. لا تُرجع `-1` إلا بعد انتهاء الـ~loop~: عندها فقط يُعرف أن الـ~target~ غير موجود.
+
+## ~Python~
+    def find(a, target):
+        for i in range(len(a)):
+            if a[i] == target:
+                return i
+        return -1
+
+## ~Java~
+    static int find(int[] a, int target) {
+        for (int i = 0; i < a.length; i++)
+            if (a[i] == target) return i;
+        return -1;
+    }
+
+## ~JavaScript~
+    function find(a, target) {
+      for (let i = 0; i < a.length; i++)
+        if (a[i] === target) return i
+      return -1
+    }
+
+## ~C++~
+    int find(const vector<int>& a, int target) {
+        for (int i = 0; i < (int)a.size(); i++)
+            if (a[i] == target) return i;
+        return -1;
+    }
+
+## الـ~complexity~
+الـ~time complexity~: `O(n)`. الـ~target~ غير الموجود يكلف `n` مقارنة، واحدة لكل عنصر، والـ~target~ الموجود عند الـ~index~ `i` يكلف `i + 1`. ضعف عدد العناصر يعني ضعف العمل.
+الـ~space complexity~: `O(1)`: الـ~index~ `i` فقط.
+
+## انتبه إلى
+- آخر تطابق بدلًا من الأول. الـ~loop~ الذي يحفظ `i` عند كل تطابق ويستمر ينتهي بآخر تطابق: `3` في المثال، لا `1`. أرجِع النتيجة عند أول تطابق.
+- إرجاع `0` عندما يكون الـ~target~ غير موجود. `0` ~index~ حقيقي، لذا يجب أن تكون نتيجة "غير موجود" هي `-1`.
+- إرجاع `-1` داخل الـ~loop~ عند أول عدم تطابق. عندها لا يُفحص إلا الـ~index~ `0`.
+
+الـ~binary search~، الذي يأتي لاحقًا في الدورة، أسرع لكنه يحتاج إلى ~sorted list~.
+TEXT,
+    ],
+    'greatest-common-divisor' => [
+        'title' => 'القاسم المشترك الأكبر',
+        'body' => <<<'TEXT'
+القاسم المشترك الأكبر `gcd(a, b)` هو أكبر عدد يقسم كلًا من `a` و`b`. كل عدد يقسم `0`، لذا `gcd(a, 0) = a`.
+
+يقوم ~Euclid's algorithm~ على حقيقة واحدة: العدد يقسم `a` و`b` إذا وفقط إذا كان يقسم `b` و`a % b`. لذا `gcd(a, b) = gcd(b, a % b)`. كرر ذلك حتى يصبح `b` صفرًا؛ عندها تكون `a` هي الإجابة.
+
+## مثال
+`gcd(48, 18)`:
+`48 % 18 = 12`، إذن `gcd(18, 12)`.
+`18 % 12 = 6`، إذن `gcd(12, 6)`.
+`12 % 6 = 0`، إذن `gcd(6, 0) = 6`.
+`gcd(18, 48)` يحتاج إلى خطوة إضافية واحدة: `18 % 48 = 18`، وهي تبدّل العددين فقط.
+
+## طريقة التفكير في الحل
+طرح العدد الأصغر من الأكبر حتى يتساويا يعمل أيضًا؛ و`%` تنفّذ كل عمليات الطرح هذه دفعة واحدة. مع `10^18` و`10^18 - 1`، يحتاج ~Euclid's algorithm~ إلى خطوتين، ويحتاج الطرح إلى `999999999999999999` خطوة: نحو `32` سنة بمعدل مليار خطوة في الثانية.
+
+## ~Python~
+    def gcd(a, b):
+        while b != 0:
+            a, b = b, a % b
+        return a
+
+## ~Java~
+    static long gcd(long a, long b) {
+        while (b != 0) {
+            long t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+
+## ~JavaScript~
+    function gcd(a, b) {  // a and b are BigInts
+      while (b !== 0n) [a, b] = [b, a % b]
+      return a
+    }
+
+## ~C++~
+    long long gcd(long long a, long long b) {
+        while (b != 0) {
+            long long t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+
+## الـ~complexity~
+الـ~time complexity~: `O(log n)` خطوة للأعداد حتى `n`. حتى `10^18`، لا يحتاج ~Euclid's algorithm~ أبدًا إلى أكثر من `86` خطوة.
+الـ~space complexity~: `O(1)`.
+
+## انتبه إلى
+- `Number` في ~JavaScript~ دقيق فقط حتى `2^53 - 1 = 9007199254740991`. القيمة `Number("999999999999999999")` تساوي `10^18`، لذا يعطي `gcd(10^18, 10^18 - 1)` النتيجة `10^18` لا `1`. استخدم `BigInt(text)`، واطبع `String(g)`: لأن `console.log(g)` يضيف `n`.
+- يحدث ~overflow~ في `int`: استخدم `long` في ~Java~، و`long long` في ~C++~.
+- `a = 0` لا تحتاج إلى معالجة خاصة.
+TEXT,
+    ],
+    'prime-check' => [
+        'title' => 'فحص الأعداد الأولية',
+        'body' => <<<'TEXT'
+العدد الأولي عدد صحيح أكبر من `1` ليس له قواسم إلا `1` ونفسه. العددان `0` و`1` ليسا أوليين: للعدد `1` قاسم واحد فقط، وكل عدد يقسم `0`.
+
+## مثال
+هل `91` أولي؟ `sqrt(91)` تقريبًا `9.5`، لذا جرّب من `2` إلى `9`.
+`2` و`3` و`4` و`5` و`6` لا تقسم `91`. أما `7` فيقسمه: `91 = 7 * 13`. ليس أوليًا.
+هل `97` أولي؟ `sqrt(97)` تقريبًا `9.8`، ولا يقسم `97` أي عدد من `2` إلى `9`. أولي.
+
+## طريقة التفكير في الحل
+إذا كان `n = a * b`، فإن الأصغر من `a` و`b` لا يتجاوز `sqrt(n)`. لذا إذا لم يقسم `n` أي عدد من `2` إلى `sqrt(n)`، فلن يقسمه أي عدد أكبر. اكتب الحد بالشكل `i * i <= n`.
+
+## ~Python~
+    def is_prime(n):
+        if n < 2:
+            return False
+        i = 2
+        while i * i <= n:
+            if n % i == 0:
+                return False
+            i += 1
+        return True
+
+## ~Java~
+    static boolean isPrime(long n) {
+        if (n < 2) return false;
+        for (long i = 2; i * i <= n; i++)
+            if (n % i == 0) return false;
+        return true;
+    }
+
+## ~JavaScript~
+    function isPrime(n) {
+      if (n < 2) return false
+      for (let i = 2; i * i <= n; i++)
+        if (n % i === 0) return false
+      return true
+    }
+
+## ~C++~
+    bool isPrime(long long n) {
+        if (n < 2) return false;
+        for (long long i = 2; i * i <= n; i++)
+            if (n % i == 0) return false;
+        return true;
+    }
+
+## الـ~complexity~
+الـ~time complexity~: `O(sqrt(n))`. العدد الأولي القريب من `10^12` يحتاج إلى نحو `10^6` عملية قسمة؛ أما ~loop~ حتى `n / 2` فيحتاج إلى `5 * 10^11` ويتجاوز الوقت المسموح.
+الـ~space complexity~: `O(1)`.
+
+## انتبه إلى
+- `int i` في ~Java~ أو ~C++~. يحدث ~overflow~ في `i * i` عند `i = 46341`، فيستمر الـ~loop~ بعد `sqrt(n)`، ويتجاوز العدد الأولي الكبير الوقت المسموح. استخدم `long` (`long long` في ~C++~).
+- حذف الشرط `n < 2` يجعل `0` أو `1` أوليًا.
+- `i * i < n` بدلًا من `<=` يجعل `49` أوليًا.
+TEXT,
+    ],
+    'count-primes-with-a-sieve' => [
+        'title' => 'عدّ الأعداد الأولية باستخدام الـ sieve',
+        'body' => <<<'TEXT'
+يجد ~Sieve of Eratosthenes~ كل الأعداد الأولية حتى `n` دفعة واحدة. أصغر عدد لم يُشطب بعد هو عدد أولي: اشطب مضاعفاته، وكرر.
+
+## مثال
+`n = 30`.
+`2`: اشطب `4, 6, ..., 30`.
+`3`: اشطب `9, 12, ..., 30`.
+`5`: اشطب `25, 30`.
+التالي هو `7`، و`7 * 7 = 49` أكبر من `30`: توقف.
+الباقي: `2 3 5 7 11 13 17 19 23 29`، أي `10` أعداد أولية.
+
+## طريقة التفكير في الحل
+ابدأ من `p * p`: فالمضاعفات الأصغر، مثل `2 * p`، شُطبت من قبل. توقف عندما `p * p > n`، ثم عدّ ما بقي من `2` إلى `n`. استخدم `n + 1` خانة حتى يكون `n` نفسه مشمولًا.
+
+## ~Python~
+    composite = [False] * (n + 1)
+    p = 2
+    while p * p <= n:
+        if not composite[p]:
+            for m in range(p * p, n + 1, p):
+                composite[m] = True
+        p += 1
+
+## ~Java~
+    boolean[] composite = new boolean[n + 1];
+    for (int p = 2; p * p <= n; p++)
+        if (!composite[p])
+            for (int m = p * p; m <= n; m += p) composite[m] = true;
+
+## ~JavaScript~
+    const composite = new Uint8Array(n + 1)
+    for (let p = 2; p * p <= n; p++)
+      if (!composite[p])
+        for (let m = p * p; m <= n; m += p) composite[m] = 1
+
+## ~C++~
+    vector<bool> composite(n + 1, false);
+    for (int p = 2; p * p <= n; p++)
+        if (!composite[p])
+            for (int m = p * p; m <= n; m += p) composite[m] = true;
+
+## الـ~complexity~
+الـ~time complexity~: `O(n log log n)`، بضع خطوات لكل عدد: `11192870` عملية شطب عندما `n = 5000000`. أما ~trial division~ لكل عدد فيحتاج إلى `654184150` عملية قسمة، أي `58` ضعفًا.
+الـ~space complexity~: `O(n)`.
+
+## انتبه إلى
+- خطأ ~off-by-one~: استخدام `n` خانة، أو عدّ يتوقف عند `n - 1`، يُسقط `n`. فيعطي `n = 3` النتيجة `1` لا `2`.
+- ~trial division~ لكل عدد: صحيح، لكنه في ~Python~ يتجاوز الحد الزمني البالغ `3` ثوانٍ.
+TEXT,
+    ],
 ];
