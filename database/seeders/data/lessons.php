@@ -2698,7 +2698,7 @@ empty
                 'problem' => [
                     'title' => 'Shapes',
                     'description' => 'Read n shapes and print the area of each one, then the total. Write a Shape base class with an area method, and Circle, Rectangle and Square classes that override it, with Square extending Rectangle.
-- circle r: a circle with radius r, area pi * r * r. Use your language pi constant (math.pi, Math.PI or M_PI), not 3.14.
+- circle r: a circle with radius r, area pi * r * r. Use your language\'s pi constant (math.pi, Math.PI or M_PI), not 3.14.
 - rect w h: a rectangle w wide and h high, area w * h.
 - square s: a square with side s, area s * s.
 

@@ -132,7 +132,7 @@ n = 0: 0 % 2 is 0, so print even. Zero is even.
 n = -3: here the languages disagree. Python gives -3 % 2 = 1. Java, C++ and JavaScript give -1.
 
 ## How to think about it
-The difference comes from how each language rounds the division. Python rounds -3 / 2 down, to -2, so the remainder is 1: -3 = -2 * 2 + 1. Java, C++ and JavaScript round toward zero, to -1, so the remainder is -1: -3 = -1 * 2 - 1.
+The difference comes from how each language rounds the division. The exact result of -3 divided by 2 is -1.5. Python rounds it down, to -2, as -3 // 2 does, so the remainder is 1: -3 = -2 * 2 + 1. Java, C++ and JavaScript round toward zero, to -1, so the remainder is -1: -3 = -1 * 2 - 1.
 
 Both rules agree on one thing: an even number always leaves 0. So test n % 2 == 0 for even, and everything else is odd. That works for positive numbers, negative numbers and zero, in every language.
 
@@ -222,7 +222,7 @@ With a loop: set result = 1, multiply it by every i from 2 to n, and return it.
 With recursion, the function calls itself: factorial(n) = n * factorial(n - 1), with factorial(0) = 1 as the stopping point.
 
 The hard part is size. A number type has a largest value, and going past it is called overflow.
-- A 32-bit int, the default in Java and C++, holds up to 2,147,483,647. 12! fits, but 13! does not. Java silently wraps around and prints 1932053504; in C++ the result is undefined, and here it printed the same.
+- A 32-bit int, the default in Java and C++, holds up to 2,147,483,647. 12! fits, but 13! does not. Java silently wraps around and prints 1932053504; in C++ the result is undefined, and in our sandbox it printed the same.
 - long in Java and long long in C++ hold up to about 9.2 * 10^18, so 20! fits.
 - Python integers grow as needed.
 - A JavaScript Number stores whole numbers exactly only up to 9,007,199,254,740,991. 19! is past that, so arithmetic may round without warning. Use BigInt instead: write 1n, convert with BigInt(n), and it never rounds.
@@ -233,7 +233,7 @@ Space: O(1) for the loop, O(n) for the recursion's calls.
 
 ## Watch out for
 - int instead of long. 13 is the first input that breaks it.
-- Plain Number in JavaScript. Up to 21!, the results happen to come out right anyway, so the tests can't catch it. Use BigInt so the answer is right by design.
+- Plain Number in JavaScript. For every n here, up to 20!, the results happen to come out right anyway, so the tests can't catch it. Use BigInt so the answer is right by design.
 
 The grader can't tell whether you wrote a function, a loop or recursion, and a table of the 21 answers would also pass. Write the function: the next lessons build on it.
 TEXT,
@@ -620,7 +620,7 @@ The program reads the shapes from standard input, and your classes do the work: 
 circle 1, rect 2 3 and square 4 print 3.14, 6.00 and 16.00, then total 25.14. Round only when printing, not before adding.
 
 ## How to think about it
-Circle overrides area() with pi * r * r, using math.pi, Math.PI or M_PI: 3.14 gives 314.00 for r = 10, not 314.16. In Java and C++, the lines after // in main: go inside main.
+Circle overrides area() with pi * r * r, using math.pi, Math.PI or M_PI. Using 3.14 instead is wrong: it gives 314.00 for r = 10, not 314.16. In Java and C++, the lines after // in main: go inside main.
 
 ## Python
     class Shape:
