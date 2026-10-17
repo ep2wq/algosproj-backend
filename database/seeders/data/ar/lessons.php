@@ -489,7 +489,7 @@ TEXT,
 يقرأ البرنامج الأوامر من الـ~standard input~، والـ~classes~ التي تكتبها تؤدي العمل: يقرأ `main` كل سطر، ويجد `Account` المناسب، ويستدعي الـ~method~ الخاص به.
 
 ## مثال
-`OPEN ann` يبدأ رصيدًا قيمته `0`. `DEPOSIT ann 100` ثم `WITHDRAW ann 30` يتركان `70`. `WITHDRAW ann 100` يطلب أكثر من اللازم: اطبع `Insufficient funds` ولا تغيّر شيئًا. `BALANCE ann` يطبع `70`.
+`OPEN ann` يبدأ رصيدًا قيمته `0`. `DEPOSIT ann 100` ثم `WITHDRAW ann 30` يتركان `70`. `WITHDRAW ann 100` يطلب أكثر من الرصيد: اطبع `Insufficient funds` ولا تغيّر شيئًا. `BALANCE ann` يطبع `70`.
 
 ## طريقة التفكير في الحل
 استخدم ~dictionary~ من الاسم إلى `Account`. لكل ~object~ رصيده الخاص، لذا لا يختلط `ann` و`bob` أبدًا.
