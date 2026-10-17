@@ -4,57 +4,22 @@ namespace Database\Seeders;
 
 use App\Models\Module;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ContentSeeder extends Seeder
 {
-    private const POINTS = [
-        'easy' => 10,
-        'medium' => 20,
-        'hard' => 30,
-    ];
-
     public function run(): void
     {
         // The first import only. After that the database is the source of truth (content is
-        // edited in the admin area), so a later run must not touch it.
+        // edited in the admin area), so a later run must not touch it. `php artisan content:sync`
+        // adds new seed content and empty Arabic fields without overwriting anything.
         if (Module::exists()) {
             $this->command?->warn('Content not imported: modules already exist. Edit content in the admin area.');
 
             return;
         }
 
-        // Modules, lessons (one problem each) and test cases live in data/lessons.php;
-        // lesson text lives in data/lesson_bodies.php, keyed by slug.
-        $bodies = require __DIR__.'/data/lesson_bodies.php';
-
-        foreach (require __DIR__.'/data/lessons.php' as $moduleIndex => $moduleData) {
-            $module = Module::create([
-                'slug' => $moduleData['slug'],
-                'title' => $moduleData['title'],
-                'track' => $moduleData['track'],
-                'sort_order' => $moduleIndex + 1,
-            ]);
-
-            foreach ($moduleData['lessons'] as $lessonIndex => $lessonData) {
-                $lesson = $module->lessons()->create([
-                    'slug' => $lessonData['slug'],
-                    'title' => $lessonData['title'],
-                    'body' => $bodies[$lessonData['slug']],
-                    'sort_order' => $lessonIndex + 1,
-                ]);
-
-                $problemData = $lessonData['problem'];
-                $problem = $lesson->problems()->create([
-                    // One problem per lesson, so the lesson slug is the challenge slug.
-                    'slug' => $lessonData['slug'],
-                    'title' => $problemData['title'],
-                    'description' => $problemData['description'],
-                    'difficulty' => $problemData['difficulty'],
-                    'points' => self::POINTS[$problemData['difficulty']],
-                ]);
-
-                $problem->testCases()->createMany($problemData['test_cases']);
-            }
-        }
+        // The same import as content:sync (ContentImport), English and Arabic.
+        DB::transaction(fn () => (new ContentImport)->run());
     }
 }

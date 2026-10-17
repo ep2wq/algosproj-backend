@@ -3,6 +3,7 @@
 use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Models\UserActivityLog;
+use Database\Seeders\ContentImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -60,3 +61,27 @@ Artisan::command('activity:prune {--days=90 : Delete rows older than this many d
 
     return 0;
 })->purpose('Delete user activity log rows older than --days (default 90)');
+
+// Adds seed content the database doesn't have yet and fills empty Arabic columns, in one
+// transaction; never overwrites a non-empty value (README "content:sync"). Safe to run again.
+Artisan::command('content:sync {--dry-run : Print the summary without writing anything}', function () {
+    $dryRun = (bool) $this->option('dry-run');
+
+    $counts = DB::transaction(function () use ($dryRun) {
+        $counts = (new ContentImport)->run($dryRun);
+        if (! $dryRun) {
+            AdminAuditLog::record(null, 'content.sync', null, 'content', $counts);
+        }
+
+        return $counts;
+    });
+
+    if ($dryRun) {
+        $this->warn('Dry run: nothing was written.');
+    }
+    $this->info("Added: {$counts['modules']} modules, {$counts['lessons']} lessons, {$counts['problems']} problems, {$counts['test_cases']} test cases.");
+    $this->info("Arabic fields filled: {$counts['arabic_filled']}.");
+    $this->info("Arabic fields skipped because a value already exists: {$counts['arabic_skipped']}.");
+
+    return 0;
+})->purpose('Add new seed content and fill empty Arabic fields, never overwriting (--dry-run to preview)');

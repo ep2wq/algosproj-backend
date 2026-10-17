@@ -23,14 +23,15 @@ class AdminAuditLog extends Model
     }
 
     // $actor is the logged-in admin or owner, or null for an artisan command ("console").
-    public static function record(?User $actor, string $action, Model $target, string $label, ?array $details = null): void
+    // $target is null for an action on no single row (content:sync).
+    public static function record(?User $actor, string $action, ?Model $target, string $label, ?array $details = null): void
     {
         self::create([
             'actor_id' => $actor?->id,
             'actor_email' => $actor?->email ?? 'console',
             'action' => $action,
-            'target_type' => Str::snake(class_basename($target)),
-            'target_id' => $target->getKey(),
+            'target_type' => $target ? Str::snake(class_basename($target)) : null,
+            'target_id' => $target?->getKey(),
             'target_label' => mb_substr($label, 0, 255),
             'details' => $details,
             'ip' => $actor ? request()->ip() : null,
@@ -38,7 +39,7 @@ class AdminAuditLog extends Model
     }
 
     // The fields an unsaved fill() changed, each {old, new} cut to 200 characters. Fields in
-    // $contentOnly (lesson body, test input and output) are only marked "changed".
+    // $contentOnly (lesson bodies, test input and output) are only marked "changed".
     public static function changes(Model $model, array $contentOnly = []): array
     {
         $changes = [];
