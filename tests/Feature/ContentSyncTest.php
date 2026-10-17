@@ -150,7 +150,7 @@ class ContentSyncTest extends TestCase
         $problem = $lesson->problems()->firstOrFail();
         $this->assertSame('basics', $lesson->module->slug);
         $this->assertSame('Maximum of an array', $lesson->title);
-        $this->assertSame('أكبر عنصر في المصفوفة', $lesson->title_ar);
+        $this->assertSame((require database_path('seeders/data/ar/lessons.php'))['maximum-of-an-array']['title'], $lesson->title_ar);
         $this->assertSame('maximum-of-an-array', $problem->slug);
         $this->assertSame(10, $problem->points);
         $this->assertSame($expectedTests, $problem->testCases()->orderBy('id')->get(['input', 'expected_output', 'is_hidden'])->toArray());
