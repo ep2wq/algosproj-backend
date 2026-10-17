@@ -12,4 +12,5 @@ return [
     'algorithm-basics' => ['title' => 'أساسيات الخوارزميات'],
     'arrays-and-strings' => ['title' => 'Arrays and strings'],
     'stacks-and-queues' => ['title' => 'Stacks and queues'],
+    'linked-lists' => ['title' => 'Linked lists'],
 ];
