@@ -79,8 +79,9 @@ the `*_ar` names never appear in public responses. The language only picks a col
 queries. Admin responses hold both languages.
 
 Translated so far: Getting started (`basics`), Programming basics, Core programming,
-Object-oriented programming, Algorithm basics, Arrays and strings (22 lessons, 22 problems).
-The other 13 modules show English.
+Object-oriented programming, Algorithm basics, Arrays and strings, Stacks and queues, Linked
+lists, Hash tables, Trees and BSTs, Heaps and priority queues (`heaps`) (37 lessons, 37
+problems). The other 8 modules show English.
 
 Translation rules (for every batch):
 

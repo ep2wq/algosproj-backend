@@ -6,23 +6,32 @@ rule) are in the backend README, "Content languages". Load this list before tran
 every new entry afterwards. ⚠ marks a choice to review.
 
 Translated so far: Getting started (`basics`), Programming basics, Core programming,
-Object-oriented programming, Algorithm basics, Arrays and strings.
+Object-oriented programming, Algorithm basics, Arrays and strings, Stacks and queues, Linked
+lists, Hash tables, Trees and BSTs, Heaps and priority queues.
 
 ## Part 1: terms kept in English
 
 Written as `~term~` in prose (`الـ~term~` for the definite form), never with an Arabic
 equivalent. Code, identifiers, keywords, values and Big-O stay in `inline code`. An English term
 is treated as masculine (الـ~array~ الفارغ); language names are feminine (لغة): ~Python~ تعطي.
-Plurals are English inside the marker (~strings~), never an Arabic suffix.
+Plurals are English inside the marker (~strings~), never an Arabic suffix. "للـ" is not used:
+write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
 
-- Data and structures: array, character array, 2D list, list, sorted list, string, character,
-  index, indexes, element ⚠ (written عنصر, see Part 2), stack, top, map, hash map, dictionary,
-  key, keys, entries, lookup table, newline, whitespace, printable ASCII characters.
+- Data and structures: array, character array, 2D list, list, lists, sorted list, string,
+  character, index, indexes, element ⚠ (written عنصر, see Part 2), stack, top, map, hash map,
+  dictionary, key, keys, entry, entries, lookup table, newline, whitespace, printable ASCII
+  characters, queue, linked list, singly linked list, node, nodes, head, tail, cycle, set, hash
+  table, hash function, substring, subarray, subarrays, prefix, prefix sum, tree, trees, binary
+  tree, binary search tree, BST, root, child, children, parent, subtree, subtrees, leaf, edges,
+  ancestor, lowest common ancestor, LCA, successor, heap, max-heap, min-heap, iterator, token,
+  tokens.
 - Programming: variable, type, function, built-in function, parameter, return value, loop, for
   loop, nested loops, loop condition, conditions, counter, recursion, exception, overflow,
   undefined, debugging, compilation, regular expression, remainder operator, integer division,
   in place, immutable, builder, input, inputs, output, standard input, standard output,
-  streams, 32-bit, 64-bit, 32-bit integer, 32-bit signed integer, signed 64-bit integer.
+  streams, 32-bit, 64-bit, 32-bit integer, 32-bit signed integer, signed 64-bit integer,
+  operator, operators, operand, operands, counters, recursive function, recursion limit,
+  parent pointers, pointer equality, trim, sandbox ⚠ ("في الـ~sandbox~ لدينا" = in our sandbox).
 - Objects: class, classes, object, field, fields, private fields, private, static field,
   class-level field, method, methods, constructor, getter, encapsulation, shared state,
   subclass, subclasses, base class, interface, abstract class, abstract methods, pure virtual
@@ -30,13 +39,21 @@ Plurals are English inside the marker (~strings~), never an Arabic suffix.
 - Algorithms: complexity, time complexity, space complexity, single pass, running total,
   sorting, sort, stable, stable sort, comparator, two passes, lookup, insert, linear search,
   binary search, two pointers, two-pointer technique, pointer, pointers, target ⚠, palindrome,
-  trial division, off-by-one, factorial ⚠, Euclid's algorithm ⚠, Sieve of Eratosthenes ⚠.
+  trial division, off-by-one, factorial ⚠, Euclid's algorithm ⚠, Sieve of Eratosthenes ⚠,
+  last-in, first-out, push, pop, peek, sift up, sift down, postfix notation, postfix
+  expression, reverse Polish notation, next greater element, brute force, fast and slow
+  pointers, Floyd ⚠ (name: "طريقة ~Floyd~"), sliding window, window, anagram, anagrams,
+  preorder, preorder traversal, comparators.
 - Language names: Python, Java, JavaScript, C++.
 - Problem section labels: ~Input~, ~Output~, ~Constraints~ ⚠ (the interface says المدخلات,
   المخرجات; القيود was used before).
 - Titles that stay English: FizzBuzz, Factorial ⚠, Caesar cipher ⚠, Stack class, Linear search,
-  Two Sum, Object-oriented programming, Arrays and strings. A title with an English term and
-  Arabic writes "الـ " and the term with a space, no marker: "مجموع عناصر الـ array".
+  Two Sum, Object-oriented programming, Arrays and strings, Stacks and queues, Linked lists,
+  Hash tables, Trees and BSTs, Heaps and priority queues, Next greater element, Valid anagram,
+  Longest substring without repeating characters, Subarray sum equals K, Lowest common ancestor
+  of a BST ⚠, Last stone weight ⚠, Merge k sorted lists, Running median ⚠. A title with an
+  English term and Arabic writes "الـ " and the term with a space, no marker: "مجموع عناصر الـ
+  array", "عكس الـ linked list", "ارتفاع الـ BST", "حساب قيمة الـ postfix expression".
 
 ## Part 2: Arabic wording for recurring words and phrases
 
@@ -91,3 +108,24 @@ Plurals are English inside the marker (~strings~), never an Arabic suffix.
 | wraps around (numbers) | تلتف | ⚠ |
 | grid | الشبكة | |
 | balance / deposit / withdraw | الرصيد / إيداع / اسحب | |
+| push X / pop X (in worked steps) | نفّذ ~push~ للقيمة `X` / نفّذ ~pop~ للقيمة `X` | ⚠ the operation stays a term |
+| bracket / opener / closer / balanced | قوس / قوس فتح / قوس إغلاق / متوازن | ⚠ |
+| strictly greater | أكبر تمامًا | ⚠ |
+| rounds down / truncates toward zero | يقرّب إلى الأسفل / يقرّب نحو الصفر | |
+| nothing (a pointer to no node) | لا شيء | ⚠ |
+| loop (the ring a cycle makes) | الحلقة | ⚠ the ~cycle~ itself stays English |
+| insert (into a BST) / insertion order | أدخل / ترتيب الإدخال | ⚠ the hash-map operation stays ~insert~ |
+| Insert the n values one by one, in the order given, into an empty binary search tree | أدخل القيم وعددها `n` واحدة تلو الأخرى، بالترتيب المعطى، في ~binary search tree~ فارغ | |
+| Never rebalance the tree. | لا تُعِد توازن الـ~tree~ أبدًا. | ⚠ |
+| height / depth / level / path / chain | الارتفاع / العمق / مستوى / مسار / سلسلة | ⚠ |
+| split point | نقطة الانفصال | ⚠ |
+| link (in a list or tree) | رابط | ⚠ |
+| All values are distinct. | كل القيم مختلفة. | |
+| k between a and b (a single variable) | `k` بين `a` و`b`، شاملًا الطرفين | |
+| contiguous / non-decreasing order | متصلة / ترتيب غير تنازلي | |
+| median / average | الوسيط / المتوسط | ⚠ |
+| beats (heap order) | يتفوق على | ⚠ |
+| it crashes | يجعل البرنامج يتعطل | ⚠ |
+| count of a letter | عدد مرات الحرف | |
+| visited nodes | الـ~nodes~ التي تمت زيارتها | |
+| a lesson named in prose | درس + its Arabic title, terms as markers: "درس منتصف الـ~linked list~" | |
