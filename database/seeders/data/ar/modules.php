@@ -6,4 +6,5 @@
 
 return [
     'basics' => ['title' => 'البداية'],
+    'programming-basics' => ['title' => 'أساسيات البرمجة'],
 ];
