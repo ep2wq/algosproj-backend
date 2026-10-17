@@ -2,12 +2,11 @@
 
 ## Project overview
 
-AlgosProj teaches data structures and algorithms: lessons, visualizations, in-browser code
-(Python, Java, JavaScript, C++) run against test cases, points on a leaderboard, AI hints.
+AlgosProj teaches data structures and algorithms (English and Arabic): lessons, visualizations,
+in-browser code (Python, Java, JavaScript, C++) run against test cases, points, AI hints.
 Three repos, three deployments. Flow: frontend -> backend -> sandbox.
 - **algosproj-frontend**: React + TypeScript + Vite + Tailwind v4. Talks only to the backend.
-- **algosproj-backend** (this repo): Laravel API (Sanctum auth, lessons, problems,
-  submissions, points, leaderboard). The only service that calls the sandbox.
+- **algosproj-backend** (this repo): Laravel API. The only service that calls the sandbox.
 - **algosproj-sandbox**: FastAPI, runs user code in throwaway Docker containers. Never
   public; the backend calls it with a shared secret.
 Points are only awarded after server-side grading. Never trust a score sent by the client.
@@ -16,16 +15,17 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Laravel (PHP 8.3+), MySQL 8 in Docker (`algosproj-mysql`, host port 3307), Sanctum
   personal access tokens (not cookie mode: the frontend is on another domain).
-- Tables: `users` (`points`, `role` user/admin/owner and `banned_at`/`ban_reason`, none
-  fillable), `modules`, `lessons`, `problems`, `test_cases` (`is_hidden`), `submissions`,
-  `completions`, `admin_audit_logs`, `user_activity_logs` (both append-only). Planned: `ai_hints`.
-- `routes/api.php` (README "API", "Admin API", "Roles", "Bans", "Logs"); plain controllers,
-  inline validation. `/api/admin/*`: `auth:sanctum` + `not-banned` + `admin` (admin or owner),
-  owner-only routes add `owner`; all run before route binding. `Controllers/Admin/*`. Owners
-  only via `php artisan user:make-admin {email} [--owner|--remove]`.
-- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET` (`config('services.sandbox')`), `FRONTEND_URL`
-  (the only CORS origin). Dockerfile: PHP 8.4 + Apache, config via env vars (README).
-- Commands: `composer install`, `php artisan serve`, `php artisan migrate`, `php artisan test`.
+- Tables: `users` (`points`, `role` user/admin/owner, `banned_at`/`ban_reason`, none fillable),
+  `modules`, `lessons`, `problems` (+ `title_ar`, `body_ar`, `description_ar`; NULL =
+  untranslated), `test_cases` (`is_hidden`), `submissions`, `completions`, `admin_audit_logs`,
+  `user_activity_logs` (both append-only). Planned: `ai_hints`.
+- Public content routes: `content-lang` middleware (`Accept-Language`, first `ar`/`ar-XX` =
+  Arabic), per-field fallback (`HasArabicText`), `*_lang`, `Vary`; never `*_ar` names publicly.
+- `routes/api.php` (README "API", "Admin API", "Roles", "Bans", "Logs"); plain controllers, inline
+  validation. `/api/admin/*`: `auth:sanctum` + `not-banned` + `admin`, owner routes add `owner`,
+  all before route binding. Owners only via `php artisan user:make-admin {email} [--owner|--remove]`.
+- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin). Dockerfile: README.
+- Commands: `composer install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`.
 
 ## Working rules
 
@@ -47,14 +47,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: auth, lessons, submit, leaderboard, rate limits, admin content CRUD, owner role, bans,
-  user endpoints, audit + activity logs. 111 tests pass (SQLite, `Http::fake()`).
-- Content lives in the DB. `ContentSeeder` imports `data/lessons.php` + `lesson_bodies.php`
-  only when `modules` is empty; never make it overwrite. Next: AI hints (`ai_hints`).
-- Decisions: sandbox failure = 503, no submission stored; logs never hold code, tests or
-  the secret. Ties share a rank. Code max 65536 bytes. Points from difficulty, never from a
-  request. Admin delete is 409 for a module with lessons, a lesson with problems, a solved
-  problem. Tests: max 50, 20,000 bytes per field, 25,000 total, untrimmed. Every admin write
-  calls `AdminAuditLog::record()` in its transaction (`AdminTest` checks `AUDIT_ACTIONS`).
-- Gotchas: `docker start algosproj-mysql` before `migrate`/`serve`. Sandbox on 8001. Expected
-  outputs must match trimmed stdout and come from a reference solution, never by hand.
+- Done: auth, lessons, submit, leaderboard, rate limits, admin CRUD, roles, bans, logs, Arabic
+  content (phase 2; pilot = module `basics`). 151 tests pass (SQLite, `Http::fake()`).
+- Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
+  and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic in
+  `data/ar/*.php`; rules + terms in `data/ar/GLOSSARY.md` (I review it before more modules).
+- Decisions: sandbox failure = 503, no submission stored; logs never hold code, tests or the
+  secret. Ties share a rank. Code max 65536 bytes. Points from difficulty. Admin delete 409 for
+  a module with lessons, a lesson with problems, a solved problem. Tests: max 50, 20,000 bytes
+  each, 25,000 total, untrimmed. Admin writes call `AdminAuditLog::record()` in the transaction.
+- Next: translate the other modules, AI hints. Gotchas: `docker start algosproj-mysql` first.
+  Sandbox on 8001. Expected outputs come from a reference solution, matched on trimmed stdout.

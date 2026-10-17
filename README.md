@@ -30,6 +30,61 @@ by accident) never overwrites admin edits. Editing the seed files after launch d
 to a live database. For a clean dev copy, `php artisan migrate:fresh --seed` still works:
 it empties every table, so the import runs again.
 
+### content:sync
+
+`php artisan content:sync` brings new seed content into an existing database without touching
+edits. In one transaction it reads the English files (`lessons.php`, `lesson_bodies.php`) and the
+Arabic ones (`data/ar/*.php`) and:
+
+1. adds the modules, lessons and problems (with their test cases) whose slug the database does
+   not have yet, exactly as the first import does;
+2. fills an Arabic column (`*_ar`) only while it is empty (NULL);
+3. never changes a non-empty value (English or Arabic) and never touches the test cases of a
+   problem that already exists. A problem an admin deleted comes back if its lesson is still in
+   the seed files.
+
+It prints how many rows were added, how many Arabic fields were filled and how many were skipped
+because a value already exists, and records one audit-log row (`content.sync`, actor
+`console`) with those counts. `--dry-run` prints the same summary and writes nothing. A second
+run changes nothing. `ContentSeeder` uses the same code (`database/seeders/ContentImport.php`),
+so there is one import path; the seeder still runs only when no module exists.
+
+- **Dev:** `docker start algosproj-mysql`, `php artisan migrate`, `php artisan content:sync
+  --dry-run`, then `php artisan content:sync`.
+- **Production:** after deploying, `php artisan migrate --force`, then
+  `php artisan content:sync --dry-run`; read the summary, then `php artisan content:sync`.
+
+To add a lesson in both languages: add the module (if new) and the lesson with its problem and
+test cases to `lessons.php`, its body to `lesson_bodies.php`, and the Arabic title, body and
+problem text under the same slugs in `data/ar/lessons.php` and `data/ar/problems.php` (a new
+module's Arabic title in `data/ar/modules.php`). Then run `content:sync`. Arabic can also be
+added later; until then the English is shown.
+
+### Content languages
+
+Modules, lessons and problems have an Arabic column next to each English prose column, same
+type, NULL until translated (an empty value is stored as NULL): `modules.title_ar`,
+`lessons.title_ar`, `lessons.body_ar`, `problems.title_ar`, `problems.description_ar`. Slugs,
+tracks, difficulty, test inputs and expected outputs are never translated.
+
+The public content routes (`/api/modules`, `/api/lessons/{slug}`, `/api/challenges`,
+`/api/challenges/{slug}`) read `Accept-Language`: Arabic only when the first language listed is
+`ar` or `ar-XX` (`ar`, `ar-SA`, `ar;q=0.9,en;q=0.8`); anything else, missing or malformed, is
+English (`SetContentLanguage`, the `content-lang` middleware). The field names stay `title`,
+`body`, `description`; in Arabic each field uses its Arabic column and falls back to English
+on its own when that is empty. `body_lang` (lessons) and `description_lang` (problems) say which
+language the text came in (`ar` or `en`), so the frontend sets `lang` and `dir`. Responses carry
+`Vary: Accept-Language`. English responses are what they were before, plus the `*_lang` fields;
+the `*_ar` names never appear in public responses. The language only picks a column: no extra
+queries. Admin responses hold both languages.
+
+Translation rules (for every batch) and the terms chosen so far:
+`database/seeders/data/ar/GLOSSARY.md`. In short: natural Modern Standard Arabic, same structure
+as the English (same headings, lists and code blocks in the same order; code blocks
+byte-identical), every expression, identifier or value in `inline code`, Arabic punctuation,
+Western digits, no tatweel, body length within about 25% of the English, and a check by a
+back-translation from someone who has not seen the English.
+
 ### Roles
 
 `users.role` is `user` (the default), `admin` or `owner`; an owner is above an admin. It is
@@ -140,6 +195,8 @@ or numbered lists):
 - Everything else is paragraphs. Blank lines separate them, and single line breaks inside
   a paragraph are kept (worked examples rely on that). Paragraphs use a proportional font,
   so worked tables whose columns must line up are written as 4-space code blocks.
+- `` `inline code` `` in headings, list items, paragraphs and problem descriptions is shown in a
+  code font, left to right. Arabic text must put every expression and value in it.
 
 Each lesson uses the headings `## Example`, `## How to think about it`, `## Complexity`
 and `## Watch out for`, and is 300-350 words. The Core programming, Object-oriented
@@ -202,12 +259,15 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | POST | `/api/logout` | yes | Deletes the current token |
 | GET | `/api/me` | yes | The current user, with `points` |
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
-| GET | `/api/lessons/{slug}` | | A lesson with its problems and their visible test cases |
+| GET | `/api/lessons/{slug}` | | A lesson (`body`, `body_lang`) with its problems (`description_lang`) and their visible test cases |
 | POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
 | GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
-| GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
+| GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `description_lang`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
+
+The modules, lessons and challenges routes answer in Arabic for `Accept-Language: ar` (see
+"Content languages").
 
 Hidden test cases are never returned by the public routes. In a submit response they only
 show `{"passed": bool}`. Only the admin routes below return them.
@@ -268,16 +328,16 @@ at once. Every successful write is in the audit log (see "Logs").
 | Method | Path | Body | Result |
 |---|---|---|---|
 | GET | `/modules` | | Modules in order, each with its `lessons` (no body) |
-| POST | `/modules` | `title`, `slug`, `sort_order` | 201; new modules get track `algorithms` |
+| POST | `/modules` | `title`, `title_ar`, `slug`, `sort_order` | 201; new modules get track `algorithms` |
 | PUT | `/modules/{module}` | `title`, `slug`, `sort_order` | The module (track unchanged) |
 | DELETE | `/modules/{module}` | | 204, or 409 if it has lessons |
 | GET | `/modules/{module}/lessons` | | Its lessons (no body) |
-| POST | `/lessons` | `module_id`, `title`, `slug`, `body`, `sort_order` | 201 |
-| GET | `/lessons/{lesson}` | | The lesson with its full `body` |
+| POST | `/lessons` | `module_id`, `title`, `title_ar`, `slug`, `body`, `body_ar`, `sort_order` | 201 |
+| GET | `/lessons/{lesson}` | | The lesson with its full `body` and `body_ar` |
 | PUT | `/lessons/{lesson}` | as POST | The lesson |
 | DELETE | `/lessons/{lesson}` | | 204, or 409 if it has problems |
 | GET | `/problems` | | All problems (no description) |
-| POST | `/problems` | `lesson_id` (optional), `title`, `slug`, `description`, `difficulty` | 201 |
+| POST | `/problems` | `lesson_id` (optional), `title`, `title_ar`, `slug`, `description`, `description_ar`, `difficulty` | 201 |
 | GET | `/problems/{problem}` | | The problem |
 | PUT | `/problems/{problem}` | as POST | The problem |
 | DELETE | `/problems/{problem}` | | 204 (its tests and submissions go with it), or 409 if anyone has a completion |
@@ -308,6 +368,11 @@ Rules (422 with a message per field unless noted):
 - Titles at most 255 characters; `sort_order` an integer 0-100000; lesson `body` optional,
   at most 20,000 characters (and 65,535 bytes, the TEXT column); problem `description`
   required, at most 5,000 characters; `difficulty` is `easy`, `medium` or `hard`.
+- Arabic fields (`title_ar`, `body_ar`, `description_ar`) are optional, with the same limits as
+  their English field (`body_ar` is checked in bytes too); an empty one is stored as NULL. The
+  audit log records them like the English ones (`body_ar` only as "changed"). 255 Arabic
+  letters fit a title (VARCHAR counts characters); 5,000 characters of a description are at
+  most 20,000 bytes, so they always fit its TEXT column.
 - `points` is never accepted: the server sets it from difficulty (easy 10, medium 20, hard
   30) on create and update. Changing difficulty does not change points already awarded.
 - Test cases: `input` may be empty, `expected_output` is required, each at most 20,000
@@ -351,7 +416,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
 
 ## Deploy checklist
 
-- Run `php artisan migrate --force`, then make the first owner with
+- Run `php artisan migrate --force` and `php artisan content:sync` (see "content:sync"), then
+  make the first owner with
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
 - Run `php artisan activity:prune` once a day (cron or the Laravel scheduler); it is not
   scheduled in the code yet.
