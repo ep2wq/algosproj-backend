@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['slug', 'title', 'track', 'sort_order'])]
+#[Fillable(['slug', 'title', 'title_ar', 'track', 'sort_order'])]
 class Module extends Model
 {
+    use HasArabicText;
+
     public $timestamps = false;
 
     public function lessons(): HasMany

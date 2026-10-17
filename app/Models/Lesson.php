@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['module_id', 'slug', 'title', 'body', 'sort_order'])]
+#[Fillable(['module_id', 'slug', 'title', 'title_ar', 'body', 'body_ar', 'sort_order'])]
 class Lesson extends Model
 {
+    use HasArabicText;
+
     public $timestamps = false;
 
     public function module(): BelongsTo

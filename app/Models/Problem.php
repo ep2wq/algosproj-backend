@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['lesson_id', 'slug', 'title', 'description', 'difficulty', 'points'])]
+#[Fillable(['lesson_id', 'slug', 'title', 'title_ar', 'description', 'description_ar', 'difficulty', 'points'])]
 class Problem extends Model
 {
+    use HasArabicText;
+
     public $timestamps = false;
 
     protected function casts(): array
