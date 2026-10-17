@@ -481,4 +481,312 @@ TEXT,
 نظام التصحيح لا يرى إلا الترتيب النهائي، فلا يمكنه التمييز بين مقارنة واحدة و~two passes~.
 TEXT,
     ],
+    'bank-accounts' => [
+        'title' => 'الحسابات البنكية',
+        'body' => <<<'TEXT'
+الـ~class~ مخطط، والـ~object~ شيء واحد مبني منه. يجمع الـ~class~ بين الـ~fields~، وهي البيانات التي يحملها كل ~object~، والـ~methods~، وهي الـ~functions~ التي تستخدم تلك البيانات. يعمل الـ~constructor~ عند إنشاء ~object~ ويهيئ الـ~fields~ الخاصة به.
+
+يقرأ البرنامج الأوامر من الـ~standard input~، والـ~classes~ التي تكتبها تؤدي العمل: يقرأ `main` كل سطر، ويجد `Account` المناسب، ويستدعي الـ~method~ الخاص به.
+
+## مثال
+`OPEN ann` يبدأ رصيدًا قيمته `0`. `DEPOSIT ann 100` ثم `WITHDRAW ann 30` يتركان `70`. `WITHDRAW ann 100` يطلب أكثر من اللازم: اطبع `Insufficient funds` ولا تغيّر شيئًا. `BALANCE ann` يطبع `70`.
+
+## طريقة التفكير في الحل
+استخدم ~dictionary~ من الاسم إلى `Account`. لكل ~object~ رصيده الخاص، لذا لا يختلط `ann` و`bob` أبدًا.
+
+الفخ هو الـ~shared state~. الـ~class-level field~ في ~Python~، أو الـ~static field~ في اللغات الأخرى، يتبع الـ~class~ نفسه، فتشترك كل الحسابات في عدد واحد. المقتطفات تعرض الحالتين. في ~Java~ و~C++~، توضع الأسطر التي بعد `// in main:` داخل `main`.
+
+## ~Python~
+    class Account:
+        opened = 0            # class-level: one value shared by all accounts
+        def __init__(self):
+            self.balance = 0  # field: every object has its own
+            Account.opened += 1
+        def deposit(self, amount):
+            self.balance += amount
+
+    a, b = Account(), Account()
+    a.deposit(50)
+    print(a.balance, b.balance, Account.opened)  # 50 0 2
+
+## ~Java~
+    class Account {
+        static int opened = 0;  // shared by all accounts
+        long balance = 0;
+        Account() { opened++; }
+        void deposit(long amount) { balance += amount; }
+    }
+    // in main:
+    Account a = new Account(), b = new Account();
+    a.deposit(50);
+    System.out.println(a.balance + " " + b.balance + " " + Account.opened);  // 50 0 2
+
+## ~JavaScript~
+    class Account {
+      static opened = 0    // shared by all accounts
+      constructor() {
+        this.balance = 0
+        Account.opened++
+      }
+      deposit(amount) { this.balance += amount }
+    }
+    const a = new Account(), b = new Account()
+    a.deposit(50)
+    console.log(a.balance, b.balance, Account.opened)  // 50 0 2
+
+## ~C++~
+    class Account {
+    public:
+        static int opened;      // shared by all accounts
+        long long balance = 0;
+        Account() { opened++; }
+        void deposit(long long amount) { balance += amount; }
+    };
+    int Account::opened = 0;
+    // in main:
+    Account a, b;
+    a.deposit(50);
+    cout << a.balance << " " << b.balance << " " << Account::opened << "\n";  // 50 0 2
+
+## الـ~complexity~
+`O(1)` لكل أمر في المتوسط باستخدام ~hash map~.
+
+## انتبه إلى
+- خمسة إيداعات بقيمة `1,000,000,000` تصنع `5,000,000,000`، لذا استخدم أعدادًا صحيحة بحجم ~64-bit~.
+- سحب الرصيد كاملًا بالضبط مسموح ويترك `0`.
+
+~dictionary~ من أعداد عادية يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يرى إلا الأسطر. ومع ذلك اكتب الـ~class~.
+TEXT,
+    ],
+    'stack-class' => [
+        'title' => 'Stack class',
+        'body' => <<<'TEXT'
+الـ~encapsulation~ يعني أن الـ~object~ يخفي بياناته، ولا يسمح للكود الخارجي بتغييرها إلا عبر الـ~methods~ الخاصة به، وهي التي تحمي قواعده، مثل عدم تنفيذ ~pop~ على ~stack~ فارغ أبدًا.
+
+يقرأ البرنامج الأوامر من الـ~standard input~، والـ~class~ المسمى `Stack` الذي تكتبه يؤدي العمل: يستدعي `main` لكل سطر `push` أو `pop` أو `peek` أو `size`.
+
+يختلف الإخفاء من لغة إلى أخرى:
+- ~Python~: الشرطة السفلية في البداية، كما في `_items`، تعني أنه داخلي، بالعُرف فقط.
+- ~Java~ و~C++~: ~private fields~. الوصول من الخارج يفشل في الـ~compilation~.
+- ~JavaScript~: ~field~ من نوع `#private`. الوصول من الخارج يسبب `SyntaxError`.
+
+## مثال
+`PUSH 3`، ثم `PUSH 7`، ثم `PEEK` يطبع `7`، و`POP` يطبع `7` ويزيله، و`SIZE` يطبع `1`. على ~stack~ فارغ، يطبع `POP` و`PEEK` الكلمة `empty`.
+
+## طريقة التفكير في الحل
+احفظ العناصر في ~list~ داخل الـ~class~، والـ~top~ في نهايته. `pop` و`peek` لا يُرجعان شيئًا (`None` أو `null`) على ~stack~ فارغ، و`main` يطبع `empty`. أما `size` فهو ~getter~: يقرأ بيانات ~private~ دون كشفها. في ~Java~ و~C++~، توضع الأسطر التي بعد `// in main:` داخل `main`.
+
+## ~Python~
+    class Stack:
+        def __init__(self):
+            self._items = []
+        def push(self, x):
+            self._items.append(x)
+        def pop(self):
+            return self._items.pop() if self._items else None
+        def size(self):
+            return len(self._items)
+
+    s = Stack()
+    s.push(4)
+    print(s.pop(), s.pop(), s.size())  # 4 None 0
+
+## ~Java~
+    class Stack {
+        private final ArrayList<Long> items = new ArrayList<>();
+        void push(long x) { items.add(x); }
+        Long pop() { return items.isEmpty() ? null : items.remove(items.size() - 1); }
+        int size() { return items.size(); }
+    }
+    // in main:
+    Stack s = new Stack();
+    s.push(4);
+    System.out.println(s.pop() + " " + s.pop() + " " + s.size());  // 4 null 0
+
+## ~JavaScript~
+    class Stack {
+      #items = []
+      push(x) { this.#items.push(x) }
+      pop() { return this.#items.length > 0 ? this.#items.pop() : null }
+      size() { return this.#items.length }
+    }
+    const s = new Stack()
+    s.push(4)
+    console.log(s.pop(), s.pop(), s.size())  // 4 null 0
+
+## ~C++~
+    class Stack {
+        vector<long long> items;  // class members are private by default
+    public:
+        void push(long long x) { items.push_back(x); }
+        bool empty() const { return items.empty(); }
+        long long pop() { long long top = items.back(); items.pop_back(); return top; }
+        int size() const { return items.size(); }
+    };
+    // in main:
+    Stack s;
+    s.push(4);
+    cout << s.pop() << " " << s.empty() << " " << s.size() << "\n";  // 4 1 0
+
+## الـ~complexity~
+`O(1)` لكل أمر.
+
+## انتبه إلى
+- يجب ألا يزيل `PEEK` الـ~top~؛ أما `POP` فيجب أن يزيله.
+- `0` قيمة، وليس فراغًا. `if value:` يعامل `0` كأنه لا شيء.
+- في ~C++~، افحص `empty()` قبل `back()`.
+
+~list~ عادي داخل `main` يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يستطيع رؤية ما هو ~private~.
+TEXT,
+    ],
+    'shapes' => [
+        'title' => 'الأشكال',
+        'body' => <<<'TEXT'
+الـ~subclass~ يرث من ~base class~، ويمكنه أن يطبّق ~override~ على الـ~methods~ الخاصة به: `Square` هو `Rectangle` أضلاعه متساوية. الـ~polymorphism~ يعني أن ~loop~ يستدعي `area()` على ~list~ من `Shape` ينفّذ النسخة الخاصة بكل ~object~.
+
+يقرأ البرنامج الأشكال من الـ~standard input~، والـ~classes~ التي تكتبها تؤدي العمل: يضع `main` لكل سطر `Circle` أو `Rectangle` أو `Square` في ~list~ واحد.
+
+## مثال
+`circle 1` و`rect 2 3` و`square 4` تطبع `3.14` و`6.00` و`16.00`، ثم `total 25.14`. قرّب عند الطباعة فقط، لا قبل الجمع.
+
+## طريقة التفكير في الحل
+يطبّق `Circle` ~override~ على `area()` بالصيغة `pi * r * r`، مستخدمًا `math.pi` أو `Math.PI` أو `M_PI`: القيمة `3.14` تعطي `314.00` عندما `r = 10`، لا `314.16`. في ~Java~ و~C++~، توضع الأسطر التي بعد `// in main:` داخل `main`.
+
+## ~Python~
+    class Shape:
+        def area(self):
+            return 0.0
+    class Rectangle(Shape):
+        def __init__(self, w, h):
+            self.w, self.h = w, h
+        def area(self):  # overrides Shape.area
+            return self.w * self.h
+    class Square(Rectangle):
+        def __init__(self, s):
+            super().__init__(s, s)  # parent constructor
+
+    for shape in [Rectangle(2, 3), Square(4)]:
+        print(f"{shape.area():.2f}")  # 6.00, then 16.00
+
+## ~Java~
+    class Shape { double area() { return 0; } }
+    class Rectangle extends Shape {
+        double w, h;
+        Rectangle(double w, double h) { this.w = w; this.h = h; }
+        @Override double area() { return w * h; }
+    }
+    class Square extends Rectangle { Square(double s) { super(s, s); } }
+    // in main:
+    for (Shape shape : List.of(new Rectangle(2, 3), new Square(4)))
+        System.out.println(String.format(Locale.ROOT, "%.2f", shape.area()));  // 6.00, 16.00
+
+## ~JavaScript~
+    class Shape { area() { return 0 } }
+    class Rectangle extends Shape {
+      constructor(w, h) { super(); this.w = w; this.h = h }
+      area() { return this.w * this.h }
+    }
+    class Square extends Rectangle { constructor(s) { super(s, s) } }
+    for (const shape of [new Rectangle(2, 3), new Square(4)]) console.log(shape.area().toFixed(2))  // 6.00, 16.00
+
+## ~C++~
+    class Shape {
+    public:
+        virtual double area() const { return 0; }
+        virtual ~Shape() = default;
+    };
+    class Rectangle : public Shape {
+        double w, h;
+    public:
+        Rectangle(double w, double h) : w(w), h(h) {}
+        double area() const override { return w * h; }
+    };
+    class Square : public Rectangle { public: Square(double s) : Rectangle(s, s) {} };
+    // in main:
+    Rectangle rect(2, 3);
+    Square square(4);
+    const Shape* shapes[] = {&rect, &square};  // base-type pointers
+    for (const Shape* shape : shapes) printf("%.2f\n", shape->area());  // 6.00, 16.00
+
+## الـ~complexity~
+`O(n)` لعدد `n` من الأشكال.
+
+## انتبه إلى
+- في ~C++~، بدون `virtual` ينفّذ `shape->area()` نسخة `Shape` ويطبع `0.00`.
+- `String.format` في ~Java~ يتبع لغة الكمبيوتر، فمع الألمانية يُطبع `6,00`؛ أما `Locale.ROOT` فيطبع نقطة.
+
+استخدام `if` على اسم الشكل يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يرى إلا الأعداد.
+TEXT,
+    ],
+    'fee-calculator' => [
+        'title' => 'حاسبة الرسوم',
+        'body' => <<<'TEXT'
+الـ~interface~ يسرد ~methods~ يتعهد الـ~class~ بوجودها، دون كود. أما الـ~abstract class~ فلا يمكن إنشاؤه مباشرة، وفيه ~abstract methods~ بلا ~body~، لتكتبها الـ~subclasses~. كلاهما يتيح استدعاء `fee(amount)` من `main` على أي `Fee` دون معرفة نوعه.
+
+يقرأ البرنامج الأسطر من الـ~standard input~، والـ~classes~ التي تكتبها تؤدي العمل: يبحث `main` عن `Fee` المناسب لاسم كل طريقة دفع ويستدعيه.
+
+تستخدم ~Python~ `ABC`، و~Java~ ~interface~، و~C++~ ~pure virtual method~ (`= 0`)؛ أما ~JavaScript~ فليس فيها شيء من ذلك، لذا يحل محله ~method~ في الـ~base class~ يرمي ~exception~.
+
+## مثال
+`card 100` و`cash 50` و`transfer 10` تطبع `2` و`0` و`5`، ثم `total 7`. و`card 49` يعطي `0.98`، ويُقرَّب إلى الأسفل إلى `0`.
+
+## طريقة التفكير في الحل
+احفظ ~object~ واحدًا لكل ~class~ في ~map~ من الاسم إلى `Fee`. رسوم البطاقة تحتاج إلى ~integer division~ (`//` في ~Python~، و`Math.floor` في ~JavaScript~)، إذ إن `round(0.98)` يعطي `1`. في ~Java~ و~C++~، توضع الأسطر التي بعد `// in main:` داخل `main`.
+
+## ~Python~
+    from abc import ABC, abstractmethod
+    class Fee(ABC):
+        @abstractmethod
+        def fee(self, amount): ...
+    class Card(Fee):
+        def fee(self, amount):
+            return amount * 2 // 100
+    class Transfer(Fee):
+        def fee(self, amount):
+            return 5
+
+    methods = {"card": Card(), "transfer": Transfer()}
+    print(methods["card"].fee(149), methods["transfer"].fee(149))  # 2 5
+
+## ~Java~
+    interface Fee { long fee(long amount); }
+    class Card implements Fee { public long fee(long amount) { return amount * 2 / 100; } }
+    class Transfer implements Fee { public long fee(long amount) { return 5; } }
+    // in main:
+    Map<String, Fee> methods = Map.of("card", new Card(), "transfer", new Transfer());
+    System.out.println(methods.get("card").fee(149) + " " + methods.get("transfer").fee(149));  // 2 5
+
+## ~JavaScript~
+    class Fee { fee(amount) { throw new Error('not implemented') } }
+    class Card extends Fee { fee(amount) { return Math.floor(amount * 2 / 100) } }
+    class Transfer extends Fee { fee(amount) { return 5 } }
+    const methods = { card: new Card(), transfer: new Transfer() }
+    console.log(methods.card.fee(149), methods.transfer.fee(149))  // 2 5
+
+## ~C++~
+    class Fee {
+    public:
+        virtual long long fee(long long amount) const = 0;
+    };
+    class Card : public Fee {
+    public: long long fee(long long amount) const override { return amount * 2 / 100; }
+    };
+    class Transfer : public Fee {
+    public: long long fee(long long) const override { return 5; }
+    };
+    // in main:
+    Card card;
+    const Fee& f = card;
+    cout << f.fee(149) << " " << Transfer().fee(149) << "\n";  // 2 5
+
+## الـ~complexity~
+`O(n)` لعدد `n` من الأسطر.
+
+## انتبه إلى
+- في ~Python~، يرمي `Fee()` الخطأ `TypeError`؛ وفي ~C++~، يفشل `Fee f;` في الـ~compilation~.
+- في ~Java~، يجب أن يكون الـ~method~ الذي يطبّق ~interface~ من نوع `public`.
+
+استخدام `if` على اسم طريقة الدفع يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يرى إلا الأعداد.
+TEXT,
+    ],
 ];
