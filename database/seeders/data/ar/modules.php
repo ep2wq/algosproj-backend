@@ -14,4 +14,5 @@ return [
     'stacks-and-queues' => ['title' => 'Stacks and queues'],
     'linked-lists' => ['title' => 'Linked lists'],
     'hash-tables' => ['title' => 'Hash tables'],
+    'trees-and-bsts' => ['title' => 'Trees and BSTs'],
 ];
