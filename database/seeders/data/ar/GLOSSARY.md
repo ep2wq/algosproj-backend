@@ -1,91 +1,93 @@
-# Arabic glossary and translation rules
+# Arabic glossary
 
-For the Arabic course text in this folder (`modules.php`, `lessons.php`, `problems.php`).
-Pilot: the first module, `basics` ("Getting started" = البداية). To be reviewed by a native
-speaker before the other modules are translated.
+For the Arabic course text in this folder (`modules.php`, `lessons.php`, `problems.php`). The
+translation rules (what is translated, what stays English, the `~term~` marker and the "الـ"
+rule) are in the backend README, "Content languages". Load this list before translating and add
+every new entry afterwards. ⚠ marks a choice to review.
 
-Confidence: **settled** (the normal Arabic CS term), **common** (widely used, alternatives
-exist), **my choice** (a decision; please confirm or change). Rows marked ⚠ need your decision.
+Translated so far: Getting started (`basics`), Programming basics, Core programming,
+Object-oriented programming, Algorithm basics, Arrays and strings.
 
-## Rule 1: the interface wins
+## Part 1: terms kept in English
 
-A term the interface already uses (`algosproj-frontend/src/locales/ar.json`) is used the same
-way in course text. Never introduce a second word for it.
+Written as `~term~` in prose (`الـ~term~` for the definite form), never with an Arabic
+equivalent. Code, identifiers, keywords, values and Big-O stay in `inline code`. An English term
+is treated as masculine (الـ~array~ الفارغ); language names are feminine (لغة): ~Python~ تعطي.
+Plurals are English inside the marker (~strings~), never an Arabic suffix.
 
-| English | Arabic (interface) |
-|---|---|
-| Lessons / lesson | الدروس / درس |
-| Challenges / challenge | التحديات / تحدٍّ |
-| Leaderboard | لوحة الصدارة |
-| points | نقاط |
-| problem (exercise) | مسألة |
-| module | وحدة |
-| topic | موضوع |
-| Input / Expected output | المدخلات / المخرجات المتوقعة |
-| test, hidden test | اختبار، اختبار مخفي |
-| Examples | أمثلة |
-| Submit | إرسال |
-| code | كود |
-| editor | المحرر |
-| Easy / Medium / Hard | سهل / متوسط / صعب |
-| Solved | تم الحل |
-| class (Java) | class, kept in English (the interface says "الـ class"; course text avoids the tatweel: "اسم class") |
+- Data and structures: array, character array, 2D list, list, sorted list, string, character,
+  index, indexes, element ⚠ (written عنصر, see Part 2), stack, top, map, hash map, dictionary,
+  key, keys, entries, lookup table, newline, whitespace, printable ASCII characters.
+- Programming: variable, type, function, built-in function, parameter, return value, loop, for
+  loop, nested loops, loop condition, conditions, counter, recursion, exception, overflow,
+  undefined, debugging, compilation, regular expression, remainder operator, integer division,
+  in place, immutable, builder, input, inputs, output, standard input, standard output,
+  streams, 32-bit, 64-bit, 32-bit integer, 32-bit signed integer, signed 64-bit integer.
+- Objects: class, classes, object, field, fields, private fields, private, static field,
+  class-level field, method, methods, constructor, getter, encapsulation, shared state,
+  subclass, subclasses, base class, interface, abstract class, abstract methods, pure virtual
+  method, body, override, polymorphism.
+- Algorithms: complexity, time complexity, space complexity, single pass, running total,
+  sorting, sort, stable, stable sort, comparator, two passes, lookup, insert, linear search,
+  binary search, two pointers, two-pointer technique, pointer, pointers, target ⚠, palindrome,
+  trial division, off-by-one, factorial ⚠, Euclid's algorithm ⚠, Sieve of Eratosthenes ⚠.
+- Language names: Python, Java, JavaScript, C++.
+- Problem section labels: ~Input~, ~Output~, ~Constraints~ ⚠ (the interface says المدخلات,
+  المخرجات; القيود was used before).
+- Titles that stay English: FizzBuzz, Factorial ⚠, Caesar cipher ⚠, Stack class, Linear search,
+  Two Sum, Object-oriented programming, Arrays and strings. A title with an English term and
+  Arabic writes "الـ " and the term with a space, no marker: "مجموع عناصر الـ array".
 
-## Rule 2: how terms are written
+## Part 2: Arabic wording for recurring words and phrases
 
-- A term without a settled Arabic form: Arabic, then the English in parentheses at its first
-  mention in each lesson, e.g. "المصفوفة (Array)". Afterwards Arabic only.
-- Established English terms stay English: language names (Python, Java, JavaScript), `C++`,
-  `int`, `long`, class.
-- Every identifier, keyword, function, Big-O expression, variable, value and literal output is
-  inline code: `best`, `O(n)`, `n = 0`, `-7`, `YES`. Inline code is shown left to right inside
-  Arabic text; bare Latin with digits or operators (C++, -7, 2 * n) is not allowed in Arabic prose
-  because its order breaks in right-to-left text. Even a heading is `## \`C++\``.
-- Plain quantities in words may stay bare Western digits: "32 بت", "السطر 1".
-- Arabic punctuation (، ؛ ؟), Western digits (0-9) only, no tatweel (ـ), so no "الـ" or "بـ".
-- Code blocks are byte-identical to the English. Same headings, lists and code blocks in the same
-  order. Example values, numbers and expected outputs stay identical.
-- Natural Modern Standard Arabic for university students, short sentences, addressing the
-  reader ("اقرأ"، "اطبع")، the same teaching tone; not word for word. Each body within about
-  ±25% of the English word count.
-- Problem statements: same meaning, numbers, limits and output format. Section names: المدخلات،
-  المخرجات، القيود. Ranges "a <= x <= b" stay inline code, or are written "بين `a` و`b`، شاملًا
-  الطرفين" (never split one expression into several code pieces).
-- Each batch is checked by a back-translation from a reader who has not seen the English.
-
-## Terms used in the pilot
-
-| English | Arabic | Confidence | Note |
-|---|---|---|---|
-| array | المصفوفة (Array) | common ⚠ | Also the usual word for "matrix" (مصفوفة ثنائية الأبعاد). Alternative: "مصفوفة أحادية" or "قائمة". Decide before the arrays module. |
-| element | عنصر | settled | |
-| position (index) | موضع | my choice ⚠ | "فهرس" or "مؤشر" for index when the word "index" appears in later modules. |
-| integer | عدد صحيح | settled | |
-| signed integer | عدد صحيح ذو إشارة | common | |
-| 32-bit / 64-bit | بطول 32 بت / 64 بت | common | |
-| overflow | تجاوز السعة (overflow) | common | "فيض" is also used. |
-| string | سلسلة نصية (string) | common | |
-| text | نص | settled | |
-| variable | متغير | settled | |
-| loop | حلقة تكرار (loop) | common | |
-| exception | استثناء (exception) | settled | |
-| complexity | التعقيد | settled | |
-| time (complexity line) | الوقت | my choice ⚠ | Alternative "الزمن" or "التعقيد الزمني". |
-| space (complexity line) | الذاكرة | my choice ⚠ | Alternative "المساحة" or "التعقيد المكاني". |
-| standard input / output | الإدخال القياسي / الإخراج القياسي (standard input / output) | common | |
-| stream | قناة (stream) | my choice ⚠ | "مجرى" is also used. |
-| grader | نظام التصحيح (grader) | my choice ⚠ | Alternative "المصحِّح الآلي". |
-| whitespace | المسافات البيضاء (whitespace) | common | |
-| expected answer | الإجابة المتوقعة | settled | |
-| prompt ("Enter a number:") | رسالة | my choice | Paraphrased, no term needed. |
-| snippet | مقتطف كود | my choice | |
-| debugging | تتبّع الأخطاء (debugging) | my choice ⚠ | Alternative "تصحيح الأخطاء"; avoid confusion with "نظام التصحيح" (grader). |
-| running total | مجموع تراكمي (running total) | common | |
-| single pass | مرور واحد (single pass) | my choice ⚠ | Alternative "تمريرة واحدة". |
-| sorting | الترتيب (sorting) | common ⚠ | "الفرز" is also common. Decide before the sorting module. |
-| range | المدى | common | |
-| maximum value | القيمة العظمى / أكبر عنصر | common | |
-| constraints | القيود | common | |
-| inclusive (both ends) | شاملًا الطرفين | common | |
-| Warm-up | الإحماء | my choice | Lesson title. |
-| Getting started | البداية | my choice | Module title. |
+| English | Arabic | Note |
+|---|---|---|
+| Getting started (module) | البداية | |
+| Programming basics (module) | أساسيات البرمجة | |
+| Core programming (module) | مهارات البرمجة الأساسية | ⚠ "Core programming skills" in back-translation |
+| Algorithm basics (module) | أساسيات الخوارزميات | |
+| Warm-up | الإحماء | |
+| ## Example | ## مثال | |
+| ## How to think about it | ## طريقة التفكير في الحل | not gendered (no "تفكر") |
+| ## Complexity | ## الـ~complexity~ | ⚠ |
+| Time: / Space: | الـ~time complexity~: / الـ~space complexity~: | |
+| ## Watch out for | ## انتبه إلى | |
+| Read ... (problem) | اقرأ | |
+| Print ... | اطبع | |
+| return (verb) / it returns | أرجِع / يُرجع | |
+| One line with X. | سطر واحد فيه X. | |
+| Line 1: n, the number of elements. | السطر 1: `n`، عدد العناصر. | |
+| Next n lines: | الأسطر التالية وعددها `n`: | no "الـ" before code |
+| the n integers | الأعداد الصحيحة وعددها `n` | |
+| separated by single spaces | تفصل بينها مسافة واحدة | |
+| a <= each value <= b | كل قيمة بين `a` و`b`، شاملًا الطرفين | a single expression stays in code |
+| 0 <= length of s <= 1000 | طول `s` بين `0` و`1000`، شاملًا الطرفين | |
+| 0-based | مع العدّ من `0` | |
+| in lower case | بأحرف صغيرة | ⚠ |
+| the grader | نظام التصحيح | ⚠ |
+| The grader only sees ... | نظام التصحيح لا يرى إلا ... | |
+| ... also passes | ... يجتاز الاختبارات أيضًا | |
+| the problem below | المسألة أدناه | |
+| test (test case) | اختبار | as the interface |
+| expected answer | الإجابة المتوقعة | |
+| In Java and C++, the lines after // in main: go inside main. | في ~Java~ و~C++~، توضع الأسطر التي بعد `// in main:` داخل `main`. | |
+| The program reads ... from standard input, and your classes do the work | يقرأ البرنامج ... من الـ~standard input~، والـ~classes~ التي تكتبها تؤدي العمل | |
+| on average | في المتوسط | |
+| code | كود | as the interface |
+| snippet | مقتطف كود | |
+| the computer | الكمبيوتر | ⚠ everyday word; الحاسوب also understood |
+| integer / whole number | عدد صحيح | ⚠ school-math word kept Arabic |
+| prime / divisor / remainder / multiple | عدد أولي / قاسم / باقي القسمة / مضاعف | school math in Arabic |
+| main / anti-diagonal | القطر الرئيسي / القطر الثانوي | ⚠ |
+| greatest common divisor | القاسم المشترك الأكبر | ⚠ title translated |
+| vowels | حروف العلة | ⚠ with the letters listed |
+| case of a letter | حالة الحرف | ⚠ |
+| element | عنصر | ⚠ kept Arabic, very common |
+| position | موضع | index stays ~index~ |
+| score (leaderboard) | الدرجة | ⚠ the interface says نقاط for points |
+| sort (verb) | رتّب | ⚠ the noun stays ~sorting~ |
+| swap | بدّل | |
+| descending order / alphabetically | الترتيب التنازلي / أبجديًا | |
+| wraps around (numbers) | تلتف | ⚠ |
+| grid | الشبكة | |
+| balance / deposit / withdraw | الرصيد / إيداع / اسحب | |

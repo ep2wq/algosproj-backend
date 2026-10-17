@@ -78,12 +78,37 @@ language the text came in (`ar` or `en`), so the frontend sets `lang` and `dir`.
 the `*_ar` names never appear in public responses. The language only picks a column: no extra
 queries. Admin responses hold both languages.
 
-Translation rules (for every batch) and the terms chosen so far:
-`database/seeders/data/ar/GLOSSARY.md`. In short: natural Modern Standard Arabic, same structure
-as the English (same headings, lists and code blocks in the same order; code blocks
-byte-identical), every expression, identifier or value in `inline code`, Arabic punctuation,
-Western digits, no tatweel, body length within about 25% of the English, and a check by a
-back-translation from someone who has not seen the English.
+Translated so far: Getting started (`basics`), Programming basics, Core programming,
+Object-oriented programming, Algorithm basics, Arrays and strings (22 lessons, 22 problems).
+The other 13 modules show English.
+
+Translation rules (for every batch):
+
+- Translated: explanations, instructions, the wording of examples, headings and problem
+  statements, in plain neutral Modern Standard Arabic (short sentences, everyday words, no
+  dialect, idioms or rare classical words), not word for word.
+- Kept in English: every technical and computer-science term (array, string, index, loop,
+  function, recursion, time complexity, input, output, hash map, ...), with no Arabic
+  equivalent next to it. In prose it is a `~term~` marker (one term or phrase, never Arabic
+  inside); code, identifiers, keywords, Big-O, values and expressions stay in `inline code`.
+  No Arabic suffix on a marker: rephrase or use the English plural (`~arrays~`). The definite
+  form is "الـ" right before the marker (`الـ~array~`), with و، ب، ف، ك before it
+  (`بالـ~index~`); this is the only place for tatweel.
+- Titles: a title that is only a technical term or a known problem name stays English (Two Sum,
+  FizzBuzz); a descriptive one is translated with its terms in English and no marker
+  ("مجموع عناصر الـ array").
+- Same structure as the English (same headings, list items and code blocks in the same order;
+  code blocks byte-identical), same numbers, examples and outputs; problem sections are
+  `~Input~`, `~Output~`, `~Constraints~`. Arabic punctuation, Western digits, no diacritics
+  unless a word is ambiguous, no gendered address where it can be avoided, body length within
+  about 25% of the English.
+- Checks: `tests/Feature/ArabicSeedTextTest.php` (code blocks, headings, list items, no empty
+  field, no English outside inline code and markers, balanced markers), and a back-translation
+  by a reader who has not seen the English.
+
+`database/seeders/data/ar/GLOSSARY.md` lists (1) the terms kept in English and (2) the Arabic
+wording chosen for recurring words and phrases; ⚠ marks choices to review. Load it before a
+batch and add every new entry.
 
 ### Roles
 
@@ -197,6 +222,9 @@ or numbered lists):
   so worked tables whose columns must line up are written as 4-space code blocks.
 - `` `inline code` `` in headings, list items, paragraphs and problem descriptions is shown in a
   code font, left to right. Arabic text must put every expression and value in it.
+- `~term~` (Arabic text only) is an English term shown as plain text, left to right, marked
+  `lang="en"`. It starts and ends with a non-space character; a lone `~` stays as text, and a
+  `~` inside code is never a marker. English text never uses it.
 
 Each lesson uses the headings `## Example`, `## How to think about it`, `## Complexity`
 and `## Watch out for`, and is 300-350 words. The Core programming, Object-oriented

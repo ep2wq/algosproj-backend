@@ -48,13 +48,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: auth, lessons, submit, leaderboard, rate limits, admin CRUD, roles, bans, logs, Arabic
-  content (phase 2; pilot = module `basics`). 151 tests pass (SQLite, `Http::fake()`).
+  content (6 of 19 modules; English terms as `~term~`). 196 tests pass (SQLite, `Http::fake()`).
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic in
-  `data/ar/*.php`; rules + terms in `data/ar/GLOSSARY.md` (I review it before more modules).
+  `data/ar/*.php`; rules: README "Content languages"; terms: `data/ar/GLOSSARY.md` (⚠ = review).
 - Decisions: sandbox failure = 503, no submission stored; logs never hold code, tests or the
   secret. Ties share a rank. Code max 65536 bytes. Points from difficulty. Admin delete 409 for
   a module with lessons, a lesson with problems, a solved problem. Tests: max 50, 20,000 bytes
   each, 25,000 total, untrimmed. Admin writes call `AdminAuditLog::record()` in the transaction.
-- Next: translate the other modules, AI hints. Gotchas: `docker start algosproj-mysql` first.
+- Next: translate the other 13 modules, AI hints. Gotchas: `docker start algosproj-mysql` first.
   Sandbox on 8001. Expected outputs come from a reference solution, matched on trimmed stdout.
