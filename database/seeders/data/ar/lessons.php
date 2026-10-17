@@ -1470,4 +1470,208 @@ TEXT,
 نظام التصحيح لا يقارن إلا الـ~preorder~، لذا لا يمكنه رؤية هل حرّكت الـ~pointers~ أم لا. حرّكها مع ذلك.
 TEXT,
     ],
+    'last-stone-weight' => [
+        'title' => 'Last stone weight',
+        'body' => <<<'TEXT'
+الـ~heap~ هو ~array~ يتفوق فيه كل ~parent~ على الـ~children~ الخاصين به، لذا يكون `a[0]` أكبر عنصر (~max-heap~) أو أصغر عنصر (~min-heap~). للعنصر `a[i]` ~children~ هما `a[2i + 1]` و`a[2i + 2]`، و~parent~ هو `a[(i - 1) / 2]`، مقرّبًا إلى الأسفل.
+
+## مثال
+~max-heap~، نفّذ ~push~ للقيم `2 7 4 8`:
+`[2 7]` يصبح `[7 2]`.
+`[7 2 4 8]`: `8` يتفوق على `2`، ثم على `7`: `[8 7 4 2]`.
+نفّذ ~pop~ للقيمة `8`: `[2 7 4]` يصبح `[7 2 4]`.
+
+## طريقة التفكير في الحل
+الـ~push~ يضيف العنصر في النهاية ثم ينفّذ ~sift up~: يبدّله مع الـ~parent~ ما دام العنصر يتفوق عليه. والـ~pop~ يأخذ `a[0]`، وينقل آخر عنصر إلى الأعلى، ثم ينفّذ ~sift down~: يبدّله مع الـ~child~ الأفضل ما دام ذلك الـ~child~ يتفوق عليه.
+
+## ~Python~
+    h = []
+    for x in [2, 7, 4]:
+        heapq.heappush(h, -x)
+    print(-heapq.heappop(h))
+
+## ~Java~
+    PriorityQueue<Integer> h = new PriorityQueue<>(Collections.reverseOrder());
+    h.addAll(List.of(2, 7, 4));
+    System.out.println(h.poll());
+
+## ~JavaScript~
+    class Heap {
+      constructor(less) { this.less = less; this.a = [] }
+      push(x) {
+        const a = this.a
+        let i = a.push(x) - 1
+        for (let p; i > 0 && this.less(x, a[p = (i - 1) >> 1]); i = p) a[i] = a[p]
+        a[i] = x
+      }
+      pop() {
+        const a = this.a, top = a[0], x = a.pop()
+        let i = 0
+        for (let c; (c = 2 * i + 1) < a.length; i = c) {
+          if (c + 1 < a.length && this.less(a[c + 1], a[c])) c++
+          if (!this.less(a[c], x)) break
+          a[i] = a[c]
+        }
+        if (a.length) a[i] = x
+        return top
+      }
+    }
+    const h = new Heap((x, y) => x > y)  // max-heap
+    for (const x of [2, 7, 4]) h.push(x)
+    console.log(h.pop())
+
+## ~C++~
+    priority_queue<int> h;
+    for (int x : {2, 7, 4}) h.push(x);
+    cout << h.top();
+
+## الـ~complexity~
+الـ~push~ والـ~pop~ يكلفان `O(log n)`: تبديل واحد لكل مستوى، ونحو `log2 n` مستوى. والـ~peek~ يكلف `O(1)`.
+
+## انتبه إلى
+- `heapq` في ~Python~ هو ~min-heap~ فقط: نفّذ ~push~ للقيمة `-x`.
+- `PriorityQueue` في ~Java~ هو ~min-heap~: استخدم `Collections.reverseOrder()`. الـ~comparators~ من نوع `b - a` قد يحدث فيها ~overflow~ (انظر درس ~Running median~).
+- `priority_queue` في ~C++~ هو ~max-heap~.
+- لا يوجد ~heap~ في ~JavaScript~: استخدم هذا الـ~class~.
+TEXT,
+    ],
+    'merge-k-sorted-lists' => [
+        'title' => 'Merge k sorted lists',
+        'body' => <<<'TEXT'
+احتفظ بأول عنصر من كل ~list~ في ~min-heap~: أصغر عدد متبقٍ يكون دائمًا أول عنصر في إحدى الـ~lists~. نفّذ ~pop~ له، وأخرجه إلى الـ~output~، ثم نفّذ ~push~ للعدد التالي من الـ~list~ الخاص به.
+
+## مثال
+`A = 1 4 5`، و`B = 1 3 4`، و`C = 2 6`. البداية: `1 1 2`.
+~pop~ للقيمة `1`، و~push~ للقيمة `4` من `A`. ~pop~ للقيمة `1`، و~push~ للقيمة `3` من `B`. ~pop~ للقيمة `2`، و~push~ للقيمة `6` من `C`.
+~pop~ للقيمة `3`، و~push~ للقيمة `4` من `B`. ~pop~ للقيمة `4`، و~push~ للقيمة `5` من `A`. ~pop~ للقيمة `4`؛ انتهى `B`. ثم `5` و`6`.
+الـ~output~: `1 1 2 3 4 4 5 6`.
+
+## طريقة التفكير في الحل
+كل ~entry~ `(value, list index, position)` يشير إلى العدد التالي. الـ~lists~ الفارغة لا تدخل أبدًا.
+
+## ~Python~
+    heap = [(l[0], i, 0) for i, l in enumerate(lists) if l]
+    heapq.heapify(heap)
+    while heap:
+        v, i, j = heapq.heappop(heap)
+        out.append(v)
+        if j + 1 < len(lists[i]):
+            heapq.heappush(heap, (lists[i][j + 1], i, j + 1))
+
+## ~Java~
+    PriorityQueue<int[]> h = new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0]));
+    for (int i = 0; i < k; i++)
+        if (lists[i].length > 0) h.add(new int[] {lists[i][0], i, 0});
+    while (!h.isEmpty()) {
+        int[] t = h.poll();
+        out.add("" + t[0]);
+        int i = t[1], j = t[2] + 1;
+        if (j < lists[i].length) h.add(new int[] {lists[i][j], i, j});
+    }
+
+## ~JavaScript~
+    const h = new Heap((x, y) => x[0] < y[0])  // Last stone weight's class
+    lists.forEach((l, i) => l.length && h.push([l[0], i, 0]))
+    while (h.a.length) {
+      const [v, i, j] = h.pop()
+      out.push(v)
+      if (j + 1 < lists[i].length) h.push([lists[i][j + 1], i, j + 1])
+    }
+
+## ~C++~
+    priority_queue<array<int, 3>, vector<array<int, 3>>, greater<>> h;
+    for (int i = 0; i < k; i++)
+        if (!lists[i].empty()) h.push({lists[i][0], i, 0});
+    while (!h.empty()) {
+        auto [v, i, j] = h.top();
+        h.pop();
+        out.push_back(v);
+        if (j + 1 < (int)lists[i].size()) h.push({lists[i][j + 1], i, j + 1});
+    }
+
+## الـ~complexity~
+مع `k` من الـ~entries~ على الأكثر، يكلف الـ~push~ والـ~pop~ `O(log k)`؛ ويكلف الـ~peek~ `O(1)`. ومع `N` عددًا: `O(N log k)`.
+
+## انتبه إلى
+- ~Python~: عند التعادل في `(value, list)` تُقارن العناصر الثانية؛ ووجود ~iterator~ أو ~node~ هناك يجعل البرنامج يتعطل. نفّذ ~push~ للثلاثي `(value, list index, position)`.
+TEXT,
+    ],
+    'running-median' => [
+        'title' => 'Running median',
+        'body' => <<<'TEXT'
+احتفظ بالنصف الأصغر في `lo`، وهو ~max-heap~، وبالنصف الأكبر في `hi`، وهو ~min-heap~؛ يكون حجم `lo` مساويًا لحجم `hi` أو أكبر منه بواحد. الوسيط هو الـ~top~ في `lo` عندما يكون عدد القيم فرديًا، وإلا فهو متوسط قيمتي الـ~top~ في الاثنين.
+
+## مثال
+أضف `2 7 -4 3 10` (`lo | hi: median`):
+`2 | (empty): 2`
+`2 | 7: 4.5`
+`2 -4 | 7: 2`
+`2 -4 | 3 7: 2.5`
+`3 2 -4 | 7 10: 3`
+
+## طريقة التفكير في الحل
+لإضافة `x`، نفّذ ~push~ له في `lo`، ثم انقل الـ~top~ من `lo` إلى `hi`؛ وإذا أصبح `hi` أكبر، فانقل الـ~top~ منه عائدًا إلى `lo`.
+
+## ~Python~
+    def add(x):  # lo holds -x
+        heapq.heappush(lo, -x)
+        heapq.heappush(hi, -heapq.heappop(lo))
+        if len(hi) > len(lo):
+            heapq.heappush(lo, -heapq.heappop(hi))
+
+    def median():
+        if len(lo) > len(hi):
+            return str(-lo[0])
+        return str((hi[0] - lo[0]) / 2).removesuffix(".0")
+
+## ~Java~
+    static void add(int x) {
+        lo.add(x);
+        hi.add(lo.poll());
+        if (hi.size() > lo.size()) lo.add(hi.poll());
+    }
+
+    static String median() {
+        if (lo.size() > hi.size()) return "" + lo.peek();
+        long s = (long) lo.peek() + hi.peek();
+        return new BigDecimal(s).divide(BigDecimal.valueOf(2)).toPlainString();
+    }
+
+## ~JavaScript~
+    function add(x) {
+      lo.push(x)
+      hi.push(lo.pop())
+      if (hi.a.length > lo.a.length) lo.push(hi.pop())
+    }
+
+    function median() {
+      if (lo.a.length > hi.a.length) return String(lo.a[0])
+      return String((lo.a[0] + hi.a[0]) / 2)
+    }
+
+## ~C++~
+    void add(long long x) {
+        lo.push(x);
+        hi.push(lo.top());
+        lo.pop();
+        if (hi.size() > lo.size()) {
+            lo.push(hi.top());
+            hi.pop();
+        }
+    }
+
+    string median() {
+        if (lo.size() > hi.size()) return to_string(lo.top());
+        long long s = lo.top() + hi.top();
+        return (s < 0 ? "-" : "") + to_string(llabs(s) / 2) + (s % 2 ? ".5" : "");
+    }
+
+## الـ~complexity~
+كل عدد يكلف `O(log n)`: بضع عمليات ~push~ و~pop~ بتكلفة `O(log n)` لكل منها، ثم ~peek~ على قيمتي الـ~top~، `O(1)`.
+
+## انتبه إلى
+- العدد الزوجي من القيم قد يعطي `.5`، والـ~integer division~ يقرّب الأعداد السالبة بشكل خطأ: `(-3 + -2) / 2` يساوي `-2.5`، لا `-2` (~Java~ و~C++~) ولا `-3` (`//` في ~Python~). مع المجموع `s`، اطبع الإشارة، ثم `|s| / 2`، ثم `.5` إذا كان `s` فرديًا.
+- يحدث ~overflow~ في الأعداد من نوع `int` بحجم ~32-bit~: `2147483647 + 2147483646`، و`b - a` مع `2147483647` و`-2147483648`. استخدم `long` و`reverseOrder()`.
+TEXT,
+    ],
 ];

@@ -15,4 +15,5 @@ return [
     'linked-lists' => ['title' => 'Linked lists'],
     'hash-tables' => ['title' => 'Hash tables'],
     'trees-and-bsts' => ['title' => 'Trees and BSTs'],
+    'heaps' => ['title' => 'Heaps and priority queues'],
 ];
