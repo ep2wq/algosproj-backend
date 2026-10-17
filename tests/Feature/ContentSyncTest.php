@@ -45,8 +45,9 @@ class ContentSyncTest extends TestCase
             $this->assertNotEmpty($lesson->problems[0]->title_ar, $lesson->slug);
             $this->assertNotEmpty($lesson->problems[0]->description_ar, $lesson->slug);
         }
-        // Untranslated modules keep NULL, never "".
-        $this->assertNull(Lesson::where('slug', 'two-sum')->value('body_ar'));
+        // Untranslated lessons keep NULL, never "".
+        $translated = array_keys(require database_path('seeders/data/ar/lessons.php'));
+        $this->assertSame(0, Lesson::whereNotIn('slug', $translated)->whereNotNull('body_ar')->count());
         // The seeder writes no audit row; only the command does.
         $this->assertSame(0, AdminAuditLog::count());
     }
@@ -177,12 +178,14 @@ class ContentSyncTest extends TestCase
         Problem::where('slug', 'warm-up')->delete();
         Lesson::where('slug', 'warm-up')->delete();
         $before = $this->contentSnapshot();
+        // The new lesson's two fields and its problem's two, plus the title and body of every
+        // other translated lesson.
+        $filled = 4 + 2 * (count(require database_path('seeders/data/ar/lessons.php')) - 1);
 
         $this->artisan('content:sync', ['--dry-run' => true])
             ->expectsOutputToContain('Dry run: nothing was written.')
             ->expectsOutputToContain('Added: 0 modules, 1 lessons, 1 problems, 6 test cases.')
-            // The new lesson's two fields and its problem's two, plus the other lessons' four.
-            ->expectsOutputToContain('Arabic fields filled: 8.')
+            ->expectsOutputToContain("Arabic fields filled: $filled.")
             ->assertExitCode(0);
 
         $this->assertSame($before, $this->contentSnapshot());
