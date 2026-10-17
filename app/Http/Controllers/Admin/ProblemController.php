@@ -75,8 +75,13 @@ class ProblemController extends Controller
             // Optional: a problem without a lesson is a standalone challenge.
             'lesson_id' => ['nullable', 'integer', 'exists:lessons,id'],
             'title' => ['required', 'string', 'max:255'],
+            // Arabic is optional; an empty value is stored as NULL (not translated).
+            'title_ar' => ['nullable', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9-]+$/', Rule::unique('problems')->ignore($problem)],
+            // TEXT columns: 5,000 characters are at most 20,000 bytes (4 bytes each), so the
+            // character limit also keeps them under the 65,535-byte limit.
             'description' => ['required', 'string', 'max:5000'],
+            'description_ar' => ['nullable', 'string', 'max:5000'],
             'difficulty' => ['required', 'string', Rule::in(array_keys(self::POINTS))],
         ], ['slug.regex' => 'The slug may only contain lowercase letters, digits and hyphens.']);
 

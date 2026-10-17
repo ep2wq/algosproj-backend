@@ -42,8 +42,8 @@ class LessonController extends Controller
     public function update(Request $request, Lesson $lesson)
     {
         $lesson->fill($this->validated($request, $lesson));
-        // The body itself is not logged, only that it changed.
-        $changes = AdminAuditLog::changes($lesson, ['body']);
+        // The bodies themselves are not logged, only that they changed.
+        $changes = AdminAuditLog::changes($lesson, ['body', 'body_ar']);
         DB::transaction(function () use ($request, $lesson, $changes) {
             $lesson->save();
             AdminAuditLog::record($request->user(), 'lesson.update', $lesson, $lesson->title, ['changes' => $changes]);
@@ -71,14 +71,23 @@ class LessonController extends Controller
         return $request->validate([
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'title' => ['required', 'string', 'max:255'],
+            // Arabic is optional; an empty value is stored as NULL (not translated).
+            'title_ar' => ['nullable', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9-]+$/', Rule::unique('lessons')->ignore($lesson)],
-            // body is a TEXT column (65,535 bytes), so long non-ASCII text is checked in bytes too.
-            'body' => ['nullable', 'string', 'max:20000', function ($attribute, $value, $fail) {
-                if (is_string($value) && strlen($value) > 65535) {
-                    $fail('The body may not be larger than 65,535 bytes.');
-                }
-            }],
+            // TEXT columns (65,535 bytes), so long non-ASCII text is checked in bytes too: Arabic
+            // takes 2 bytes per letter, some characters 3 or 4.
+            'body' => $this->bodyRules('body'),
+            'body_ar' => $this->bodyRules('Arabic body'),
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
         ], ['slug.regex' => 'The slug may only contain lowercase letters, digits and hyphens.']);
+    }
+
+    private function bodyRules(string $name): array
+    {
+        return ['nullable', 'string', 'max:20000', function ($attribute, $value, $fail) use ($name) {
+            if (is_string($value) && strlen($value) > 65535) {
+                $fail("The $name may not be larger than 65,535 bytes.");
+            }
+        }];
     }
 }
