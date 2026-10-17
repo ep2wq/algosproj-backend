@@ -53,8 +53,8 @@ Each snippet below reads one line of numbers and prints how many are even. Keep 
     }
 
 ## Complexity
-Time: O(1), because there is one number and one multiplication.
-Space: O(1), because you keep a single value.
+Time: O(1) for the problem below, because there is one number and one multiplication. The snippets above read a whole line of n numbers, which takes O(n).
+Space: O(1) for the problem below, because you keep a single value. The snippets store the line, O(n), except the C++ one, which reads one number at a time.
 
 ## Watch out for
 - Negative numbers and zero: -7 doubled is -14.
@@ -116,7 +116,7 @@ Space: O(1) extra, because only best is kept (plus the input, if you store it).
 - All negative numbers. For -8 -3 -9 -3 -12 the answer is -3. If best starts at 0, you print 0, which isn't in the array at all. Start from the first element, or from the smallest possible value: Integer.MIN_VALUE in Java, INT_MIN in C++, -Infinity in JavaScript, float('-inf') in Python.
 - A single number. With n = 1 there is nothing to compare, and that number is the answer.
 - The range. Values go from -1000000000 to 1000000000. Both ends fit in a 32-bit int, so int is enough in Java and C++.
-- Repeated maximum values. -3 appears twice in the first example; the answer is still just -3, printed once.
+- Repeated maximum values. -3 appears twice in -8 -3 -9 -3 -12 above; the answer is still just -3, printed once.
 
 Solve the problem below in one pass, without sorting.
 TEXT,
