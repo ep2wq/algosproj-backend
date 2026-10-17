@@ -131,6 +131,7 @@ class ChallengeTest extends TestCase
             'id' => $graphA->id,
             'title' => 'Graph-a problem',
             'description' => 'Solve graph-a',
+            'description_lang' => 'en',
             'difficulty' => 'hard',
             'points' => 30,
             'test_cases' => [[

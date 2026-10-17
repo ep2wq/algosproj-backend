@@ -11,10 +11,10 @@ class ChallengeController extends Controller
     {
         // Module order, then lesson order; standalone problems (no lesson) last, oldest first.
         $problems = Problem::query()
-            ->select('problems.id', 'problems.lesson_id', 'problems.slug', 'problems.title', 'problems.difficulty', 'problems.points')
+            ->select('problems.id', 'problems.lesson_id', 'problems.slug', 'problems.title', 'problems.title_ar', 'problems.difficulty', 'problems.points')
             ->leftJoin('lessons', 'lessons.id', '=', 'problems.lesson_id')
             ->leftJoin('modules', 'modules.id', '=', 'lessons.module_id')
-            ->with(['lesson:id,module_id,slug', 'lesson.module:id,slug,title'])
+            ->with(['lesson:id,module_id,slug', 'lesson.module:id,slug,title,title_ar'])
             ->orderByRaw('problems.lesson_id is null')
             ->orderBy('modules.sort_order')
             ->orderBy('lessons.sort_order')
@@ -25,7 +25,7 @@ class ChallengeController extends Controller
 
         return response()->json($problems->map(fn ($problem) => [
             'slug' => $problem->slug,
-            'title' => $problem->title,
+            'title' => $problem->localized('title'),
             'difficulty' => $problem->difficulty,
             'points' => $problem->points,
             'topic' => $this->topic($problem),
@@ -37,7 +37,7 @@ class ChallengeController extends Controller
     public function show(string $slug)
     {
         $problem = Problem::where('slug', $slug)
-            ->with(['visibleTestCases', 'lesson:id,module_id,slug', 'lesson.module:id,slug,title'])
+            ->with(['visibleTestCases', 'lesson:id,module_id,slug', 'lesson.module:id,slug,title,title_ar'])
             ->firstOrFail();
 
         $userId = auth('sanctum')->id();
@@ -54,7 +54,7 @@ class ChallengeController extends Controller
     {
         $module = $problem->lesson?->module;
 
-        return $module ? ['slug' => $module->slug, 'title' => $module->title] : null;
+        return $module ? ['slug' => $module->slug, 'title' => $module->localized('title')] : null;
     }
 
     // The routes are public; a token, if sent, marks the requester's solved problems

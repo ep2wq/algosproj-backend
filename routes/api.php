@@ -12,11 +12,14 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-Route::get('/modules', [LessonController::class, 'modules']);
-Route::get('/lessons/{slug}', [LessonController::class, 'show']);
+// Course content in Arabic or English, from the Accept-Language header (README "Content languages").
+Route::middleware('content-lang')->group(function () {
+    Route::get('/modules', [LessonController::class, 'modules']);
+    Route::get('/lessons/{slug}', [LessonController::class, 'show']);
+    Route::get('/challenges', [ChallengeController::class, 'index']);
+    Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
+});
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
-Route::get('/challenges', [ChallengeController::class, 'index']);
-Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 
 // not-banned refuses a banned user's token (banning deletes their tokens; this catches any left).
 Route::middleware(['auth:sanctum', 'not-banned'])->group(function () {

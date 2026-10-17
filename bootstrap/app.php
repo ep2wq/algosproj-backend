@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\EnsureUserIsOwner;
+use App\Http\Middleware\SetContentLanguage;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'owner' => EnsureUserIsOwner::class,
             'not-banned' => EnsureUserIsNotBanned::class,
+            'content-lang' => SetContentLanguage::class,
         ]);
         // Check the ban and the role before route model binding, so a banned user or a non-admin gets
         // 403 for any id, never 404.
