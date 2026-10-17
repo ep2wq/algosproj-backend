@@ -254,4 +254,231 @@ TEXT,
 لا يستطيع نظام التصحيح معرفة هل كتبت ~function~ أم ~loop~ أم ~recursion~، وجدول يحوي الإجابات وعددها `21` سيجتاز الاختبارات أيضًا. اكتب الـ~function~: الدروس التالية تبني عليه.
 TEXT,
     ],
+    'caesar-cipher' => [
+        'title' => 'Caesar cipher',
+        'body' => <<<'TEXT'
+الـ~string~ سلسلة من الـ~characters~، لكل منها موضع يبدأ من `0` ورمز رقمي: رمز `a` هو `97`، ورمز `A` هو `65`، وتتبع بقية حروف كل أبجدية بالترتيب.
+
+في ~Python~ و~Java~ و~JavaScript~، الـ~strings~ ~immutable~: كل تغيير ينشئ ~string~ جديدًا. ابنِ النتيجة بجمع الأجزاء ثم ربطها مرة واحدة، أو باستخدام ~builder~. أما في ~C++~ فالـ~strings~ قابلة للتغيير، لذا يضيف `+=` إلى نهايتها.
+
+## مثال
+خذ `k = 3` و`Hello, World!`. ينتقل `H` ثلاثة أحرف إلى الأمام فيصبح `K`، و`e` يصبح `h`، و`l` يصبح `o`. تبقى الفاصلة والمسافة و`!` كما هي. اطبع `Khoor, Zruog!`.
+مع `k = 1`، يعود `z` إلى `a` ويعود `Z` إلى `A`. ومع `k = 1000`، لا يهم إلا `1000 % 26 = 12`، لذا يصبح `z` هو `l`.
+
+## طريقة التفكير في الحل
+للحرف الصغير أو الكبير، حوّله إلى عدد من `0` إلى `25`، وأضف `k`، وخذ باقي القسمة على `26`، ثم أعده حرفًا: `(c - 'a' + k) % 26 + 'a'`. باقي القسمة يعيد `z` إلى `a`، والأساس الصحيح، `'a'` أو `'A'`، يحافظ على حالة الحرف. انسخ كل ما عدا ذلك دون تغيير.
+
+## ~Python~
+    s = "Hello, World"
+    print(s[0:5], s.lower())         # Hello hello, world
+    print("-".join(s.split(", ")))   # Hello-World
+    out = []
+    for ch in s:
+        out.append(chr(ord(ch) + 1) if ch.isalpha() else ch)
+    print("".join(out))              # Ifmmp, Xpsme
+
+## ~Java~
+    String s = "Hello, World";
+    System.out.println(s.substring(0, 5) + " " + s.toLowerCase());  // Hello hello, world
+    System.out.println(String.join("-", s.split(", ")));            // Hello-World
+    StringBuilder out = new StringBuilder();
+    for (char ch : s.toCharArray()) out.append(Character.isLetter(ch) ? (char) (ch + 1) : ch);
+    System.out.println(out);                                        // Ifmmp, Xpsme
+
+## ~JavaScript~
+    const s = 'Hello, World'
+    console.log(s.slice(0, 5), s.toLowerCase())  // Hello hello, world
+    console.log(s.split(', ').join('-'))         // Hello-World
+    let out = ''
+    for (const ch of s) out += /[a-z]/i.test(ch) ? String.fromCharCode(ch.charCodeAt(0) + 1) : ch
+    console.log(out)                             // Ifmmp, Xpsme
+
+## ~C++~
+    string s = "Hello, World";
+    cout << s.substr(0, 5) << "\n";  // Hello (substr takes a start and a length)
+    string out;
+    for (char ch : s) out += isalpha(ch) ? char(ch + 1) : ch;
+    cout << out << "\n";             // Ifmmp, Xpsme
+
+لا يوجد `split` في ~C++~؛ استخدم `stringstream`.
+
+## الـ~complexity~
+الـ~time complexity~: `O(n)`، حيث `n` طول النص، خطوة واحدة لكل ~character~.
+الـ~space complexity~: `O(n)` للنتيجة.
+
+## انتبه إلى
+- صغّر `k` أولًا. إضافة `1000` إلى رمز ~character~ تتجاوز `z` بكثير.
+- قراءة النص. قد يكون فارغًا ويحتوي على مسافات، لذا اقرأ السطر الثاني كله.
+- `s += ch` داخل ~loop~ في ~Java~ ينسخ الـ~string~ في كل مرة. أما `StringBuilder` فلا.
+
+نظام التصحيح لا يرى إلا الـ~output~، لذا تجتاز الاختبارات أيضًا نسخة مزاحة من الأبجدية تُستخدم بوصفها ~lookup table~.
+TEXT,
+    ],
+    'diagonal-sums' => [
+        'title' => 'مجموعا القطرين',
+        'body' => <<<'TEXT'
+الـ~list~ يحفظ القيم بالترتيب، كل قيمة عند ~index~ يبدأ من `0`؛ وتسميه ~Java~ و~C++~ و~JavaScript~ ~array~. الـ~2D list~ هو ~list~ من الصفوف: `grid[r][c]` هي القيمة في الصف `r` والعمود `c`.
+
+## مثال
+مع `n = 3`:
+    1 2 3
+    4 5 6
+    7 8 9
+القطر الرئيسي، من أعلى اليسار إلى أسفل اليمين: `grid[0][0] + grid[1][1] + grid[2][2] = 1 + 5 + 9 = 15`.
+القطر الثانوي، من أعلى اليمين إلى أسفل اليسار: `grid[0][2] + grid[1][1] + grid[2][0] = 3 + 5 + 7 = 15`.
+المركز، `5`، يُحسب في المجموعين. اطبع `15 15`.
+
+## طريقة التفكير في الحل
+اقرأ `n`، ثم اقرأ كل صف في ~list~ خاص به. الـ~nested loops~ تزور كل خلية: ~loop~ خارجي على الصفوف، و~loop~ داخلي على الأعمدة. أما القطران فيكفيهما ~loop~ واحد: الصف `i` يلتقي بالقطر الرئيسي عند العمود `i`، وبالقطر الثانوي عند العمود `n - 1 - i`.
+
+مع قيم يصل حجمها إلى `1,000,000,000` و`n` حتى `50`، قد يصل المجموع إلى `50,000,000,000`. استخدم `long` في ~Java~ و`long long` في ~C++~.
+
+## ~Python~
+    n = 3
+    grid = [[0] * n for _ in range(n)]  # n separate rows
+    trap = [[0] * n] * n                # n references to ONE row
+    grid[0][0] = 1
+    trap[0][0] = 1
+    print(grid)  # [[1, 0, 0], [0, 0, 0], [0, 0, 0]]
+    print(trap)  # [[1, 0, 0], [1, 0, 0], [1, 0, 0]]
+
+## ~Java~
+    int n = 3;
+    long[][] grid = new long[n][n];   // every cell starts at 0
+    for (int r = 0; r < n; r++)
+        for (int c = 0; c < n; c++)
+            grid[r][c] = r * n + c + 1;  // 1 to 9, row by row
+    System.out.println(grid[1][2]);   // 6
+
+## ~JavaScript~
+    const n = 3
+    const grid = Array.from({ length: n }, () => new Array(n).fill(0))  // n rows
+    const trap = new Array(n).fill(new Array(n).fill(0))                // one shared row
+    grid[0][0] = 1
+    trap[0][0] = 1
+    console.log(grid[1][0], trap[1][0])  // 0 1
+
+## ~C++~
+    int n = 3;
+    vector<vector<long long>> grid(n, vector<long long>(n, 0));  // n copies of a row
+    grid[0][0] = 1;
+    cout << grid[1][0] << "\n";  // 0
+
+## الـ~complexity~
+الـ~time complexity~: `O(n^2)` لقراءة الشبكة، ثم `O(n)` للمجموعين.
+الـ~space complexity~: `O(n^2)` لتخزين الشبكة.
+
+## انتبه إلى
+- الصف المشترك. `[[0] * n] * n` في ~Python~ و`fill` في ~JavaScript~ يضعان الصف نفسه في كل خانة، لذا يؤدي تغيير خلية إلى تغيير عمودها كله. أما ~C++~ فتنسخ الصف.
+- عندما يكون `n` فرديًا، ينتمي المركز إلى القطرين معًا؛ لا تطرحه.
+- المجاميع بحجم ~32-bit~ تلتف مع أكبر القيم.
+
+الجمع أثناء القراءة دون تخزين الشبكة يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يرى إلا عددين.
+TEXT,
+    ],
+    'word-frequency' => [
+        'title' => 'تكرار الكلمات',
+        'body' => <<<'TEXT'
+الـ~dictionary~، أو الـ~map~، يخزن أزواجًا: كل ~key~ يقود إلى قيمة. هنا الـ~key~ هو الكلمة، والقيمة هي عدد مرات ظهورها. تسميه ~Python~ `dict`، و~Java~ `HashMap`، و~JavaScript~ `Map`، و~C++~ `map` أو `unordered_map`. البحث عن ~key~ في ~hash map~ يستغرق وقتًا `O(1)` في المتوسط.
+
+## مثال
+خذ `the cat and the hat`.
+الكلمة `the` ليست في الـ~map~ بعد، لذا تأخذ `1`. ثم `cat 1`، و`and 1`، ثم `the` مرة أخرى `2`، و`hat 1`.
+رتّب حسب العدد، الأكبر أولًا، وأبجديًا عند تساوي العدد:
+`the 2, and 1, cat 1, hat 1`.
+
+## طريقة التفكير في الحل
+العدّ يحتاج إلى ~lookup~ مع قيمة افتراضية: الكلمة التي لم تظهر بعد تُعدّ `0`. أضف `1` وخزّن النتيجة من جديد. ثم مُرّ على الـ~entries~، وانسخها إلى ~list~ ورتّبه.
+
+لا تطبع الـ~map~ بترتيبه الخاص. `dict` في ~Python~ و`Map` في ~JavaScript~ يحافظان على ترتيب إضافة الـ~keys~، و`HashMap` في ~Java~ ليس له ترتيب مفيد، و`map` في ~C++~ مرتب حسب الـ~key~. لا شيء من ذلك يضع الأكثر تكرارًا أولًا.
+
+## ~Python~
+    counts = {}
+    for w in "the cat and the hat".split():
+        counts[w] = counts.get(w, 0) + 1  # get with a default
+    for w, c in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+        print(w, c)  # the 2, and 1, cat 1, hat 1
+
+## ~Java~
+    Map<String, Integer> counts = new HashMap<>();
+    for (String w : "the cat and the hat".split(" "))
+        counts.put(w, counts.getOrDefault(w, 0) + 1);
+    System.out.println(counts.get("the"));  // 2
+    for (Map.Entry<String, Integer> e : counts.entrySet())
+        System.out.println(e.getKey() + " " + e.getValue());  // no useful order
+
+## ~JavaScript~
+    const counts = new Map()
+    for (const w of 'the cat and the hat'.split(' '))
+      counts.set(w, (counts.get(w) ?? 0) + 1)  // get gives undefined, ?? turns it into 0
+    for (const [w, c] of counts) console.log(w, c)  // the 2, cat 1, and 1, hat 1
+
+## ~C++~
+    map<string, int> counts;
+    istringstream words("the cat and the hat");
+    string w;
+    while (words >> w) counts[w]++;  // a missing key starts at 0
+    for (const auto& [word, c] : counts) cout << word << " " << c << "\n";  // and, cat, hat, the
+
+## الـ~complexity~
+الـ~time complexity~: `O(w)` لعدّ `w` كلمة، إضافة إلى `O(d log d)` لترتيب الكلمات المختلفة وعددها `d`.
+الـ~space complexity~: `O(d)` لتخزين الـ~map~.
+
+## انتبه إلى
+- القراءة في ~C++~. `counts["dog"]` يضيف `dog` بقيمة `0` حتى لو كان القصد مجرد النظر. استخدم `counts.count(w)` للتحقق.
+- التعادل. عند تساوي العدد، تُرتب الكلمات أبجديًا.
+
+ترتيب كل الكلمات ثم عدّ المتتاليات المتساوية منها يجتاز الاختبارات أيضًا؛ فنظام التصحيح لا يستطيع معرفة هل استخدمت ~map~.
+TEXT,
+    ],
+    'sort-the-leaderboard' => [
+        'title' => 'ترتيب لوحة الصدارة',
+        'body' => <<<'TEXT'
+الـ~sorting~ باستخدام ~key~ يعني مقارنة قيمة محسوبة من كل عنصر بدلًا من العنصر كله. مع عدة ~keys~، قارن بالأول؛ ولا تنظر إلى الثاني إلا عند تساوي الأول. للترتيب التنازلي، اعكس ذلك الـ~key~ وحده، لا الباقي.
+
+يكون الـ~sort~ ~stable~ عندما تحافظ العناصر المتساوية في المقارنة على ترتيبها الحالي. `sort` في ~Python~ و`List.sort` في ~Java~ و`sort` في ~JavaScript~ كلها ~stable~؛ أما `sort` في ~C++~ فليس كذلك، لكن `stable_sort` كذلك.
+
+## مثال
+`alice 50, bob 70, carol 50, dave 70`.
+حسب الدرجة، الأعلى أولًا، تأتي درجات `70` قبل درجات `50`. ضمن `70` يأتي `bob` قبل `dave`؛ وضمن `50` يأتي `alice` قبل `carol`.
+اطبع `bob 70, dave 70, alice 50, carol 50`.
+
+## طريقة التفكير في الحل
+إحدى الطرق مقارنة واحدة تفحص الدرجة، الأعلى أولًا، ثم الاسم. والأخرى ~two passes~ باستخدام ~stable sort~: رتّب حسب الاسم، ثم رتّب ترتيبًا ~stable~ حسب الدرجة، الأعلى أولًا. تبقى الأسماء مرتبة ضمن كل درجة.
+
+في ~Python~، `reverse=True` يعكس الـ~key~ كله، بما في ذلك الأسماء. اجعل العدد سالبًا بدلًا من ذلك: `(-score, name)`.
+
+الـ~comparator~ يأخذ عنصرين `a` و`b` ويحدد أيهما يأتي أولًا: في ~Java~ و~JavaScript~ العدد السالب يعني `a`، والموجب يعني `b`، و`0` يعني أنهما متساويان. وفي ~C++~ يُرجع `true` عندما يجب أن يأتي `a` قبل `b` بشكل صارم.
+
+## ~Python~
+    players = [("alice", 50), ("bob", 70), ("carol", 50), ("dave", 70)]
+    players.sort(key=lambda p: (-p[1], p[0]))
+    print(players)  # [('bob', 70), ('dave', 70), ('alice', 50), ('carol', 50)]
+
+## ~Java~
+    record Player(String name, int score) {}
+    players.sort(Comparator.comparingInt(Player::score).reversed()
+            .thenComparing(Player::name));
+
+## ~JavaScript~
+    players.sort((a, b) => b.score - a.score || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+
+## ~C++~
+    sort(players.begin(), players.end(), [](const Player& a, const Player& b) {
+        if (a.score != b.score) return a.score > b.score;  // higher score first
+        return a.name < b.name;
+    });
+
+## الـ~complexity~
+الـ~time complexity~: `O(n log n)` مقارنة.
+الـ~space complexity~: `O(n)` لتخزين الـ~list~.
+
+## انتبه إلى
+- ترتيب الأعداد في ~JavaScript~ دون ~comparator~: `[10, 9, 1].sort()` يقارنها كنص ويعطي `1, 10, 9`.
+- إرجاع `a.score >= b.score` في ~comparator~ بلغة ~C++~. يجب أن يُرجع `false` للعناصر المتساوية، وإلا فقد يتصرف `sort` بشكل خاطئ.
+- الـ~two passes~ في ~C++~ تحتاج إلى `stable_sort`.
+
+نظام التصحيح لا يرى إلا الترتيب النهائي، فلا يمكنه التمييز بين مقارنة واحدة و~two passes~.
+TEXT,
+    ],
 ];

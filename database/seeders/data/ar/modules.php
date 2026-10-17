@@ -7,4 +7,5 @@
 return [
     'basics' => ['title' => 'البداية'],
     'programming-basics' => ['title' => 'أساسيات البرمجة'],
+    'core-programming' => ['title' => 'مهارات البرمجة الأساسية'],
 ];
