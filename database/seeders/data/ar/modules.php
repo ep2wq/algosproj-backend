@@ -13,4 +13,5 @@ return [
     'arrays-and-strings' => ['title' => 'Arrays and strings'],
     'stacks-and-queues' => ['title' => 'Stacks and queues'],
     'linked-lists' => ['title' => 'Linked lists'],
+    'hash-tables' => ['title' => 'Hash tables'],
 ];
