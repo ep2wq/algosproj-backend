@@ -10,4 +10,5 @@ return [
     'core-programming' => ['title' => 'مهارات البرمجة الأساسية'],
     'oop' => ['title' => 'Object-oriented programming'],
     'algorithm-basics' => ['title' => 'أساسيات الخوارزميات'],
+    'arrays-and-strings' => ['title' => 'Arrays and strings'],
 ];
