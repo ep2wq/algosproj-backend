@@ -16,4 +16,5 @@ return [
     'hash-tables' => ['title' => 'Hash tables'],
     'trees-and-bsts' => ['title' => 'Trees and BSTs'],
     'heaps' => ['title' => 'Heaps and priority queues'],
+    'recursion-and-backtracking' => ['title' => 'Recursion and backtracking'],
 ];
