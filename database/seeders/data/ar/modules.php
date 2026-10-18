@@ -19,4 +19,5 @@ return [
     'recursion-and-backtracking' => ['title' => 'Recursion and backtracking'],
     'graphs' => ['title' => 'Graphs'],
     'tries-union-find' => ['title' => 'Tries and union-find'],
+    'sorting-and-searching' => ['title' => 'الـ sorting والبحث'],
 ];
