@@ -612,7 +612,7 @@ A bare list in main also passes; the grader can't see privacy.
 TEXT,
 
     'shapes' => <<<'TEXT'
-A subclass inherits from a base class and can override its methods: a Square is a Rectangle with equal sides. Polymorphism means a loop calling area() on a list of Shape runs each object's own version.
+A subclass inherits from a base class and can override the base class's methods: a Square is a Rectangle with equal sides. Polymorphism means a loop calling area() on a list of Shape runs each object's own version.
 
 The program reads the shapes from standard input, and your classes do the work: main puts a Circle, Rectangle or Square for each line into one list.
 
@@ -1675,7 +1675,7 @@ It also finds 3 1 4 2: print 2, then 2 4 1 3.
 place(row): if every row has a queen, count the solution and save it if it is the first. Otherwise, for each free column, add col, row - col and row + col (choose), call place(row + 1) (explore), then remove all three (undo). Trying columns from 1 up makes the first solution found the one to print.
 
 ## Complexity
-Time: far below the n^n boards: 35,538 placements at n = 10.
+Time: at most O(n! * n), since each row has at least one free column fewer than the row above and each call checks all n columns; pruning keeps it far below that: 35,538 placements at n = 10.
 Space: O(n).
 
 ## Watch out for
@@ -2006,11 +2006,11 @@ find walks to the leader, pointing each person passed at their grandparent (path
     }
 
 ## Complexity
-Nearly constant per operation. Tests are small; skipping compression would pass, but matters at millions of operations.
+Nearly constant per operation. Tests are small; skipping path halving would pass, but matters at millions of operations.
 
 ## Watch out for
 - Compare leaders, not people.
-- Without union by size, JOIN 1 2, JOIN 2 3, ... can build a 3000-long path; a recursive find overflows Python's default limit of 1000 calls.
+- Without union by size, a join that always does parent[a] = b turns JOIN 1 2, JOIN 2 3, ... into a 3000-long path; a recursive find overflows Python's default limit of 1000 calls.
 TEXT,
 
     'minimum-spanning-tree' => <<<'TEXT'
