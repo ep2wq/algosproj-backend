@@ -17,4 +17,5 @@ return [
     'trees-and-bsts' => ['title' => 'Trees and BSTs'],
     'heaps' => ['title' => 'Heaps and priority queues'],
     'recursion-and-backtracking' => ['title' => 'Recursion and backtracking'],
+    'graphs' => ['title' => 'Graphs'],
 ];
