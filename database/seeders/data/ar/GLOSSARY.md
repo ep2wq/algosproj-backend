@@ -190,3 +190,26 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
 | times out | يتجاوز الوقت المسموح | ⚠ |
 | infinity | اللانهاية | |
 | seeds the start (table) | يضع القيمة الأولى للبداية | ⚠ |
+
+## Part 3: visualization and interface wording (frontend)
+
+Used in `algosproj-frontend/src/locales/visuals.ar.json` (step text, labels, input hints). Step
+sentences follow Parts 1 and 2; values and expressions are `inline code`. New choices, all ⚠:
+
+| English | Arabic | Note |
+|---|---|---|
+| Step back / Step forward / Reset (player) | الخطوة السابقة / الخطوة التالية / إعادة البدء | ⚠ |
+| Play / Pause / Speed: Slow, Normal, Fast | تشغيل / إيقاف مؤقت / السرعة: بطيئة، عادية، سريعة | ⚠ |
+| New random example / Use these / Your own numbers | مثال عشوائي جديد / استخدم هذه / أعدادك الخاصة | ⚠ |
+| Small numbers: indices / positions (legend) | الأعداد الصغيرة: الـ~indexes~ / المواضع | ⚠ |
+| Running now / Waiting on the call stack / Returned | يعمل الآن / ينتظر في الـ~call stack~ / انتهى وعاد | ⚠ |
+| best so far / largest depth | الأكبر حتى الآن / أكبر عمق | ⚠ |
+| the space (character) | حرف المسافة | ⚠ "المسافة" alone reads as "distance" |
+| partner (Two Sum, target - value) | الشريك | ⚠ |
+| last-seen map | الـ~map~ الخاص بآخر ظهور | ⚠ |
+| mark (as visited) | ضع علامة الزيارة على ... | ⚠ |
+| undone (an item's choice) | أُلغي اختياره | ⚠ |
+| has tried every ... (the search is over) | انتهى ... من تجربة كل ... | ⚠ avoids reading "جرّب" as an order |
+| X of N items (variable count) | `N` من العناصر / الأعداد / الأحرف | ⚠ avoids number agreement |
+| verdict Passed / Failed | نجح / فشل | as the interface |
+| Output: (label) | المخرجات: | as the interface |
