@@ -87,4 +87,23 @@ class ArabicSeedTextTest extends TestCase
             $this->assertNotSame('', trim($module['title'] ?? ''), $slug);
         }
     }
+
+    // New content must ship with Arabic: every seeded module, lesson and problem has it.
+    public function test_every_seeded_module_lesson_and_problem_has_arabic(): void
+    {
+        $data = database_path('seeders/data');
+        $arModules = require "$data/ar/modules.php";
+        $arLessons = require "$data/ar/lessons.php";
+        $arProblems = require "$data/ar/problems.php";
+        foreach (require "$data/lessons.php" as $module) {
+            $this->assertNotSame('', trim($arModules[$module['slug']]['title'] ?? ''), "module {$module['slug']} title");
+            foreach ($module['lessons'] as $lesson) {
+                $slug = $lesson['slug'];
+                $this->assertNotSame('', trim($arLessons[$slug]['title'] ?? ''), "lesson $slug title");
+                $this->assertNotSame('', trim($arLessons[$slug]['body'] ?? ''), "lesson $slug body");
+                $this->assertNotSame('', trim($arProblems[$slug]['title'] ?? ''), "problem $slug title");
+                $this->assertNotSame('', trim($arProblems[$slug]['description'] ?? ''), "problem $slug description");
+            }
+        }
+    }
 }
