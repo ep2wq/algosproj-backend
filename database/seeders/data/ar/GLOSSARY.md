@@ -8,7 +8,8 @@ every new entry afterwards. ⚠ marks a choice to review.
 Translated so far: Getting started (`basics`), Programming basics, Core programming,
 Object-oriented programming, Algorithm basics, Arrays and strings, Stacks and queues, Linked
 lists, Hash tables, Trees and BSTs, Heaps and priority queues, Recursion and backtracking,
-Graphs, Tries and union-find, Sorting and searching.
+Graphs, Tries and union-find, Sorting and searching, Greedy algorithms, Dynamic programming
+basics, Dynamic programming: tables, Bit manipulation and math: all 19 modules.
 
 ## Part 1: terms kept in English
 
@@ -29,7 +30,8 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
   undirected graph, edge, adjacency list, connected component, connected components,
   component, components, visited set, self-loops, parallel edges, weighted edges, offsets,
   trie, flag, pattern, patterns, prefixes, parents, grandparent, spanning tree, spanning trees,
-  minimum spanning tree, maximum spanning tree, arrays.
+  minimum spanning tree, maximum spanning tree, arrays, table, state, subsequence, longest common
+  subsequence, LCS, tails, bit, bits, sign bit, mask, subset, subsets, variables.
 - Programming: variable, type, function, built-in function, parameter, return value, loop, for
   loop, nested loops, loop condition, conditions, counter, recursion, exception, overflow,
   undefined, debugging, compilation, regular expression, remainder operator, integer division,
@@ -37,7 +39,9 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
   streams, 32-bit, 64-bit, 32-bit integer, 32-bit signed integer, signed 64-bit integer,
   operator, operators, operand, operands, counters, recursive function, recursion limit,
   parent pointers, pointer equality, trim, sandbox ⚠ ("في الـ~sandbox~ لدينا" = in our sandbox),
-  base case, locale ⚠ ("الـ~locale~ الخاص بالكمبيوتر" = the computer's locale), built-in sort.
+  base case, locale ⚠ ("الـ~locale~ الخاص بالكمبيوتر" = the computer's locale), built-in sort,
+  base cases, signed 64-bit integer, signed 32 bits, cast, bitwise operators, and, or, xor, XOR,
+  left shift, right shift.
 - Objects: class, classes, object, field, fields, private fields, private, static field,
   class-level field, method, methods, constructor, getter, encapsulation, shared state,
   subclass, subclasses, base class, interface, abstract class, abstract methods, pure virtual
@@ -53,7 +57,9 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
   permutations, lexicographic order ⚠, N-Queens (in prose), walk ⚠, walks, depth-first,
   depth-first search, breadth-first search, DFS, BFS, recursive DFS, union-find, path halving,
   union by size, compression ⚠, Kruskal's algorithm ⚠, greedy, bubble sort, insertion sort,
-  merge sort, pass ⚠ ("الـ~pass~ رقم `1`" = pass 1), passes, linear scan, inversion, inversions.
+  merge sort, pass ⚠ ("الـ~pass~ رقم `1`" = pass 1), passes, linear scan, inversion, inversions,
+  greedy algorithm, Huffman coding, dynamic programming, DP, top-down, bottom-up, memoize,
+  subproblems, unbounded knapsack, edit distance.
 - Language names: Python, Java, JavaScript, C++.
 - Problem section labels: ~Input~, ~Output~, ~Constraints~ ⚠ (the interface says المدخلات,
   المخرجات; القيود was used before).
@@ -63,11 +69,16 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
   Longest substring without repeating characters, Subarray sum equals K, Lowest common ancestor
   of a BST ⚠, Last stone weight ⚠, Merge k sorted lists, Running median ⚠, Recursion and
   backtracking, Binary strings, Permutations ⚠, N-Queens, Graphs, Number of islands ⚠, Tries and
-  union-find, Dictionary with wildcards, Minimum spanning tree, Binary search. A title with an
+  union-find, Dictionary with wildcards, Minimum spanning tree, Binary search, Coin change, House
+  robber, Longest increasing subsequence, Dynamic programming: tables, Knapsack, Longest common
+  subsequence, Edit distance, Single number, Power mod. A title with an
   English term and Arabic writes "الـ " and the term with a space, no marker: "مجموع عناصر الـ
   array", "عكس الـ linked list", "ارتفاع الـ BST", "حساب قيمة الـ postfix expression", "عدّ الـ
   connected components", "عدّ الـ prefix" ⚠, "رتّب الـ array", "عدّ الـ inversions", "الـ sorting
-  والبحث" ⚠ (module). Translated without a term: "أقصر مسار في الشبكة", "مجموعات الأصدقاء".
+  والبحث" ⚠ (module), "خوارزميات الـ greedy" ⚠ (module), "أساسيات الـ dynamic programming"
+  (module), "الـ bit manipulation والرياضيات" ⚠ (module), "عدّ الـ set bits", "عدّ الـ subsets حسب
+  المجموع" ⚠. Translated without a term: "أقصر مسار في الشبكة", "مجموعات الأصدقاء", "إعطاء الباقي" ⚠
+  (Make change), "أكبر عدد من الاجتماعات", "وصل الحبال", "صعود الدرج", "مسارات الشبكة".
 
 ## Part 2: Arabic wording for recurring words and phrases
 
@@ -164,3 +175,18 @@ write "من أجل الـ~stack~" or "الخاص بالـ~successor~" instead.
 | X: O(...) time, O(...) extra space (per method) | وقت `O(...)` / مساحة إضافية `O(...)` | |
 | O(length of the word) | `O(length of the word)`، أي بحسب طول الكلمة | ⚠ Big-O kept in code |
 | reversed / sorted input | ~input~ معكوس / ~input~ مرتب | |
+| coin / cent / amount | عملة / سنت / المبلغ | |
+| counter-example / optimal (answer) | مثال مضاد / الأمثل (إجابة مثلى) | |
+| meeting / start time / end time | اجتماع / وقت البداية / وقت النهاية | |
+| rope / join (ropes) / cost | حبل / وصل / تكلفة | ⚠ |
+| step / staircase / house | درجة / درج / بيت | |
+| item / capacity / bag / weight / value (knapsack) | عنصر / سعة / حقيبة / وزن / قيمة | |
+| blocked / free cell / goal | مغلقة / مفتوحة / الهدف | |
+| insert / delete / replace (edit distance) | إدراج / حذف / استبدال | |
+| strictly increasing / contiguous run | متزايد تمامًا / سلسلة متصلة | ⚠ |
+| 1 bits, set bits (in prose) | الـ~bits~ التي قيمتها `1` | ⚠ |
+| binary form / in binary | الصورة الثنائية / بالنظام الثنائي | |
+| square a / halve b | ربّع `a` / اجعل `b` نصفه | |
+| times out | يتجاوز الوقت المسموح | ⚠ |
+| infinity | اللانهاية | |
+| seeds the start (table) | يضع القيمة الأولى للبداية | ⚠ |

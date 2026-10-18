@@ -57,8 +57,10 @@ so there is one import path; the seeder still runs only when no module exists.
 To add a lesson in both languages: add the module (if new) and the lesson with its problem and
 test cases to `lessons.php`, its body to `lesson_bodies.php`, and the Arabic title, body and
 problem text under the same slugs in `data/ar/lessons.php` and `data/ar/problems.php` (a new
-module's Arabic title in `data/ar/modules.php`). Then run `content:sync`. Arabic can also be
-added later; until then the English is shown.
+module's Arabic title in `data/ar/modules.php`). Then run `content:sync`. The Arabic is
+required: `ArabicSeedTextTest` fails while any seeded module, lesson or problem lacks its Arabic
+title or text, so new content always ships with Arabic. (A field still empty in the database,
+for example after an admin edit, falls back to the English.)
 
 ### Content languages
 
@@ -78,11 +80,7 @@ language the text came in (`ar` or `en`), so the frontend sets `lang` and `dir`.
 the `*_ar` names never appear in public responses. The language only picks a column: no extra
 queries. Admin responses hold both languages.
 
-Translated so far: Getting started (`basics`), Programming basics, Core programming,
-Object-oriented programming, Algorithm basics, Arrays and strings, Stacks and queues, Linked
-lists, Hash tables, Trees and BSTs, Heaps and priority queues (`heaps`), Recursion and
-backtracking, Graphs, Tries and union-find, Sorting and searching (50 lessons, 50 problems).
-The other 4 modules show English.
+Translated: all 19 of 19 modules (65 lessons, 65 problems).
 
 Translation rules (for every batch):
 
@@ -104,9 +102,10 @@ Translation rules (for every batch):
   `~Input~`, `~Output~`, `~Constraints~`. Arabic punctuation, Western digits, no diacritics
   unless a word is ambiguous, no gendered address where it can be avoided, body length within
   about 25% of the English.
-- Checks: `tests/Feature/ArabicSeedTextTest.php` (code blocks, headings, list items, no empty
-  field, no English outside inline code and markers, balanced markers), and a back-translation
-  by a reader who has not seen the English.
+- Checks: `tests/Feature/ArabicSeedTextTest.php` (every seeded module, lesson and problem has
+  its Arabic; code blocks, headings, list items, no empty field, no English outside inline code
+  and markers, balanced markers), and a back-translation by a reader who has not seen the
+  English.
 
 `database/seeders/data/ar/GLOSSARY.md` lists (1) the terms kept in English and (2) the Arabic
 wording chosen for recurring words and phrases; ⚠ marks choices to review. Load it before a
