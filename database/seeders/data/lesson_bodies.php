@@ -225,7 +225,7 @@ The hard part is size. A number type has a largest value, and going past it is c
 - A 32-bit int, the default in Java and C++, holds up to 2,147,483,647. 12! fits, but 13! does not. Java silently wraps around and prints 1932053504; in C++ the result is undefined, and in our sandbox it printed the same.
 - long in Java and long long in C++ hold up to about 9.2 * 10^18, so 20! fits.
 - Python integers grow as needed.
-- A JavaScript Number stores whole numbers exactly only up to 9,007,199,254,740,991. 19! is past that, so arithmetic may round without warning. Use BigInt instead: write 1n, convert with BigInt(n), and it never rounds.
+- A JavaScript Number stores whole numbers exactly only up to 9,007,199,254,740,991. 19! is past that, so arithmetic can round without warning in general (here it happens not to). Use BigInt instead: write 1n, convert with BigInt(n), and it never rounds.
 
 ## Complexity
 Time: O(n) multiplications.
@@ -683,7 +683,7 @@ O(n) for n shapes.
 
 ## Watch out for
 - In C++, without virtual, shape->area() runs Shape's version and prints 0.00.
-- Java's String.format follows the computer's language, so German prints 6,00; Locale.ROOT prints a point.
+- Java's String.format follows the computer's locale, so German prints 6,00; Locale.ROOT prints a point.
 
 Ifs on the shape name also pass; the grader only sees numbers.
 TEXT,
@@ -1383,7 +1383,7 @@ Preorder prints the root, then the left subtree, then the right: 60 30 20 40 70 
 Deleting 20, a leaf, instead gives 50 30 40 70 60 65 80.
 
 ## How to think about it
-Keep parent and cur while you search, and the successor's parent too. If the successor is cur's own right child, set cur.right to the successor's right child; otherwise set the successor parent's left to it.
+Keep parent and cur while you search, and the successor's parent too. If the successor is cur's own right child, set cur.right to the successor's right child; otherwise set the successor parent's left to the successor's right child.
 
 For preorder, use a stack: pop a node, print it, push its right child, then its left.
 
@@ -1392,7 +1392,7 @@ Time: O(n * h) to build, where h is the height, O(h) to delete and O(n) to print
 Space: O(n).
 
 ## Watch out for
-- The rule. The largest value in the left subtree also leaves a valid BST, but a different one, and fails here.
+- The rule. Using the largest value in the left subtree instead also leaves a valid BST, but a different one, so it fails here.
 - Copying the successor without removing it leaves its value twice.
 - Deleting the only node. Print an empty line.
 - Deep trees. Sorted input gives a chain 1,000 deep, past Python's default recursion limit.
@@ -1406,6 +1406,7 @@ A heap is an array where every parent beats its children, so a[0] is the largest
 ## Example
 Max-heap, push 2 7 4 8:
 [2 7] becomes [7 2].
+Push 4: [7 2 4].
 [7 2 4 8]: 8 beats 2, then 7: [8 7 4 2].
 Pop 8: [2 7 4] becomes [7 2 4].
 
@@ -1519,7 +1520,7 @@ An entry (value, list index, position) points to the next number. Empty lists ne
 With at most k entries, push and pop cost O(log k); peek costs O(1). N numbers: O(N log k).
 
 ## Watch out for
-- Python: a tie on (value, list) compares the second items; an iterator or node there crashes. Push (value, list index, position).
+- Python: with (value, iterator) entries, a tie on value compares the iterators, which crashes (nodes too). Push (value, list index, position).
 TEXT,
 
     'running-median' => <<<'TEXT'
