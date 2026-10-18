@@ -22,4 +22,5 @@ return [
     'sorting-and-searching' => ['title' => 'الـ sorting والبحث'],
     'greedy' => ['title' => 'خوارزميات الـ greedy'],
     'dp-basics' => ['title' => 'أساسيات الـ dynamic programming'],
+    'dp-tables' => ['title' => 'Dynamic programming: tables'],
 ];
