@@ -2273,4 +2273,184 @@ TEXT,
 ابدأ المسألة أدناه بالـ~brute force~، ثم استخدمه لاختبار نسخة الـ~merge sort~ على ~arrays~ عشوائية.
 TEXT,
     ],
+    'make-change' => [
+        'title' => 'إعطاء الباقي',
+        'body' => <<<'TEXT'
+الـ~greedy algorithm~ يبني إجابته خطوة بخطوة: يأخذ الاختيار الذي يبدو الأفضل الآن ولا يتراجع عنه أبدًا. هذا سريع، لكنه لا يكون صحيحًا إلا عندما ينتمي الاختيار الذي يبدو الأفضل دائمًا إلى إحدى الإجابات المثلى.
+
+في مسألة الباقي، الاختيار الـ~greedy~ هو أكبر عملة لا تتجاوز ما تبقى. مع عملات `1` و`5` و`10` و`25` و`100` سنت يكون ذلك هو الأمثل دائمًا، لذا فالمسألة أدناه تأخذ من كل عملة أكبر عدد ممكن، بدءًا من الأكبر.
+
+## مثال
+`99` سنتًا: `100` أكبر من المبلغ. `3 x 25` تترك `24`، و`2 x 10` تترك `4`، ولا شيء من `5`، ثم `4 x 1`. المجموع `3 + 2 + 4 = 9` عملات.
+
+## طريقة التفكير في الحل
+قد يفشل الـ~greedy~. مع العملات `4` و`3` و`1`، يحصل المبلغ `6` على `4 + 1 + 1`، أي `3` عملات، لكن `3 + 3` تحتاج إلى عملتين فقط؛ و`countCoins(6, [4, 3, 1])` يُرجع `3`. أنظمة العملات مثل هذا النظام تحتاج إلى ~dynamic programming~، وهو وحدة لاحقة. قبل أن تثق بالـ~greedy~، ابحث عن مثال مضاد.
+
+## ~Python~
+    def count_coins(amount, coins):  # largest coin first
+        count = 0
+        for c in coins:
+            count += amount // c
+            amount %= c
+        return count
+
+## ~Java~
+    static long countCoins(long amount, long[] coins) {
+        long count = 0;
+        for (long c : coins) {
+            count += amount / c;
+            amount %= c;
+        }
+        return count;
+    }
+
+## ~JavaScript~
+    function countCoins(amount, coins) {
+      let count = 0
+      for (const c of coins) {
+        count += Math.floor(amount / c)
+        amount %= c
+      }
+      return count
+    }
+
+## ~C++~
+    long long countCoins(long long amount, const vector<long long>& coins) {
+        long long count = 0;
+        for (long long c : coins) {
+            count += amount / c;
+            amount %= c;
+        }
+        return count;
+    }
+
+## الـ~complexity~
+`O(k)` لعدد `k` من أنواع العملات: عملية قسمة واحدة لكل عملة، مهما كان المبلغ كبيرًا.
+
+## انتبه إلى
+- المبلغ `10^12` سنت يحتاج إلى `10^10` عملة، وهذا أكثر مما يتسع له `int` بحجم ~32-bit~: استخدم `long` في ~Java~ و`long long` في ~C++~. الأعداد في ~JavaScript~ دقيقة حتى `2^53`.
+- يجب أن تكون العملات مرتبة من الأكبر إلى الأصغر.
+- `0` سنت يحتاج إلى `0` عملة.
+TEXT,
+    ],
+    'maximum-meetings' => [
+        'title' => 'أكبر عدد من الاجتماعات',
+        'body' => <<<'TEXT'
+لحضور أكبر عدد من الاجتماعات، رتّبها حسب وقت النهاية، وخذ كل اجتماع يبدأ عند نهاية آخر اجتماع أخذته أو بعدها. الاجتماع الذي ينتهي أولًا يترك أطول وقت للبقية، لذا فوضعه مكان غيره في أي خطة مثلى لا يجعل الخطة أسوأ أبدًا.
+
+## مثال
+`[1, 4) [3, 5) [0, 6) [5, 7) [8, 11) [12, 16)`، وهي مرتبة حسب وقت النهاية مسبقًا.
+خذ `[1, 4)`؛ `end = 4`. الاجتماعان `[3, 5)` و`[0, 6)` يبدآن مبكرًا جدًا.
+خذ `[5, 7)`؛ `end = 7`. خذ `[8, 11)`، ثم `[12, 16)`. النتيجة `4` اجتماعات.
+
+## طريقة التفكير في الحل
+قاعدتان من قواعد الـ~greedy~ تبدوان صحيحتين، لكنهما خاطئتان.
+حسب وقت البداية: `[0, 10) [1, 2) [2, 3) [3, 4)` تأخذ `[0, 10)` أولًا وتحصل على `1`؛ والأفضل `3`.
+حسب أقصر مدة: `[0, 5) [4, 6) [5, 10)` تأخذ `[4, 6)`، الذي يمنع الاجتماعين الآخرين، وتحصل على `1`؛ والأفضل `2`.
+
+## ~Python~
+    meetings.sort(key=lambda m: m[1])  # by end time
+    count, end = 0, 0
+    for s, e in meetings:
+        if s >= end:
+            count += 1
+            end = e
+
+## ~Java~
+    Arrays.sort(meetings, (a, b) -> Integer.compare(a[1], b[1]));
+    int count = 0, end = 0;
+    for (int[] m : meetings)
+        if (m[0] >= end) {
+            count++;
+            end = m[1];
+        }
+
+## ~JavaScript~
+    meetings.sort((a, b) => a[1] - b[1])
+    let count = 0, end = 0
+    for (const [s, e] of meetings)
+      if (s >= end) {
+        count++
+        end = e
+      }
+
+## ~C++~
+    sort(meetings.begin(), meetings.end(), [](auto& a, auto& b) { return a[1] < b[1]; });
+    int count = 0, end = 0;
+    for (auto& [s, e] : meetings)
+        if (s >= end) {
+            count++;
+            end = e;
+        }
+
+## الـ~complexity~
+`O(n log n)` من أجل الـ~sort~، ثم ~pass~ واحد يأخذ `O(n)`.
+
+## انتبه إلى
+- الاجتماعات المتلامسة لا تتداخل: `[1, 3)` ينتهي عندما يبدأ `[3, 5)`، لذا يُحسب الاثنان. قارن باستخدام `>=`، لا `>`.
+- رتّب حسب النهاية، لا حسب البداية.
+TEXT,
+    ],
+    'connect-ropes' => [
+        'title' => 'وصل الحبال',
+        'body' => <<<'TEXT'
+عملية الوصل تكلّف مجموع الطولين، والحبل الجديد يُوصل مرة أخرى لاحقًا، لذا يُدفع كل طول مرة واحدة مقابل كل عملية وصل فوقه. لذلك صِل دائمًا أقصر حبلين، باستخدام ~min-heap~. الـ~Huffman coding~ يستخدم الفكرة نفسها، فيدمج أندر رمزين أولًا.
+
+## مثال
+`4 3 2 6`. صِل `2 + 3 = 5`، والتكلفة `5`؛ الحبال `4 5 6`.
+صِل `4 + 5 = 9`، والتكلفة `14`؛ الحبال `6 9`.
+صِل `6 + 9 = 15`، والتكلفة `29`. ترتيب الـ~input~ كان سيكلّف `7 + 9 + 15 = 31`.
+
+## طريقة التفكير في الحل
+الـ~sorting~ مرة واحدة ثم الوصل بالتتابع يفشل أيضًا: `1 1 1 1` يكلّف `2 + 3 + 4 = 9` بهذه الطريقة، لكن الأفضل `2 + 2 + 4 = 8`. يجب أن يعود الحبل الموصول إلى بين الحبال الأخرى؛ والـ~heap~ يفعل ذلك.
+
+## ~Python~
+    heapq.heapify(ropes)
+    total = 0
+    while len(ropes) > 1:
+        a = heapq.heappop(ropes)
+        b = heapq.heappop(ropes)
+        total += a + b
+        heapq.heappush(ropes, a + b)
+
+## ~Java~
+    PriorityQueue<Long> h = new PriorityQueue<>();
+    for (long x : ropes) h.add(x);
+    long total = 0;
+    while (h.size() > 1) {
+        long a = h.poll(), b = h.poll();
+        total += a + b;
+        h.add(a + b);
+    }
+
+## ~JavaScript~
+    const h = new Heap((x, y) => x < y)  // Last stone weight's class
+    for (const x of ropes) h.push(x)
+    let total = 0
+    while (h.a.length > 1) {
+      const a = h.pop(), b = h.pop()
+      total += a + b
+      h.push(a + b)
+    }
+
+## ~C++~
+    priority_queue<long long, vector<long long>, greater<>> h(ropes.begin(), ropes.end());
+    long long total = 0;
+    while (h.size() > 1) {
+        long long a = h.top();
+        h.pop();
+        long long b = h.top();
+        h.pop();
+        total += a + b;
+        h.push(a + b);
+    }
+
+## الـ~complexity~
+`n - 1` عملية وصل، كل منها `O(log n)`: أي `O(n log n)`.
+
+## انتبه إلى
+- ستة حبال طول كل منها `10^9` تكلّف `16 x 10^9`، وهذا يتجاوز ~32-bit~: استخدم `long` (`long long` في ~C++~) للمجموع وفي الـ~heap~.
+- `n = 1` لا يحتاج إلى أي وصل: التكلفة `0`.
+TEXT,
+    ],
 ];

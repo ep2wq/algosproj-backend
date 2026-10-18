@@ -20,4 +20,5 @@ return [
     'graphs' => ['title' => 'Graphs'],
     'tries-union-find' => ['title' => 'Tries and union-find'],
     'sorting-and-searching' => ['title' => 'الـ sorting والبحث'],
+    'greedy' => ['title' => 'خوارزميات الـ greedy'],
 ];
