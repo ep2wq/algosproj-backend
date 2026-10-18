@@ -1866,4 +1866,319 @@ TEXT,
 اكتب الـ~queue~ وشبكة `dist` في المسألة أدناه.
 TEXT,
     ],
+    'prefix-count' => [
+        'title' => 'عدّ الـ prefix',
+        'body' => <<<'TEXT'
+الـ~trie~ يخزن الكلمات على شكل مسارات: كل ~edge~ حرف، لذا فالمسار الذي يبدأ من الـ~root~ يكوّن ~prefix~. كل ~node~ يعدّ الكلمات التي تمر به، و~flag~ يحدد المكان الذي تنتهي فيه كلمة.
+
+## مثال
+أضف `app` و`apple`، مع عرض الأعداد:
+
+    root
+      a 2
+        p 2
+          p 2  end
+            l 1
+              e 1  end
+
+الأمر `COUNT ap` يسير عبر `a` ثم `p`: `2`. والأمر `COUNT b` لا يجد ~edge~: `0`. وإضافة `apple` مرة أخرى تجد الـ~flag~ الخاص بها مضبوطًا: لا تغيير.
+
+## طريقة التفكير في الحل
+الأمر `ADD` ينشئ الـ~nodes~ الناقصة على امتداد الكلمة. إذا كان على آخرها ~flag~، فتوقف؛ وإلا فضع عليه الـ~flag~ وأضف `1` إلى كل عدد على المسار. الأمر `COUNT` يُرجع العدد الموجود في آخر ~node~ من الـ~prefix~. في ~Python~، يحمل `"#"` العدد ويحمل `"$"` الـ~flag~.
+
+## ~Python~
+    def add(word):
+        node = root
+        for ch in word:
+            node = node.setdefault(ch, {"#": 0})
+        if "$" in node:
+            return
+        node["$"] = True
+        node = root
+        for ch in word:
+            node = node[ch]
+            node["#"] += 1
+
+## ~Java~
+    static void add(String word) {
+        Node node = root;
+        for (char c : word.toCharArray())
+            node = node.next.computeIfAbsent(c, k -> new Node());
+        if (node.end) return;
+        node.end = true;
+        node = root;
+        for (char c : word.toCharArray()) {
+            node = node.next.get(c);
+            node.count++;
+        }
+    }
+
+## ~JavaScript~
+    function add(word) {
+      let node = root
+      for (const c of word) node = node.next[c] ??= { next: {}, count: 0 }
+      if (node.end) return
+      node.end = true
+      node = root
+      for (const c of word) {
+        node = node.next[c]
+        node.count++
+      }
+    }
+
+## ~C++~
+    void add(const string& word) {
+        Node* node = root;
+        for (char c : word) {
+            if (!node->next[c]) node->next[c] = new Node();
+            node = node->next[c];
+        }
+        if (node->end) return;
+        node->end = true;
+        node = root;
+        for (char c : word) {
+            node = node->next[c];
+            node->count++;
+        }
+    }
+
+## الـ~complexity~
+`O(length of the word)` لكل عملية، أي بحسب طول الكلمة، مهما كان عدد الكلمات المخزنة.
+
+## انتبه إلى
+- قراءة الـ~flag~ لا تعدّ إلا الكلمات التي تنتهي هناك: `COUNT ap` يعطي `0`، لا `2`.
+- بدون فحص الـ~flag~، يجعل `ADD apple` الثاني نتيجة `COUNT app` تساوي `3`.
+TEXT,
+    ],
+    'dictionary-with-wildcards' => [
+        'title' => 'Dictionary with wildcards',
+        'body' => <<<'TEXT'
+الـ~trie~ نفسه، لكن دون أعداد. في الـ~pattern~، يتبع الحرف ~edge~ واحدًا، والنقطة تطابق حرفًا واحدًا بالضبط، أي حرف كان. لذا عند النقطة يجرّب البحث كل ~child~، بطريقة ~depth-first~، حتى يطابق أحدها.
+
+## مثال
+المخزّن: `bad` و`bed` و`dab`. `SEARCH .a.`:
+
+    pattern  node  step
+    .        b     first child
+    a        ba    edge found
+    .        bad   end flag: yes
+
+`SEARCH b.` يصل إلى `ba` و`be`؛ ولا تنتهي كلمة عند أي منهما: `no`.
+
+## طريقة التفكير في الحل
+`search(node, p, i)` يسأل هل يطابق الـ~pattern~، من `i` فصاعدًا، ما يبدأ من هذا الـ~node~. عند نهاية الـ~pattern~ تكون الإجابة هي ~flag~ النهاية. في ~Python~، يحدد `"$"` النهاية.
+
+## ~Python~
+    def search(node, p, i):
+        if i == len(p):
+            return "$" in node
+        if p[i] != ".":
+            return p[i] in node and search(node[p[i]], p, i + 1)
+        return any(search(kid, p, i + 1)
+                   for ch, kid in node.items() if ch != "$")
+
+## ~Java~
+    static boolean search(Node node, String p, int i) {
+        if (node == null) return false;
+        if (i == p.length()) return node.end;
+        char c = p.charAt(i);
+        if (c != '.') return search(node.next.get(c), p, i + 1);
+        for (Node kid : node.next.values())
+            if (search(kid, p, i + 1)) return true;
+        return false;
+    }
+
+## ~JavaScript~
+    function search(node, p, i) {
+      if (!node) return false
+      if (i === p.length) return node.end
+      if (p[i] !== '.') return search(node.next[p[i]], p, i + 1)
+      return Object.values(node.next).some(kid => search(kid, p, i + 1))
+    }
+
+## ~C++~
+    bool search(Node* node, const string& p, int i) {
+        if (i == (int)p.size()) return node->end;
+        if (p[i] != '.') return node->next.count(p[i]) && search(node->next[p[i]], p, i + 1);
+        for (auto [ch, kid] : node->next)
+            if (search(kid, p, i + 1)) return true;
+        return false;
+    }
+
+## الـ~complexity~
+بلا نقاط: `O(length)`. كل نقطة يمكن أن تتفرع إلى `26` اتجاهًا، لذا فإن `k` من النقاط قد تزور حتى `26^k` مسارًا، لكن عدد المسارات لا يتجاوز ما يسمح به حجم الـ~trie~؛ وإذا كان الـ~pattern~ كله نقاطًا فقد يمر البحث بمعظم الـ~trie~.
+
+## انتبه إلى
+- إذا كانت `apple` مخزنة، فإن `SEARCH app` ينتهي داخل `apple`: `no`.
+- النقطة حرف واحد دائمًا، ولا تكون أبدًا بلا حرف: ست نقاط لا تطابق `apple`.
+TEXT,
+    ],
+    'friend-groups' => [
+        'title' => 'مجموعات الأصدقاء',
+        'body' => <<<'TEXT'
+الـ~union-find~ يتتبع مجموعات تندمج. كل شخص يشير إلى ~parent~؛ وتتبّع الـ~parents~ ينتهي عند قائد المجموعة. الدمج يجعل أحد القائدين يشير إلى الآخر.
+
+## مثال
+`JOIN 1 2`، و`JOIN 3 4`، و`JOIN 2 4`:
+
+    person  1  2  3  4  5
+    parent  1  1  1  3  5
+
+`SAME 4 2`: كلاهما يصل إلى `1`، لذا `yes`.
+
+## طريقة التفكير في الحل
+`find` يسير إلى القائد، ويجعل كل شخص يمر به يشير إلى الـ~grandparent~ الخاص به (~path halving~). و`join` يعلّق المجموعة الأصغر تحت الأكبر (~union by size~).
+
+## ~Python~
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def join(a, b):
+        a, b = find(a), find(b)
+        if a == b:
+            return
+        if size[a] < size[b]:
+            a, b = b, a
+        parent[b] = a
+        size[a] += size[b]
+
+## ~Java~
+    static int find(int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+        }
+        return x;
+    }
+
+    static void join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return;
+        if (size[a] < size[b]) { int t = a; a = b; b = t; }
+        parent[b] = a;
+        size[a] += size[b];
+    }
+
+## ~JavaScript~
+    function find(x) {
+      while (parent[x] !== x) {
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+      }
+      return x
+    }
+
+    function join(a, b) {
+      a = find(a)
+      b = find(b)
+      if (a === b) return
+      if (size[a] < size[b]) [a, b] = [b, a]
+      parent[b] = a
+      size[a] += size[b]
+    }
+
+## ~C++~
+    int find(int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+        }
+        return x;
+    }
+
+    void join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return;
+        if (sz[a] < sz[b]) swap(a, b);
+        parent[b] = a;
+        sz[a] += sz[b];
+    }
+
+## الـ~complexity~
+شبه ثابت لكل عملية. الاختبارات صغيرة، لذا فتخطي الـ~compression~ سيجتاز الاختبارات، لكنه مهم عند ملايين العمليات.
+
+## انتبه إلى
+- قارن بين القادة، لا بين الأشخاص.
+- بدون الـ~union by size~، قد تبني الأوامر `JOIN 1 2`، `JOIN 2 3`، ... مسارًا طوله `3000`؛ و`find` المكتوب بالـ~recursion~ يتجاوز الحد الافتراضي في ~Python~، وهو `1000` استدعاء.
+TEXT,
+    ],
+    'minimum-spanning-tree' => [
+        'title' => 'Minimum spanning tree',
+        'body' => <<<'TEXT'
+الـ~spanning tree~ يربط كل الـ~nodes~ وعددها `n` باستخدام `n - 1` من الـ~edges~، دون ~cycle~؛ والأصغر منها هو الذي مجموع أوزانه أقل ما يمكن. ~Kruskal's algorithm~ هو ~greedy~، مثل وحدة الـ~greedy~: رتّب الـ~edges~ حسب الوزن، وخذ كل ~edge~ يربط بين مجموعتين (بالـ~union-find~، من درس مجموعات الأصدقاء)، وتوقف عند `n - 1` من الـ~edges~.
+
+## مثال
+أربعة ~nodes~، والـ~edges~ مرتبة حسب الوزن:
+
+    edge  weight  take?
+    2-3   2       yes
+    1-3   3       yes
+    1-2   4       no, same group
+    3-4   5       yes
+
+المجموع: `2 + 3 + 5 = 10`.
+
+## طريقة التفكير في الحل
+أخف ~edge~ بين مجموعتين آمن دائمًا. والـ~edge~ داخل مجموعة واحدة، ومنه الـ~self-loops~، سيغلق ~cycle~. ومن الـ~parallel edges~ يأتي الأخف أولًا.
+
+## ~Python~
+    edges.sort()
+    total = taken = 0
+    for w, u, v in edges:
+        if find(u) != find(v):
+            join(u, v)
+            total += w
+            taken += 1
+    print(total if taken == n - 1 else -1)
+
+## ~Java~
+    Arrays.sort(edges, (x, y) -> Integer.compare(x[2], y[2]));
+    long total = 0;
+    int taken = 0;
+    for (int[] e : edges)
+        if (find(e[0]) != find(e[1])) {
+            join(e[0], e[1]);
+            total += e[2];
+            taken++;
+        }
+    System.out.println(taken == n - 1 ? total : -1);
+
+## ~JavaScript~
+    edges.sort((x, y) => x[2] - y[2])
+    let total = 0, taken = 0
+    for (const [u, v, w] of edges)
+      if (find(u) !== find(v)) {
+        join(u, v)
+        total += w
+        taken++
+      }
+    console.log(taken === n - 1 ? total : -1)
+
+## ~C++~
+    sort(edges.begin(), edges.end());
+    long long total = 0;
+    int taken = 0;
+    for (auto [w, u, v] : edges)
+        if (find(u) != find(v)) {
+            join(u, v);
+            total += w;
+            taken++;
+        }
+    cout << (taken == n - 1 ? total : -1) << "\n";
+
+## الـ~complexity~
+`O(m log m)` من أجل الـ~sort~؛ وكل خطوة ~union-find~ شبه ثابتة.
+
+## انتبه إلى
+- بلا فحص للمجموعة: `2 + 3 + 4 = 9` في المثال أعلاه، وهذا ~cycle~ ينقصه الـ~node~ `4`.
+- البدء بالأثقل يعطي الـ~maximum spanning tree~.
+- `999` من الـ~edges~ أوزانها قريبة من `10^9` تتجاوز ~32-bit~: استخدم `long` (`long long` في ~C++~).
+- إذا أُخذ أقل من `n - 1` من الـ~edges~: الـ~graph~ غير متصل، اطبع `-1`.
+TEXT,
+    ],
 ];
