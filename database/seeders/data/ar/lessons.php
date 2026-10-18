@@ -2453,4 +2453,224 @@ TEXT,
 - `n = 1` لا يحتاج إلى أي وصل: التكلفة `0`.
 TEXT,
     ],
+    'climbing-stairs' => [
+        'title' => 'صعود الدرج',
+        'body' => <<<'TEXT'
+الـ~dynamic programming~ (~DP~) يبني الإجابة من إجابات نسخ أصغر من المسألة، وكل منها يُحسب مرة واحدة.
+
+آخر حركة إلى الدرجة `n` كانت درجة واحدة، من `n - 1`، أو درجتين، من `n - 2`. لذا `ways(n) = ways(n - 1) + ways(n - 2)`، مع `ways(0) = ways(1) = 1`.
+
+## مثال
+    n:    0 1 2 3 4 5 6
+    ways: 1 1 2 3 5 8 13
+عندما `n = 4`: `1+1+1+1`، و`1+1+2`، و`1+2+1`، و`2+1+1`، و`2+2`.
+
+## طريقة التفكير في الحل
+الـ~recursion~ العادي يكرر العمل: عندما `n = 30` يُجري `2692537` استدعاء.
+الـ~top-down~: احتفظ بالـ~recursion~ ونفّذ ~memoize~ لكل إجابة: `31` استدعاء. هذه الطريقة طبيعية عندما يكون الـ~recursion~ سهل الكتابة أو عندما لا يلزم إلا بعض الـ~subproblems~.
+الـ~bottom-up~: املأ الـ~table~ بدءًا من `ways[0]` صعودًا. هذه الطريقة طبيعية عندما يكون الترتيب واضحًا أو عندما يصبح الـ~recursion~ عميقًا.
+كود ~Python~ أدناه ~top-down~؛ أما البقية، والدروس اللاحقة، فتستخدم الـ~table~.
+
+## ~Python~
+    @cache  # top-down: from functools import cache
+    def ways(n):
+        return 1 if n <= 1 else ways(n - 1) + ways(n - 2)
+
+## ~Java~
+    static long ways(int n) {
+        long[] w = new long[n + 1];
+        w[0] = w[1] = 1;
+        for (int i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2];
+        return w[n];
+    }
+
+## ~JavaScript~
+    function ways(n) {
+      const w = [1n, 1n]  // BigInt
+      for (let i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2]
+      return w[n]
+    }
+
+## ~C++~
+    long long ways(int n) {
+        vector<long long> w(n + 1, 1);
+        for (int i = 2; i <= n; i++) w[i] = w[i - 1] + w[i - 2];
+        return w[n];
+    }
+
+## الـ~complexity~
+الأسلوبان كلاهما: وقت `O(n)` ومساحة `O(n)`. الـ~recursion~ العادي ينمو مثل `1.6^n`.
+
+## انتبه إلى
+- الـ~recursion~ العادي أسّي: عندما `n = 50` يتجاوز الوقت المسموح بالفعل.
+- `ways(90)` يساوي نحو `4.7 x 10^18`. الأعداد الصحيحة بحجم ~32-bit~ يحدث فيها ~overflow~ بدءًا من `n = 46`: استخدم `long` (`long long` في ~C++~). وأعداد `Number` في ~JavaScript~ تصبح خاطئة بدءًا من `n = 78` (بعد `2^53`): استخدم `BigInt`، واطبعه باستخدام `String()`.
+TEXT,
+    ],
+    'coin-change' => [
+        'title' => 'Coin change',
+        'body' => <<<'TEXT'
+`best[x]` هو أقل عدد من العملات يكوّن المبلغ `x`. آخر عملة هي عملة ما `c <= x`، لذا فإن `best[x]` يساوي `1` زائد أصغر قيمة بين قيم `best[x - c]`؛ و`best[0] = 0`.
+
+## مثال
+العملات `1 3 4`، والمبلغ `6`:
+    x:    0 1 2 3 4 5 6
+    best: 0 1 2 1 1 2 2
+`best[6] = 1 + best[3] = 2` (`3 + 3`)؛ أما الـ~greedy~، من درس الـ~greedy~، فيأخذ `4 + 1 + 1`.
+
+## طريقة التفكير في الحل
+بعض المبالغ لا يمكن تكوينها (العملتان `2` و`4`، والمبلغ `7`): اطبع `-1`.
+
+## ~Python~
+    INF = amount + 1
+    best = [0] + [INF] * amount
+    for x in range(1, amount + 1):
+        for c in coins:
+            if c <= x:
+                best[x] = min(best[x], best[x - c] + 1)
+    print(best[amount] if best[amount] < INF else -1)
+
+## ~Java~
+    int INF = amount + 1;
+    int[] best = new int[amount + 1];
+    Arrays.fill(best, INF);
+    best[0] = 0;
+    for (int x = 1; x <= amount; x++)
+        for (int c : coins)
+            if (c <= x) best[x] = Math.min(best[x], best[x - c] + 1);
+    System.out.println(best[amount] < INF ? best[amount] : -1);
+
+## ~JavaScript~
+    const INF = amount + 1
+    const best = Array(amount + 1).fill(INF)
+    best[0] = 0
+    for (let x = 1; x <= amount; x++)
+      for (const c of coins)
+        if (c <= x) best[x] = Math.min(best[x], best[x - c] + 1)
+    console.log(best[amount] < INF ? best[amount] : -1)
+
+## ~C++~
+    int INF = amount + 1;
+    vector<int> best(amount + 1, INF);
+    best[0] = 0;
+    for (int x = 1; x <= amount; x++)
+        for (int c : coins)
+            if (c <= x) best[x] = min(best[x], best[x - c] + 1);
+    cout << (best[amount] < INF ? best[amount] : -1) << "\n";
+
+## الـ~complexity~
+`O(amount x k)` لعدد `k` من العملات: `120000` خطوة للمبلغ `10,000` مع `12` عملة.
+
+## انتبه إلى
+- اللانهاية: `Integer.MAX_VALUE + 1` يلتف إلى قيمة سالبة ويفوز في كل `min`. استخدم `amount + 1`، فهو أكبر من أي إجابة.
+- الـ~top-down~ في ~Python~: المبلغ `10,000` مع عملة قيمتها `3` سنت يجعل الـ~recursion~ بعمق `3334` استدعاء، وهذا يتجاوز الحد `1000`.
+TEXT,
+    ],
+    'house-robber' => [
+        'title' => 'House robber',
+        'body' => <<<'TEXT'
+اختر بيوتًا بحيث لا يكون أي بيتين مختارين متجاورين، ويكون المجموع أكبر ما يمكن.
+
+الـ~state~، بالكلمات: `best[i]` هو أكبر مجموع باستخدام أول `i` من البيوت فقط. للبيت `i` خياران: تخطيه، مع الإبقاء على `best[i - 1]`، أو أخذه، بإضافة قيمته إلى `best[i - 2]`، لأن جاره يجب أن يُتخطى. و`best[i]` هو الأكبر بينهما.
+
+## مثال
+`5 1 1 5`:
+    i:    0 1 2 3 4
+    best: 0 5 5 6 10
+`best[4] = max(6, 5 + 5) = 10`: البيتان اللذان قيمة كل منهما `5`، مع تخطي البيتين اللذين بينهما.
+
+## طريقة التفكير في الحل
+الطرق المختصرة تفشل. أخذ بيت وترك بيت يعطي هنا `5 + 1 = 6`. وأخذ الأكبر دائمًا يفشل مع `2 3 2`: يأخذ `3`، لكن `2 + 2 = 4`.
+
+## ~Python~
+    best = [0] * (n + 1)  # best[i]: first i houses
+    best[1] = v[0]
+    for i in range(2, n + 1):
+        best[i] = max(best[i - 1], best[i - 2] + v[i - 1])
+    print(best[n])
+
+## ~Java~
+    long[] best = new long[n + 1];
+    best[1] = v[0];
+    for (int i = 2; i <= n; i++)
+        best[i] = Math.max(best[i - 1], best[i - 2] + v[i - 1]);
+    System.out.println(best[n]);
+
+## ~JavaScript~
+    const best = Array(n + 1).fill(0)
+    best[1] = v[0]
+    for (let i = 2; i <= n; i++)
+      best[i] = Math.max(best[i - 1], best[i - 2] + v[i - 1])
+    console.log(best[n])
+
+## ~C++~
+    vector<long long> best(n + 1, 0);
+    best[1] = v[0];
+    for (int i = 2; i <= n; i++)
+        best[i] = max(best[i - 1], best[i - 2] + v[i - 1]);
+    cout << best[n] << "\n";
+
+## الـ~complexity~
+وقت `O(n)`، عملية `max` واحدة لكل بيت. مساحة `O(n)`، أو `O(1)` باستخدام اثنين من الـ~variables~.
+
+## انتبه إلى
+- `1000` بيت قيمها قريبة من `10^9` مجموعها نحو `5 x 10^11`، وهذا يتجاوز ~32-bit~: استخدم `long` (`long long` في ~C++~).
+- `best[0] = 0`، و`best[1]` يساوي قيمة البيت الأول: عندما `n = 1` لا حاجة إلى ~loop~.
+TEXT,
+    ],
+    'longest-increasing-subsequence' => [
+        'title' => 'Longest increasing subsequence',
+        'body' => <<<'TEXT'
+الـ~subsequence~ يحافظ على ترتيب العناصر لكنه قد يتخطى بعضها: `2 3 7` هو ~subsequence~ من `10 9 2 5 3 7`. جِد طول أطول ~subsequence~ متزايد تمامًا.
+
+`best[i]` هو طول أطول ~subsequence~ متزايد ينتهي عند العنصر `i`. وهو يساوي `1` زائد أكبر `best[j]` بين قيم `j` السابقة التي فيها `a[j] < a[i]`، أو `1` إذا لم توجد. الإجابة هي أكبر `best[i]`.
+
+## مثال
+    a:    10 9 2 5 3 7 101 18
+    best:  1 1 1 2 2 3   4  4
+من أجل `7`: الأعداد `2` و`5` و`3` أصغر منه؛ و`best[3] = 2`، لذا `best[5] = 3`. الإجابة `4`: `2 5 7 101`.
+
+## طريقة التفكير في الحل
+كل عنصر ينظر إلى كل عنصر قبله، لذا يُملأ الـ~table~ من اليسار إلى اليمين.
+
+## ~Python~
+    best = [1] * n  # best[i]: longest ending at i
+    for i in range(n):
+        for j in range(i):
+            if a[j] < a[i]:
+                best[i] = max(best[i], best[j] + 1)
+    print(max(best))
+
+## ~Java~
+    int[] best = new int[n];
+    int answer = 0;
+    for (int i = 0; i < n; i++) {
+        best[i] = 1;
+        for (int j = 0; j < i; j++)
+            if (a[j] < a[i]) best[i] = Math.max(best[i], best[j] + 1);
+        answer = Math.max(answer, best[i]);
+    }
+    System.out.println(answer);
+
+## ~JavaScript~
+    const best = Array(n).fill(1)
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < i; j++)
+        if (a[j] < a[i]) best[i] = Math.max(best[i], best[j] + 1)
+    console.log(Math.max(...best))
+
+## ~C++~
+    vector<int> best(n, 1);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < i; j++)
+            if (a[j] < a[i]) best[i] = max(best[i], best[j] + 1);
+    cout << *max_element(best.begin(), best.end()) << "\n";
+
+## الـ~complexity~
+`O(n^2)`: نحو `2` مليون مقارنة من أجل `2000` عدد. مساحة `O(n)`. توجد أيضًا طريقة `O(n log n)` (~binary search~ على الـ~tails~).
+
+## انتبه إلى
+- متزايد تمامًا: القيم المتساوية لا تمدّه، لذا استخدم `<` لا `<=`. إجابة `7 7 7` هي `1`.
+- ليس متصلًا: أطول سلسلة متصلة متزايدة في المثال طولها `3` (`3 7 101`)؛ والإجابة `4`.
+TEXT,
+    ],
 ];

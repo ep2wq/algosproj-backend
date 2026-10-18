@@ -21,4 +21,5 @@ return [
     'tries-union-find' => ['title' => 'Tries and union-find'],
     'sorting-and-searching' => ['title' => 'الـ sorting والبحث'],
     'greedy' => ['title' => 'خوارزميات الـ greedy'],
+    'dp-basics' => ['title' => 'أساسيات الـ dynamic programming'],
 ];
