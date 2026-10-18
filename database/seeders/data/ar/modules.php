@@ -23,4 +23,5 @@ return [
     'greedy' => ['title' => 'خوارزميات الـ greedy'],
     'dp-basics' => ['title' => 'أساسيات الـ dynamic programming'],
     'dp-tables' => ['title' => 'Dynamic programming: tables'],
+    'bits-math' => ['title' => 'الـ bit manipulation والرياضيات'],
 ];
