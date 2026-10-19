@@ -32,7 +32,7 @@ class TestCaseController extends Controller
 
         if ($problem->testCases()->count() >= self::MAX_CASES) {
             throw ValidationException::withMessages([
-                'test_cases' => 'A problem can have at most '.self::MAX_CASES.' test cases.',
+                'test_cases' => __('admin.test_cases_max', ['max' => self::MAX_CASES]),
             ]);
         }
         $this->checkTotalBytes($problem, $data);
@@ -83,7 +83,7 @@ class TestCaseController extends Controller
     {
         $maxBytes = function ($attribute, $value, $fail) {
             if (is_string($value) && strlen($value) > self::MAX_FIELD_BYTES) {
-                $fail('The '.str_replace('_', ' ', $attribute).' may not be larger than 20,000 bytes.');
+                $fail(__('admin.test_field_too_large', ['field' => str_replace('_', ' ', $attribute)]));
             }
         };
 
@@ -106,7 +106,7 @@ class TestCaseController extends Controller
 
         if ($total > self::MAX_TOTAL_BYTES) {
             throw ValidationException::withMessages([
-                'test_cases' => "All test inputs and expected outputs of a problem may total at most 25,000 bytes; this change would make $total.",
+                'test_cases' => __('admin.test_cases_total', ['total' => $total]),
             ]);
         }
     }

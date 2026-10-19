@@ -80,7 +80,7 @@ class UserController extends Controller
         $data = $request->validate(['reason' => ['required', 'string', 'max:255']]);
 
         if ($user->banned_at !== null) {
-            return response()->json(['message' => 'This user is already banned.'], 409);
+            return response()->json(['message' => __('admin.already_banned')], 409);
         }
 
         DB::transaction(function () use ($request, $user, $data) {
@@ -98,7 +98,7 @@ class UserController extends Controller
         $this->checkTarget($request, $user);
 
         if ($user->banned_at === null) {
-            return response()->json(['message' => 'This user is not banned.'], 409);
+            return response()->json(['message' => __('admin.not_banned')], 409);
         }
 
         DB::transaction(function () use ($request, $user) {
@@ -146,14 +146,14 @@ class UserController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'integer', 'not_in:0', 'between:-1000000,1000000'],
             'reason' => ['required', 'string', 'max:255'],
-        ], ['amount.not_in' => 'The amount may not be zero.']);
+        ], ['amount.not_in' => __('admin.amount_zero')]);
 
         DB::transaction(function () use ($request, $user, $data) {
             // Locked, so a submission awarding points at the same moment can't be lost.
             $locked = User::lockForUpdate()->findOrFail($user->id);
             if ($locked->points + $data['amount'] < 0) {
                 throw ValidationException::withMessages([
-                    'amount' => "Points can't go below 0. This user has {$locked->points}.",
+                    'amount' => __('admin.points_below_zero', ['points' => $locked->points]),
                 ]);
             }
             $old = $locked->points;
@@ -194,7 +194,7 @@ class UserController extends Controller
         $request->validate(['confirm_email' => ['required', 'string']]);
 
         if ($request->input('confirm_email') !== $user->email) {
-            throw ValidationException::withMessages(['confirm_email' => "Type the user's exact email to confirm."]);
+            throw ValidationException::withMessages(['confirm_email' => __('admin.confirm_email')]);
         }
 
         // The confirmation is not logged; the label is the deleted account's email.
@@ -212,9 +212,9 @@ class UserController extends Controller
     {
         $actor = $request->user();
 
-        abort_if($target->id === $actor->id, 403, "You can't do this to your own account.");
-        abort_if($target->role === 'owner', 403, 'Owners can only be changed with the artisan command.');
-        abort_if($actor->role !== 'owner' && $target->role !== 'user', 403, 'Only an owner can do this to an admin.');
+        abort_if($target->id === $actor->id, 403, __('admin.not_yourself'));
+        abort_if($target->role === 'owner', 403, __('admin.owner_artisan'));
+        abort_if($actor->role !== 'owner' && $target->role !== 'user', 403, __('admin.admin_needs_owner'));
     }
 
     private function rowResponse(User $user)

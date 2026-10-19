@@ -52,7 +52,7 @@ class ModuleController extends Controller
     public function destroy(Request $request, Module $module)
     {
         if ($module->lessons()->exists()) {
-            return response()->json(['message' => 'This module has lessons. Move or delete its lessons first.'], 409);
+            return response()->json(['message' => __('admin.module_has_lessons')], 409);
         }
 
         DB::transaction(function () use ($request, $module) {
@@ -71,6 +71,6 @@ class ModuleController extends Controller
             'title_ar' => ['nullable', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9-]+$/', Rule::unique('modules')->ignore($module)],
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
-        ], ['slug.regex' => 'The slug may only contain lowercase letters, digits and hyphens.']);
+        ], ['slug.regex' => __('admin.slug_format')]);
     }
 }

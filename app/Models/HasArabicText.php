@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 // For models with Arabic columns (title_ar, body_ar, description_ar) next to the English ones.
-// The language of a request is the app locale, set by the content-lang middleware.
+// The language of a request is the app locale, set by SetContentLanguage on every API request.
 trait HasArabicText
 {
     // An empty (or blank) Arabic value is stored as NULL, so "not translated" has one form.

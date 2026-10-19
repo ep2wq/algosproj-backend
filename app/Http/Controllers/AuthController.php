@@ -39,14 +39,14 @@ class AuthController extends Controller
             // Only the attempted email is kept, never the password.
             UserActivityLog::record($user, $user->email ?? $data['email'], 'login_failed', $request);
 
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['message' => __('messages.invalid_credentials')], 401);
         }
 
         // Checked after the password, so the ban (and its reason) is only shown to the account holder.
         if ($user->banned_at !== null) {
             UserActivityLog::record($user, $user->email, 'login_blocked_banned', $request);
 
-            return response()->json(['message' => 'This account is banned.', 'reason' => $user->ban_reason], 403);
+            return response()->json(['message' => __('messages.banned'), 'reason' => $user->ban_reason], 403);
         }
 
         UserActivityLog::record($user, $user->email, 'login', $request);
@@ -62,7 +62,7 @@ class AuthController extends Controller
         UserActivityLog::record($request->user(), $request->user()->email, 'logout', $request);
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => __('messages.logged_out')]);
     }
 
     public function me(Request $request)

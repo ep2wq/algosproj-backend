@@ -13,8 +13,8 @@ class EnsureUserIsOwner
     {
         $user = $request->user();
 
-        abort_if(! $user, 401, 'Unauthenticated.');
-        abort_if($user->role !== 'owner', 403, 'Only an owner can do this.');
+        abort_if(! $user, 401, __('messages.unauthenticated'));
+        abort_if($user->role !== 'owner', 403, __('admin.owner_only'));
 
         return $next($request);
     }

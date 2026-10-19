@@ -4,11 +4,14 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\EnsureUserIsOwner;
 use App\Http\Middleware\SetContentLanguage;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,8 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'owner' => EnsureUserIsOwner::class,
             'not-banned' => EnsureUserIsNotBanned::class,
-            'content-lang' => SetContentLanguage::class,
         ]);
+        // Every request answers in the Accept-Language language (ar or en), messages included.
+        // Global, so it also runs for unknown routes and before route binding.
+        $middleware->prepend(SetContentLanguage::class);
         // Check the ban and the role before route model binding, so a banned user or a non-admin gets
         // 403 for any id, never 404.
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsNotBanned::class);
@@ -36,4 +41,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        // Laravel's own messages for these are English. In Arabic they are replaced; in English
+        // the framework's text is kept as it was.
+        $arabic = fn (Request $request) => $request->is('api/*') && app()->getLocale() === 'ar';
+        $exceptions->render(fn (AuthenticationException $e, Request $request) => $arabic($request)
+            ? response()->json(['message' => __('messages.unauthenticated')], 401) : null);
+        $exceptions->render(fn (NotFoundHttpException $e, Request $request) => $arabic($request)
+            ? response()->json(['message' => __('messages.not_found')], 404) : null);
+        $exceptions->render(fn (ThrottleRequestsException $e, Request $request) => $arabic($request)
+            ? response()->json(['message' => __('messages.too_many_attempts')], 429, $e->getHeaders()) : null);
     })->create();

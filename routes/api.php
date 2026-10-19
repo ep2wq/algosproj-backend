@@ -13,12 +13,10 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 // Course content in Arabic or English, from the Accept-Language header (README "Content languages").
-Route::middleware('content-lang')->group(function () {
-    Route::get('/modules', [LessonController::class, 'modules']);
-    Route::get('/lessons/{slug}', [LessonController::class, 'show']);
-    Route::get('/challenges', [ChallengeController::class, 'index']);
-    Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
-});
+Route::get('/modules', [LessonController::class, 'modules']);
+Route::get('/lessons/{slug}', [LessonController::class, 'show']);
+Route::get('/challenges', [ChallengeController::class, 'index']);
+Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
 // not-banned refuses a banned user's token (banning deletes their tokens; this catches any left).

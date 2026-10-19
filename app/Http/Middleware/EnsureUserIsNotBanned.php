@@ -14,7 +14,7 @@ class EnsureUserIsNotBanned
         $user = $request->user();
 
         if ($user && $user->banned_at !== null) {
-            return response()->json(['message' => 'This account is banned.', 'reason' => $user->ban_reason], 403);
+            return response()->json(['message' => __('messages.banned'), 'reason' => $user->ban_reason], 403);
         }
 
         return $next($request);

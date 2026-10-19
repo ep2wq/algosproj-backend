@@ -55,7 +55,7 @@ class LessonController extends Controller
     public function destroy(Request $request, Lesson $lesson)
     {
         if ($lesson->problems()->exists()) {
-            return response()->json(['message' => 'This lesson has problems. Move or delete its problems first.'], 409);
+            return response()->json(['message' => __('admin.lesson_has_problems')], 409);
         }
 
         DB::transaction(function () use ($request, $lesson) {
@@ -79,14 +79,14 @@ class LessonController extends Controller
             'body' => $this->bodyRules('body'),
             'body_ar' => $this->bodyRules('Arabic body'),
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
-        ], ['slug.regex' => 'The slug may only contain lowercase letters, digits and hyphens.']);
+        ], ['slug.regex' => __('admin.slug_format')]);
     }
 
     private function bodyRules(string $name): array
     {
         return ['nullable', 'string', 'max:20000', function ($attribute, $value, $fail) use ($name) {
             if (is_string($value) && strlen($value) > 65535) {
-                $fail("The $name may not be larger than 65,535 bytes.");
+                $fail(__('admin.body_too_large', ['name' => $name]));
             }
         }];
     }

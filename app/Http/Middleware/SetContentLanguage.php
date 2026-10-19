@@ -6,8 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-// The public content routes answer in Arabic or English. The language is the app locale, read
-// by HasArabicText. The response varies by Accept-Language, so a cache keeps the two apart.
+// Every API request answers in Arabic or English: course text (HasArabicText reads the app
+// locale) and messages (lang/). Global middleware (bootstrap/app.php). The response
+// varies by Accept-Language, so a cache keeps the two apart.
 class SetContentLanguage
 {
     public function handle(Request $request, Closure $next): Response

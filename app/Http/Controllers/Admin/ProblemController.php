@@ -57,7 +57,7 @@ class ProblemController extends Controller
     public function destroy(Request $request, Problem $problem)
     {
         if ($problem->completions()->exists()) {
-            return response()->json(['message' => 'Users have already solved this problem, so it cannot be deleted. Edit it instead.'], 409);
+            return response()->json(['message' => __('admin.problem_solved')], 409);
         }
 
         // Its test cases and submissions are deleted with it (foreign keys cascade).
@@ -83,7 +83,7 @@ class ProblemController extends Controller
             'description' => ['required', 'string', 'max:5000'],
             'description_ar' => ['nullable', 'string', 'max:5000'],
             'difficulty' => ['required', 'string', Rule::in(array_keys(self::POINTS))],
-        ], ['slug.regex' => 'The slug may only contain lowercase letters, digits and hyphens.']);
+        ], ['slug.regex' => __('admin.slug_format')]);
 
         return $data + ['lesson_id' => null, 'points' => self::POINTS[$data['difficulty']]];
     }

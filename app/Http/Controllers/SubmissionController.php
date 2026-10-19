@@ -24,7 +24,7 @@ class SubmissionController extends Controller
             // Bytes, not characters: the sandbox rejects code over 64 KB.
             'code' => ['required', 'string', function ($attribute, $value, $fail) {
                 if (is_string($value) && strlen($value) > 65536) {
-                    $fail('The code may not be larger than 64 KB.');
+                    $fail(__('messages.code_too_large'));
                 }
             }],
         ]);
@@ -136,6 +136,6 @@ class SubmissionController extends Controller
 
     private function runnerUnavailable()
     {
-        return response()->json(['message' => 'Code runner unavailable, try again shortly'], 503);
+        return response()->json(['message' => __('messages.runner_unavailable')], 503);
     }
 }

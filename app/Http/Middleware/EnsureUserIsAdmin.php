@@ -13,8 +13,8 @@ class EnsureUserIsAdmin
     {
         $user = $request->user();
 
-        abort_if(! $user, 401, 'Unauthenticated.');
-        abort_if(! in_array($user->role, ['admin', 'owner'], true), 403, 'Forbidden.');
+        abort_if(! $user, 401, __('messages.unauthenticated'));
+        abort_if(! in_array($user->role, ['admin', 'owner'], true), 403, __('admin.forbidden'));
 
         return $next($request);
     }
