@@ -69,10 +69,11 @@ type, NULL until translated (an empty value is stored as NULL): `modules.title_a
 `lessons.title_ar`, `lessons.body_ar`, `problems.title_ar`, `problems.description_ar`. Slugs,
 tracks, difficulty, test inputs and expected outputs are never translated.
 
-The public content routes (`/api/modules`, `/api/lessons/{slug}`, `/api/challenges`,
-`/api/challenges/{slug}`) read `Accept-Language`: Arabic only when the first language listed is
+Every request reads `Accept-Language` (`SetContentLanguage`, global middleware in
+`bootstrap/app.php`, which sets the app locale): Arabic only when the first language listed is
 `ar` or `ar-XX` (`ar`, `ar-SA`, `ar;q=0.9,en;q=0.8`); anything else, missing or malformed, is
-English (`SetContentLanguage`, the `content-lang` middleware). The field names stay `title`,
+English. On the public content routes (`/api/modules`, `/api/lessons/{slug}`, `/api/challenges`,
+`/api/challenges/{slug}`) it picks the course text. The field names stay `title`,
 `body`, `description`; in Arabic each field uses its Arabic column and falls back to English
 on its own when that is empty. `body_lang` (lessons) and `description_lang` (problems) say which
 language the text came in (`ar` or `en`), so the frontend sets `lang` and `dir`. Responses carry
@@ -81,6 +82,30 @@ the `*_ar` names never appear in public responses. The language only picks a col
 queries. Admin responses hold both languages.
 
 Translated: all 19 of 19 modules (65 lessons, 65 problems).
+
+### API messages
+
+Messages follow the same language (`MessageLanguageTest`). Every response carries
+`Vary: Accept-Language`. Where they live:
+
+- `lang/en/messages.php` and `lang/ar/messages.php`: the public messages (wrong login, banned,
+  logged out, code too large, code runner unavailable, unauthenticated, not found, too many
+  attempts). Code calls `__('messages.key')`; whole sentences with `:placeholders`.
+- `lang/ar/validation.php`: Arabic for the validation rules the public endpoints use
+  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`) and the field names `name`,
+  `email`, `password`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
+  summary. English validation stays Laravel's built-in text; any rule missing in Arabic falls
+  back to it.
+- `lang/en/admin.php`: admin API messages, English only (the admin frontend always sends `en`,
+  and `app.fallback_locale` is `en`).
+- Laravel's own 401, 404 and 429 messages are replaced only in Arabic (`bootstrap/app.php`);
+  in English the framework's text is kept exactly as before. The ban reason is returned as
+  typed; only the sentence around it is translated.
+
+Adding a message: a key in `lang/en/<file>.php` and, if users see it, `lang/ar/<file>.php`.
+Adding a language (say `fr`): `lang/fr/messages.php`, `lang/fr/validation.php` (the rules above),
+`lang/fr.json`, and accept `fr` in `SetContentLanguage::wantsArabic` (rename it then) and in the
+Arabic-only error rendering in `bootstrap/app.php`; course text needs `*_fr` columns.
 
 Translation rules (for every batch):
 
@@ -296,7 +321,8 @@ All routes are under `/api`. Send `Accept: application/json`. Authenticated rout
 | GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `description_lang`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
 
 The modules, lessons and challenges routes answer in Arabic for `Accept-Language: ar` (see
-"Content languages").
+"Content languages"), and every route's messages do too ("API messages"); admin messages are
+English.
 
 Hidden test cases are never returned by the public routes. In a submit response they only
 show `{"passed": bool}`. Only the admin routes below return them.

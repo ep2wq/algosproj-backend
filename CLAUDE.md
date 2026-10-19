@@ -19,13 +19,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `modules`, `lessons`, `problems` (+ `title_ar`, `body_ar`, `description_ar`; NULL =
   untranslated), `test_cases` (`is_hidden`), `submissions`, `completions`, `admin_audit_logs`,
   `user_activity_logs` (both append-only). Planned: `ai_hints`.
-- Public content routes: `content-lang` middleware (`Accept-Language`, first `ar`/`ar-XX` =
-  Arabic), per-field fallback (`HasArabicText`), `*_lang`, `Vary`; never `*_ar` names publicly.
+- Language: global `SetContentLanguage` (first `ar`/`ar-XX` = Arabic locale, `Vary` always). Text
+  falls back per field (`HasArabicText`, `*_lang`, no `*_ar` publicly). Messages only from `lang/`
+  (README "API messages"; `ar/validation.php`, `ar.json`; admin keys English only).
 - `routes/api.php` (README "API", "Admin API", "Roles", "Bans", "Logs"); plain controllers, inline
   validation. `/api/admin/*`: `auth:sanctum` + `not-banned` + `admin`, owner routes add `owner`,
   all before route binding. Owners only via `php artisan user:make-admin {email} [--owner|--remove]`.
-- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin). Dockerfile: README.
-- Commands: `composer install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`.
+- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin). Commands: `composer
+  install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`. Dockerfile: README.
 
 ## Working rules
 
@@ -47,8 +48,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: auth, lessons, submit, leaderboard, rate limits, admin CRUD, roles, bans, logs, Arabic
-  content (19 of 19 modules; English terms as `~term~`). 283 tests pass (SQLite, `Http::fake()`).
+- Done: auth, lessons, submit, leaderboard, limits, admin, roles, bans, logs, Arabic text+messages.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
