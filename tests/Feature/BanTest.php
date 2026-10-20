@@ -35,7 +35,7 @@ class BanTest extends TestCase
         // A wrong password says nothing about the ban.
         $this->postJson('/api/login', ['email' => 'mallory@example.com', 'password' => 'wrong-password'])
             ->assertUnauthorized()
-            ->assertExactJson(['message' => 'Invalid credentials']);
+            ->assertExactJson(['message' => 'Wrong email or password.']);
     }
 
     public function test_a_token_that_survived_a_ban_is_refused_everywhere(): void

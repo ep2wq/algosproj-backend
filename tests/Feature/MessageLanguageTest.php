@@ -41,7 +41,7 @@ class MessageLanguageTest extends TestCase
     public function test_messages_stay_english_without_arabic(array $headers): void
     {
         $this->postJson('/api/login', ['email' => 'user@example.com', 'password' => 'wrong'], $headers)
-            ->assertStatus(401)->assertExactJson(['message' => 'Invalid credentials']);
+            ->assertStatus(401)->assertExactJson(['message' => 'Wrong email or password.']);
         $this->postJson('/api/register', [], $headers)
             ->assertStatus(422)
             ->assertJsonPath('message', 'The name field is required. (and 2 more errors)')
@@ -57,7 +57,7 @@ class MessageLanguageTest extends TestCase
     {
         $this->postJson('/api/login', ['email' => 'user@example.com', 'password' => 'wrong'], ['Accept-Language' => 'ar'])
             ->assertStatus(401)
-            ->assertExactJson(['message' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة'])
+            ->assertExactJson(['message' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'])
             ->assertHeader('Vary', 'Accept-Language');
     }
 
