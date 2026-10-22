@@ -6,6 +6,7 @@ use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Models\UserActivityLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -23,12 +24,13 @@ class ActivityLogTest extends TestCase
     {
         $this->withHeader('User-Agent', 'TestBrowser/1.0');
 
-        $token = $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password'])->assertCreated()->json('token');
+        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password'])->assertCreated();
         $id = User::where('email', 'ada@example.com')->value('id');
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
         $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk();
-        $this->withToken($token)->postJson('/api/logout')->assertOk();
+        $this->app['auth']->forgetGuards();
+        $this->actingAs(User::find($id))->postJson('/api/logout')->assertOk();
 
         $row = fn ($userId, $email, $event) => ['user_id' => $userId, 'email' => $email, 'event' => $event, 'ip' => '127.0.0.1', 'user_agent' => 'TestBrowser/1.0'];
         $this->assertSame([
@@ -73,13 +75,14 @@ class ActivityLogTest extends TestCase
 
     public function test_no_row_holds_a_password_or_a_token(): void
     {
-        $token = $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password'])->json('token');
+        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password']);
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password-guess']);
-        $loginToken = $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->json('token');
-        $this->withToken($token)->postJson('/api/logout');
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password']);
+        $this->app['auth']->forgetGuards();
+        $this->actingAs(User::first())->postJson('/api/logout');
 
         $all = json_encode(UserActivityLog::all()->toArray());
-        foreach (['secret-password', 'wrong-password-guess', 'password', explode('|', $token)[1], explode('|', $loginToken)[1], User::first()->password] as $secret) {
+        foreach (['secret-password', 'wrong-password-guess', 'password', User::first()->password] as $secret) {
             $this->assertStringNotContainsString($secret, $all);
         }
     }
@@ -90,7 +93,7 @@ class ActivityLogTest extends TestCase
         Schema::drop('user_activity_logs');
         Log::shouldReceive('error')->twice()->withArgs(fn ($message) => $message === 'Could not write user activity');
 
-        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk()->assertJsonStructure(['token']);
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk()->assertJsonStructure(['user'])->assertJsonMissingPath('token');
         $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password'])->assertCreated();
     }
 
@@ -98,13 +101,16 @@ class ActivityLogTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $user = User::factory()->create();
-        $user->createToken('api');
+        $rememberToken = $user->remember_token;
+        DB::table('sessions')->insert(['id' => str_repeat('a', 40), 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
         Schema::drop('user_activity_logs');
 
         $this->actingAs($owner)->postJson("/api/admin/users/{$user->id}/ban", ['reason' => 'Spam'])->assertServerError();
 
         $this->assertNull($user->refresh()->banned_at);
-        $this->assertSame(1, $user->tokens()->count());
+        // Rolled back with the ban: the session and the remember token are still there.
+        $this->assertSame(1, DB::table('sessions')->where('user_id', $user->id)->count());
+        $this->assertSame($rememberToken, $user->remember_token);
         $this->assertSame(0, AdminAuditLog::count());
     }
 

@@ -36,12 +36,12 @@ class RoleTest extends TestCase
         $user->role = 'admin';
         $user->save();
 
-        $token = $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])
             ->assertOk()
             ->assertJsonPath('user.role', 'admin')
-            ->json('token');
+            ->assertJsonMissingPath('token');
 
-        $this->withToken($token)->getJson('/api/me')->assertOk()->assertJsonPath('role', 'admin');
+        $this->actingAs($user)->getJson('/api/me')->assertOk()->assertJsonPath('role', 'admin');
     }
 
     public function test_make_admin_command_grants_and_removes_the_role(): void
@@ -105,13 +105,13 @@ class RoleTest extends TestCase
         $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'track' => 'basics', 'sort_order' => 1]);
         $lesson = $module->lessons()->create(['slug' => 'warm-up', 'title' => 'Warm-up', 'body' => 'Text', 'sort_order' => 1]);
         $lesson->problems()->create(['slug' => 'warm-up', 'title' => 'Double', 'description' => 'Double it', 'difficulty' => 'easy', 'points' => 10]);
-        $token = $admin->createToken('api')->plainTextToken;
 
-        // Logged out and logged in as the admin (the token marks is_you and solved).
-        foreach ([null, $token] as $sentToken) {
+        // Logged out and logged in as the admin (the session marks is_you and solved).
+        foreach ([null, $admin] as $actor) {
             $this->flushHeaders();
-            if ($sentToken) {
-                $this->withToken($sentToken);
+            $this->app['auth']->forgetGuards();
+            if ($actor) {
+                $this->actingAs($actor);
             }
             foreach (['/api/leaderboard?limit=100', '/api/challenges', '/api/challenges/warm-up', '/api/modules', '/api/lessons/warm-up'] as $uri) {
                 $body = $this->getJson($uri)->assertOk()->getContent();

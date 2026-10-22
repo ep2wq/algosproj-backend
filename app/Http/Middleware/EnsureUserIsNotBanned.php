@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsNotBanned
 {
-    // Banning deletes the user's tokens; this also refuses any token that survived.
+    // Banning deletes the user's sessions; this also refuses any session that survived.
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();

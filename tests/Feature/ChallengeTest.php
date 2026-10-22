@@ -85,7 +85,7 @@ class ChallengeTest extends TestCase
         Completion::create(['user_id' => $me->id, 'problem_id' => $standaloneA->id]);
         Completion::create(['user_id' => $other->id, 'problem_id' => $graphA->id]);
 
-        $rows = $this->withToken($me->createToken('api')->plainTextToken)->getJson('/api/challenges')->assertOk()->json();
+        $rows = $this->actingAs($me)->getJson('/api/challenges')->assertOk()->json();
 
         $this->assertSame([false, true, false, false, true, false], array_column($rows, 'solved'));
     }
@@ -93,20 +93,20 @@ class ChallengeTest extends TestCase
     public function test_list_uses_the_same_number_of_queries_for_any_number_of_problems(): void
     {
         $user = User::factory()->create();
-        $token = $user->createToken('api')->plainTextToken;
         $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'track' => 'basics', 'sort_order' => 1]);
         $this->problemIn($module, 'p-1', 1);
         $this->standalone('s-1');
 
-        $count = function () use ($token) {
+        $count = function () use ($user) {
             DB::flushQueryLog();
             DB::enableQueryLog();
-            $this->withToken($token)->getJson('/api/challenges')->assertOk();
+            $this->app['auth']->forgetGuards();
+            $this->actingAs($user)->getJson('/api/challenges')->assertOk();
             DB::disableQueryLog();
 
-            // Leave out the token, user and last_used_at queries of authentication.
+            // Leave out the user lookup of authentication.
             return collect(DB::getQueryLog())
-                ->reject(fn ($query) => preg_match('/personal_access_tokens|from "users"/', $query['query']))
+                ->reject(fn ($query) => preg_match('/from "users"/', $query['query']))
                 ->count();
         };
 
@@ -157,7 +157,7 @@ class ChallengeTest extends TestCase
             ->assertJsonPath('lesson_slug', null)
             ->assertJsonPath('solved', false);
 
-        $this->withToken($me->createToken('api')->plainTextToken)->getJson('/api/challenges/standalone-b')->assertOk()
+        $this->actingAs($me)->getJson('/api/challenges/standalone-b')->assertOk()
             ->assertJsonPath('solved', true);
     }
 

@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => EnsureUserIsOwner::class,
             'not-banned' => EnsureUserIsNotBanned::class,
         ]);
+        // Cookie sessions for the frontend (README "Sessions"): requests from an origin in
+        // sanctum.stateful get the session, encrypted cookies and the CSRF check.
+        $middleware->statefulApi();
         // Every request answers in the Accept-Language language (ar or en), messages included.
         // Global, so it also runs for unknown routes and before route binding.
         $middleware->prepend(SetContentLanguage::class);

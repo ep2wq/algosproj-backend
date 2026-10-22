@@ -19,7 +19,8 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertCreated()
-            ->assertJsonStructure(['token', 'user' => ['id', 'name', 'email', 'points']])
+            ->assertJsonStructure(['user' => ['id', 'name', 'email', 'points']])
+            ->assertJsonMissingPath('token')
             ->assertJsonPath('user.points', 0)
             ->assertJsonMissingPath('user.password');
         $this->assertDatabaseHas('users', ['email' => 'ada@example.com']);
@@ -36,13 +37,14 @@ class AuthTest extends TestCase
         ])->assertUnprocessable();
     }
 
-    public function test_login_returns_token_and_user(): void
+    public function test_login_returns_the_user_and_no_token(): void
     {
         User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
 
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])
             ->assertOk()
-            ->assertJsonStructure(['token', 'user' => ['id', 'email', 'points']]);
+            ->assertJsonStructure(['user' => ['id', 'email', 'points']])
+            ->assertJsonMissingPath('token');
     }
 
     public function test_login_rejects_wrong_password(): void
@@ -95,9 +97,9 @@ class AuthTest extends TestCase
 
     public function test_me_returns_user_with_points(): void
     {
-        $token = User::factory()->create(['email' => 'ada@example.com'])->createToken('api')->plainTextToken;
+        $user = User::factory()->create(['email' => 'ada@example.com']);
 
-        $this->withToken($token)->getJson('/api/me')
+        $this->actingAs($user)->getJson('/api/me')
             ->assertOk()
             ->assertJsonPath('email', 'ada@example.com')
             ->assertJsonPath('points', 0);
@@ -108,15 +110,11 @@ class AuthTest extends TestCase
         $this->getJson('/api/me')->assertUnauthorized();
     }
 
-    public function test_logout_deletes_current_token(): void
+    // SessionTest checks that the old session cookie stops working.
+    public function test_logout_ends_the_session(): void
     {
-        $user = User::factory()->create();
-        $token = $user->createToken('api')->plainTextToken;
+        $this->actingAs(User::factory()->create())->postJson('/api/logout')->assertOk();
 
-        $this->withToken($token)->postJson('/api/logout')->assertOk();
-
-        $this->assertDatabaseCount('personal_access_tokens', 0);
-        $this->app['auth']->forgetGuards();
-        $this->withToken($token)->getJson('/api/me')->assertUnauthorized();
+        $this->assertGuest('web');
     }
 }

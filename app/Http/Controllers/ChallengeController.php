@@ -40,7 +40,7 @@ class ChallengeController extends Controller
             ->with(['visibleTestCases', 'lesson:id,module_id,slug', 'lesson.module:id,slug,title,title_ar'])
             ->firstOrFail();
 
-        $userId = auth('sanctum')->id();
+        $userId = auth('web')->id();
 
         return response()->json($problem->editorData() + [
             'slug' => $problem->slug,
@@ -61,7 +61,7 @@ class ChallengeController extends Controller
     // (the same way the leaderboard marks is_you). Guests have none.
     private function solvedProblemIds(): array
     {
-        $userId = auth('sanctum')->id();
+        $userId = auth('web')->id();
 
         return $userId ? Completion::where('user_id', $userId)->pluck('problem_id')->flip()->all() : [];
     }

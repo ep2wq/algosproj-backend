@@ -10,14 +10,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token', 'banned_at', 'ban_reason'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     // role ('user', 'admin' or 'owner') is not fillable. An owner changes admins through the API;
     // owners only change through `php artisan user:make-admin`.
@@ -39,6 +40,17 @@ class User extends Authenticatable
             'points' => 'integer',
             'banned_at' => 'datetime',
         ];
+    }
+
+    // Logs the user out everywhere: deletes their session rows (the database session driver) and
+    // gives them a new remember token, so no "remember me" cookie works any more. Returns the
+    // number of sessions deleted.
+    public function endSessions(): int
+    {
+        $this->setRememberToken(Str::random(60));
+        $this->save();
+
+        return DB::table(config('session.table'))->where('user_id', $this->id)->delete();
     }
 
     public function submissions(): HasMany

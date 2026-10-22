@@ -29,8 +29,9 @@ class BanTest extends TestCase
 
         $this->postJson('/api/login', ['email' => 'mallory@example.com', 'password' => 'secret-password'])
             ->assertForbidden()
-            ->assertExactJson(['message' => 'This account is banned.', 'reason' => 'Spamming the leaderboard']);
-        $this->assertDatabaseCount('personal_access_tokens', 0);
+            ->assertExactJson(['message' => 'This account is banned.', 'reason' => 'Spamming the leaderboard'])
+            ->assertJsonMissingPath('token')
+            ->assertJsonMissingPath('user');
 
         // A wrong password says nothing about the ban.
         $this->postJson('/api/login', ['email' => 'mallory@example.com', 'password' => 'wrong-password'])
@@ -38,16 +39,15 @@ class BanTest extends TestCase
             ->assertExactJson(['message' => 'Wrong email or password.']);
     }
 
-    public function test_a_token_that_survived_a_ban_is_refused_everywhere(): void
+    public function test_a_session_that_survived_a_ban_is_refused_everywhere(): void
     {
         $user = $this->user('Mallory', 10, ['role' => 'admin']);
-        $token = $user->createToken('api')->plainTextToken;
-        // Set directly, so the token is not deleted as the ban endpoint would.
+        // Set directly, so no session is deleted as the ban endpoint would; actingAs is that session.
         $this->ban($user);
 
         foreach ([['GET', '/api/me'], ['GET', '/api/leaderboard/me'], ['POST', '/api/logout'], ['POST', '/api/problems/99999/submit'], ['GET', '/api/admin/modules'], ['GET', '/api/admin/problems/99999']] as [$method, $uri]) {
             $this->app['auth']->forgetGuards();
-            $this->withToken($token)->json($method, $uri)
+            $this->actingAs($user)->json($method, $uri)
                 ->assertForbidden()
                 ->assertExactJson(['message' => 'This account is banned.', 'reason' => 'Spamming the leaderboard']);
         }
@@ -69,9 +69,9 @@ class BanTest extends TestCase
 
     public function test_ban_fields_are_not_in_the_user_object(): void
     {
-        $token = $this->user('Ada', 0)->createToken('api')->plainTextToken;
+        $user = $this->user('Ada', 0);
 
-        $this->withToken($token)->getJson('/api/me')->assertOk()
+        $this->actingAs($user)->getJson('/api/me')->assertOk()
             ->assertJsonMissingPath('banned_at')->assertJsonMissingPath('ban_reason');
     }
 }

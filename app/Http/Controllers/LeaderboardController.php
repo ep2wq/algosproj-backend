@@ -20,8 +20,8 @@ class LeaderboardController extends Controller
             ->limit($limit)
             ->get(['id', 'name', 'points']);
 
-        // The route is public; a token, if sent, marks the requester's row. Ids are not returned.
-        $meId = auth('sanctum')->id();
+        // The route is public; a logged-in session, if any, marks the requester's row. Ids are not returned.
+        $meId = auth('web')->id();
 
         // Same rank rule as /leaderboard/me: 1 + number of users with more points.
         $rank = 0;

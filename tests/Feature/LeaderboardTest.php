@@ -56,7 +56,7 @@ class LeaderboardTest extends TestCase
 
         foreach ([[$first, [true, false]], [$second, [false, true]]] as [$user, $expected]) {
             $this->app['auth']->forgetGuards();
-            $rows = $this->withToken($user->createToken('api')->plainTextToken)
+            $rows = $this->actingAs($user)
                 ->getJson('/api/leaderboard')
                 ->assertOk()
                 ->json();

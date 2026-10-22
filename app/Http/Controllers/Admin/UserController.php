@@ -85,7 +85,7 @@ class UserController extends Controller
 
         DB::transaction(function () use ($request, $user, $data) {
             $user->forceFill(['banned_at' => now(), 'ban_reason' => $data['reason']])->save();
-            $user->tokens()->delete();
+            $user->endSessions();
             AdminAuditLog::record($request->user(), 'user.ban', $user, $user->email, ['reason' => AdminAuditLog::short($data['reason'])]);
             UserActivityLog::write($user, $user->email, 'banned_by_admin');
         });
@@ -116,8 +116,8 @@ class UserController extends Controller
         $this->checkTarget($request, $user);
 
         DB::transaction(function () use ($request, $user) {
-            $deleted = $user->tokens()->delete();
-            AdminAuditLog::record($request->user(), 'user.logout_everywhere', $user, $user->email, ['tokens_deleted' => $deleted]);
+            $deleted = $user->endSessions();
+            AdminAuditLog::record($request->user(), 'user.logout_everywhere', $user, $user->email, ['sessions_deleted' => $deleted]);
         });
 
         return $this->rowResponse($user);
@@ -187,7 +187,7 @@ class UserController extends Controller
     }
 
     // Owner only. Foreign keys delete the user's submissions and completions and set the user to
-    // null in both logs; tokens have no foreign key, so they are deleted here.
+    // null in both logs; sessions have no foreign key, so they are deleted here.
     public function destroy(Request $request, User $user)
     {
         $this->checkTarget($request, $user);
@@ -199,7 +199,7 @@ class UserController extends Controller
 
         // The confirmation is not logged; the label is the deleted account's email.
         DB::transaction(function () use ($request, $user) {
-            $user->tokens()->delete();
+            $user->endSessions();
             $user->delete();
             AdminAuditLog::record($request->user(), 'user.delete', $user, $user->email, ['name' => AdminAuditLog::short($user->name), 'points' => $user->points]);
         });

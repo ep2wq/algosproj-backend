@@ -9,7 +9,7 @@ use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 // Guests are throttled per IP; login is throttled per IP plus email (see AppServiceProvider).
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 // Course content in Arabic or English, from the Accept-Language header (README "Content languages").
@@ -19,8 +19,9 @@ Route::get('/challenges', [ChallengeController::class, 'index']);
 Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
-// not-banned refuses a banned user's token (banning deletes their tokens; this catches any left).
-Route::middleware(['auth:sanctum', 'not-banned'])->group(function () {
+// The session guard only: a bearer token never authenticates. not-banned refuses a banned user's
+// session (banning deletes their sessions; this catches any left).
+Route::middleware(['auth:web', 'not-banned'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/leaderboard/me', [LeaderboardController::class, 'me']);
@@ -31,7 +32,7 @@ Route::middleware(['auth:sanctum', 'not-banned'])->group(function () {
 });
 
 // The admin area. Guests get 401, users who are neither admin nor owner 403 (the admin middleware).
-Route::middleware(['auth:sanctum', 'not-banned', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:web', 'not-banned', 'admin'])->prefix('admin')->group(function () {
     Route::get('/modules', [Admin\ModuleController::class, 'index']);
     Route::post('/modules', [Admin\ModuleController::class, 'store']);
     Route::put('/modules/{module}', [Admin\ModuleController::class, 'update']);

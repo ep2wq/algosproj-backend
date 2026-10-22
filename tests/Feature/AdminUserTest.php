@@ -8,6 +8,7 @@ use App\Models\Problem;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -46,10 +47,21 @@ class AdminUserTest extends TestCase
         $this->flushHeaders();
         $this->app['auth']->forgetGuards();
         if ($as) {
-            $this->withToken($as->createToken('api')->plainTextToken);
+            $this->actingAs($as);
         }
 
         return $this->json($method, $uri, $data);
+    }
+
+    // A logged-in session of the user, as the database session driver stores it.
+    private function addSession(User $user): void
+    {
+        DB::table('sessions')->insert(['id' => fake()->regexify('[a-zA-Z0-9]{40}'), 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
+    }
+
+    private function sessionCount(User $user): int
+    {
+        return DB::table('sessions')->where('user_id', $user->id)->count();
     }
 
     // Each write action on a user, with a valid body.
@@ -121,10 +133,12 @@ class AdminUserTest extends TestCase
         $this->send('POST', "/api/admin/users/{$this->user->id}/logout-everywhere", [], $this->admin)->assertOk();
     }
 
-    public function test_ban_kills_tokens_hides_from_the_leaderboard_and_unban_restores_everything(): void
+    public function test_ban_ends_sessions_hides_from_the_leaderboard_and_unban_restores_everything(): void
     {
-        $token = $this->user->createToken('api')->plainTextToken;
-        $this->user->createToken('phone');
+        $this->addSession($this->user);
+        $this->addSession($this->user);
+        $this->addSession($this->admin);
+        $rememberToken = $this->user->remember_token;
         User::factory()->create(['name' => 'Bob', 'points' => 5]);
 
         $this->send('POST', "/api/admin/users/{$this->user->id}/ban", [], $this->admin)
@@ -134,15 +148,16 @@ class AdminUserTest extends TestCase
 
         $this->send('POST', "/api/admin/users/{$this->user->id}/ban", ['reason' => 'Spam'], $this->admin)
             ->assertOk()->assertJsonPath('id', $this->user->id)->assertJsonPath('points', 10);
-        $this->assertSame(0, $this->user->tokens()->count());
+        // Every session and the "remember me" cookie end; other users keep theirs.
+        $this->assertSame(0, $this->sessionCount($this->user));
+        $this->assertNotSame($rememberToken, $this->user->refresh()->remember_token);
+        $this->assertSame(1, $this->sessionCount($this->admin));
         $this->send('POST', "/api/admin/users/{$this->user->id}/ban", ['reason' => 'Again'], $this->admin)
             ->assertStatus(409)->assertJsonPath('message', 'This user is already banned.');
 
-        // The old token is dead, login is refused, and the leaderboard and ranks skip the user.
+        // Login is refused, and the leaderboard and ranks skip the user (SessionTest: old cookies are dead).
         $this->flushHeaders();
         $this->app['auth']->forgetGuards();
-        $this->withToken($token)->getJson('/api/me')->assertUnauthorized();
-        $this->flushHeaders();
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])
             ->assertForbidden()->assertJsonPath('reason', 'Spam');
         $this->send('GET', '/api/leaderboard')->assertExactJson([['rank' => 1, 'name' => 'Bob', 'points' => 5, 'is_you' => false]]);
@@ -160,14 +175,16 @@ class AdminUserTest extends TestCase
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk();
     }
 
-    public function test_logout_everywhere_deletes_every_token(): void
+    public function test_logout_everywhere_ends_every_session(): void
     {
-        $this->user->createToken('a');
-        $this->user->createToken('b');
+        $this->addSession($this->user);
+        $this->addSession($this->user);
+        $rememberToken = $this->user->remember_token;
 
         $this->send('POST', "/api/admin/users/{$this->user->id}/logout-everywhere", [], $this->admin)->assertOk();
 
-        $this->assertSame(0, $this->user->tokens()->count());
+        $this->assertSame(0, $this->sessionCount($this->user));
+        $this->assertNotSame($rememberToken, $this->user->refresh()->remember_token);
     }
 
     public function test_the_role_can_be_user_or_admin_but_never_owner(): void
@@ -208,7 +225,7 @@ class AdminUserTest extends TestCase
 
     public function test_delete_needs_the_exact_email_and_cascades(): void
     {
-        $this->user->createToken('api');
+        $this->addSession($this->user);
         $uri = "/api/admin/users/{$this->user->id}";
 
         foreach ([[], ['confirm_email' => 'ADA@example.com'], ['confirm_email' => 'ada@example'], ['confirm_email' => 'admin@example.com']] as $data) {
@@ -221,7 +238,7 @@ class AdminUserTest extends TestCase
         $this->assertModelMissing($this->user);
         $this->assertSame(0, Completion::count());
         $this->assertSame(0, Submission::count());
-        $this->assertSame(0, $this->user->tokens()->count());
+        $this->assertSame(0, $this->sessionCount($this->user));
     }
 
     public function test_the_list_searches_filters_and_paginates(): void
