@@ -14,7 +14,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## This repo
 
 - Laravel (PHP 8.3+), MySQL 8 in Docker (`algosproj-mysql`, host port 3307), Sanctum
-  personal access tokens (not cookie mode: the frontend is on another domain).
+  cookie sessions (SPA mode, `auth:web`, no API tokens; README "Sessions"). Frontend and API must
+  share a registrable domain.
 - Tables: `users` (`points`, `role` user/admin/owner, `banned_at`/`ban_reason`, none fillable),
   `modules`, `lessons`, `problems` (+ `title_ar`, `body_ar`, `description_ar`; NULL =
   untranslated), `test_cases` (`is_hidden`), `submissions`, `completions`, `admin_audit_logs`,
@@ -23,9 +24,10 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   falls back per field (`HasArabicText`, `*_lang`, no `*_ar` publicly). Messages only from `lang/`
   (README "API messages"; `ar/validation.php`, `ar.json`; admin keys English only).
 - `routes/api.php` (README "API", "Admin API", "Roles", "Bans", "Logs"); plain controllers, inline
-  validation. `/api/admin/*`: `auth:sanctum` + `not-banned` + `admin`, owner routes add `owner`,
+  validation. `/api/admin/*`: `auth:web` + `not-banned` + `admin`, owner routes add `owner`,
   all before route binding. Owners only via `php artisan user:make-admin {email} [--owner|--remove]`.
-- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin). Commands: `composer
+- `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin),
+  `SANCTUM_STATEFUL_DOMAINS`, `SESSION_*`, `AUTH_REMEMBER_MINUTES` (README "Sessions"). Commands: `composer
   install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`. Dockerfile: README.
 
 ## Working rules

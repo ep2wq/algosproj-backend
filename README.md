@@ -7,7 +7,7 @@ the sandbox (`algosproj-sandbox`) to run and grade user code.
 
 ## Stack
 
-Laravel on PHP 8.3+, MySQL or Postgres, Sanctum personal access tokens.
+Laravel on PHP 8.3+, MySQL or Postgres, Sanctum in SPA mode (cookie sessions, no API tokens; see "Sessions").
 
 ## Setup
 
@@ -92,8 +92,8 @@ Messages follow the same language (`MessageLanguageTest`). Every response carrie
   logged out, code too large, code runner unavailable, unauthenticated, not found, too many
   attempts). Code calls `__('messages.key')`; whole sentences with `:placeholders`.
 - `lang/ar/validation.php`: Arabic for the validation rules the public endpoints use
-  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`) and the field names `name`,
-  `email`, `password`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
+  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`, `boolean`) and the field names
+  `name`, `email`, `password`, `remember`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
   summary. English validation stays Laravel's built-in text; any rule missing in Arabic falls
   back to it.
 - `lang/en/admin.php`: admin API messages, English only (the admin frontend always sends `en`,
@@ -165,18 +165,19 @@ no public response includes it.
 Enforced on the server for every request: nobody can ban, change the role of, delete, reset
 or adjust the points of their own account; nobody can act on an owner through the API at
 all (owners change only through the command); an admin can only act on accounts with role
-`user`. Each refusal is a 403 with a message. Middleware order: `auth:sanctum`, `not-banned`,
+`user`. Each refusal is a 403 with a message. Middleware order: `auth:web`, `not-banned`,
 `admin`, then `owner` on owner routes, all before route model binding, so a refused user
 gets 403 even for an id that does not exist.
 
 ### Bans
 
 `users.banned_at` (set while banned) and `users.ban_reason` (required, at most 255
-characters). Banning deletes all the user's tokens in the same transaction. The `not-banned`
-middleware on every authenticated route also refuses a banned user's token if one survived:
+characters). Banning ends all the user's sessions (session rows deleted, remember token changed) in the same
+transaction. The `not-banned` middleware on every authenticated route also refuses a banned
+user's session if one survived:
 403 `{"message": "This account is banned.", "reason": "..."}`. Login answers the same 403
-(after the password check, so the reason only reaches the account holder) and issues no
-token. Register with that email still fails (the row exists). Banned users are left out of
+(after the password check, so the reason only reaches the account holder) and starts no
+session. Register with that email still fails (the row exists). Banned users are left out of
 `/leaderboard` and of the rank counts in `/leaderboard/me`. Unban clears both columns;
 points, completions and submissions are kept through a ban and an unban. Neither column
 appears in the user object of login, register or `/api/me`.
@@ -293,29 +294,109 @@ and unique constraints have one). In MySQL, an index starting with a foreign key
 replaces that foreign key's own index, which matters if you later drop it. Add it in a new
 migration with a name and a `down()` that drops it.
 
+## Sessions
+
+The frontend logs in with a cookie session (Laravel Sanctum's SPA mode). There are no API
+tokens: login and register return only `{"user": ...}`, and a bearer token never
+authenticates, because the protected routes use the `web` session guard (`auth:web`).
+`tests/Feature/SessionTest.php` covers the whole flow.
+
+- Only the frontend gets a session. `$middleware->statefulApi()` (`bootstrap/app.php`) starts
+  the session, encrypts cookies and checks CSRF for requests whose `Origin` (or `Referer`)
+  host and port are in `SANCTUM_STATEFUL_DOMAINS` (default: those of `FRONTEND_URL`). Any
+  other client gets no session: login and register answer 419 and protected routes 401.
+- CSRF: the frontend first calls `GET /sanctum/csrf-cookie` (204), which sets the
+  `XSRF-TOKEN` cookie (readable by JavaScript) and the session cookie. Every POST, PUT and
+  DELETE sends that value back in the `X-XSRF-TOKEN` header; without it the answer is 419.
+  Requests use `credentials: 'include'`; CORS allows credentials for `FRONTEND_URL` only.
+- The session cookie (`laravel-session`, from `APP_NAME`) is HttpOnly and `SameSite=Lax`
+  (Sanctum sets Lax on API responses whatever `SESSION_SAME_SITE` says), and `Secure` with
+  `SESSION_SECURE_COOKIE=true`. Sessions live in the `sessions` table: keep
+  `SESSION_DRIVER=database`, because ban and log out everywhere delete rows by `user_id`.
+- Idle timeout: `SESSION_LIFETIME` minutes (120); each request renews it. Login and register
+  start a new session id (against session fixation). Logout ends the session, makes a new
+  CSRF token and gives the user a new remember token, so a "remember me" cookie on another
+  device stops working too (a session open there runs until it times out).
+- Remember me: `"remember": true` on login (off by default) sets Laravel's remember cookie
+  (`remember_web_...`, HttpOnly) for `AUTH_REMEMBER_MINUTES` (43200 = 30 days; the
+  `remember` option of the `web` guard in `config/auth.php`). It logs the user back in after
+  the session timed out.
+- Ban, log out everywhere and delete call `User::endSessions()` in the action's transaction:
+  it deletes the user's session rows and changes the remember token. The `not-banned`
+  middleware still refuses a banned user if a session survives.
+- Rate limits: login 5 per minute per email and IP; register 5 per minute per IP (a named
+  limiter: `throttle:5,1` would count per logged-in user, and register logs the new user in).
+- No password reset: "forgot password" needs email, which the app does not send.
+
+Local development (`.env`; the frontend's `VITE_API_URL` must use the same host name as the
+page, `http://localhost:8000` next to `http://localhost:5173`, never `127.0.0.1`: cookies
+belong to a host name, ports don't matter):
+
+```
+FRONTEND_URL=http://localhost:5173
+SANCTUM_STATEFUL_DOMAINS=localhost:5173
+SESSION_DRIVER=database
+SESSION_DOMAIN=null
+SESSION_SECURE_COOKIE=false
+SESSION_SAME_SITE=lax
+```
+
+Production: the frontend and the API on the same registrable domain, for example
+`https://app.example.com` and `https://api.example.com`, with the frontend built with
+`VITE_API_URL=https://api.example.com`:
+
+```
+APP_URL=https://api.example.com
+FRONTEND_URL=https://app.example.com
+SANCTUM_STATEFUL_DOMAINS=app.example.com
+SESSION_DOMAIN=.example.com
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_DRIVER=database
+```
+
+`SESSION_DOMAIN=.example.com` shares the cookies with both subdomains, so the frontend can
+read `XSRF-TOKEN`. One host for both (a reverse proxy sending `/api` and `/sanctum` to
+Laravel) also works, with `SESSION_DOMAIN=null`. On different registrable domains (say
+`app.example.com` and `api.example.net`) cookie login does not work: the cookies are
+third-party there, the browser does not send a Lax cookie on a cross-site request and the
+frontend cannot read `XSRF-TOKEN`, so every request after login is 401 or 419. Move the API
+under the frontend's domain (a subdomain or a proxied path); there is no token fallback.
+
+Behind a proxy or load balancer, configure trusted proxies (see "Deploy checklist"), or the
+logs and the IP rate limits see the proxy's address instead of the user's.
+
 ## Environment variables
 
 On top of the usual Laravel `APP_*` and `DB_*` settings:
 
 - `SANDBOX_URL` — base URL of the sandbox service
 - `SANDBOX_SECRET` — shared secret sent to the sandbox as the `X-Sandbox-Secret` header
-- `FRONTEND_URL` — the only origin allowed by CORS (default `http://localhost:5173`)
+- `FRONTEND_URL` — the only origin allowed by CORS (credentials allowed) and the default
+  stateful domain (default `http://localhost:5173`)
+- `SANCTUM_STATEFUL_DOMAINS` — hosts (with port) that get a session; see "Sessions"
+- `SESSION_DRIVER` — keep `database`; see "Sessions"
+- `SESSION_DOMAIN` — cookie domain; see "Sessions"
+- `SESSION_SECURE_COOKIE` — `true` in production; see "Sessions"
+- `SESSION_SAME_SITE` — `lax`; see "Sessions"
+- `SESSION_LIFETIME` — idle timeout in minutes (120); see "Sessions"
+- `AUTH_REMEMBER_MINUTES` — "remember me" length (43200 = 30 days); see "Sessions"
 
 ## API
 
-All routes are under `/api`. Send `Accept: application/json`. Authenticated routes need
-`Authorization: Bearer <token>`, using the token from register or login.
+All routes are under `/api`. Send `Accept: application/json`. Authenticated routes need the
+session cookie set by login or register (see "Sessions"); `Authorization: Bearer` is not used.
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/register` | | Create a user (`name`, `email`, `password`); returns `token` and `user`; 5 per minute per IP |
-| POST | `/api/login` | | `email`, `password`; returns `token` and `user` (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
-| POST | `/api/logout` | yes | Deletes the current token |
+| POST | `/api/register` | | Create a user (`name`, `email`, `password`); returns `user` and sets the session; 5 per minute per IP |
+| POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
+| POST | `/api/logout` | yes | Ends the session |
 | GET | `/api/me` | yes | The current user, with `points` |
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson (`body`, `body_lang`) with its problems (`description_lang`) and their visible test cases |
 | POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
-| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a token is optional), false on every row when logged out |
+| GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a session is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
 | GET | `/api/challenges/{slug}` | | One problem with what the editor needs (`id`, `title`, `description`, `description_lang`, `difficulty`, `points`, visible `test_cases`) plus `slug`, `topic`, `lesson_slug`, `solved`; 404 for an unknown slug |
@@ -329,7 +410,7 @@ show `{"passed": bool}`. Only the admin routes below return them.
 
 Challenges are the problems themselves, so a problem solved from `/challenges` or from its
 lesson is the same completion and earns points once. `topic` is `{slug, title}` of the
-problem's module. `solved` is true only for the requester (a token is optional, as on the
+problem's module. `solved` is true only for the requester (a session is optional, as on the
 leaderboard) and always false for guests. `problems.lesson_id` is nullable: a problem with no
 lesson is a standalone challenge, with `topic` and `lesson_slug` null; submit works the same
 for it. `problems.slug` is unique and nullable; the migration that added it filled it with the
@@ -342,14 +423,15 @@ sets it the same way. A standalone problem needs its own slug to appear at
 curl -X POST http://localhost:8000/api/register \
   -H "Accept: application/json" -H "Content-Type: application/json" \
   -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
-# -> {"token":"1|...","user":{"id":1,"name":"Ada","points":0,...}}
+# -> {"user":{"id":1,"name":"Ada","points":0,...}}
+# Only the frontend origin gets a session, so plain curl answers 419 here. The frontend
+# sends the same request with its cookies and the CSRF header (see "Sessions").
 
 curl http://localhost:8000/api/lessons/warm-up -H "Accept: application/json"
 
-curl -X POST http://localhost:8000/api/problems/1/submit \
-  -H "Accept: application/json" -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{"language":"python","code":"print(int(input()) * 2)"}'
+# Submit is sent by the logged-in frontend (session cookie and CSRF header), not by curl:
+# POST /api/problems/1/submit
+#   {"language":"python","code":"print(int(input()) * 2)"}
 # -> {"status":"passed","passed_count":4,"total_count":4,"runtime_ms":31,"compile_error":null,
 #     "points_awarded":10,"results":[{"passed":true,"input":"2","expected":"4","actual":"4","error":null},
 #     {"passed":true,"input":"21","expected":"42","actual":"42","error":null},{"passed":true},{"passed":true}]}
@@ -372,8 +454,8 @@ Submit details:
 
 ## Admin API
 
-All under `/api/admin`, behind `auth:sanctum`, `not-banned` and the `admin` middleware
-(`EnsureUserIsAdmin`): no token is 401, a user who is neither admin nor owner is 403
+All under `/api/admin`, behind `auth:web`, `not-banned` and the `admin` middleware
+(`EnsureUserIsAdmin`): no session is 401, a user who is neither admin nor owner is 403
 (checked before route model binding, so they get 403 even for an id that does not exist),
 admins and owners pass. Owner-only routes add the `owner` middleware (`EnsureUserIsOwner`,
 403 for admins). The frontend hides these pages from others, but that is only convenience;
@@ -405,11 +487,11 @@ at once. Every successful write is in the audit log (see "Logs").
 | GET | `/users/{user}/activity?page=` | | The user's activity, 25 per page, newest first |
 | POST | `/users/{user}/ban` | `reason` (required, max 255) | The user row; 409 if already banned |
 | POST | `/users/{user}/unban` | | The user row; 409 if not banned |
-| POST | `/users/{user}/logout-everywhere` | | The user row; all their tokens are deleted |
+| POST | `/users/{user}/logout-everywhere` | | The user row; all their sessions end (session rows deleted, remember token changed) |
 | PUT | `/users/{user}/role` | `role`: `user` or `admin` | Owner only. The user row |
 | POST | `/users/{user}/points` | `amount` (non-zero integer, -1,000,000 to 1,000,000), `reason` (max 255) | Owner only. The user row; 422 if points would go below 0 |
 | POST | `/users/{user}/reset-progress` | | Owner only. Deletes their completions and sets points to 0 (submissions stay) |
-| DELETE | `/users/{user}` | `confirm_email` (the exact email) | Owner only. 204, or 422 if the email does not match. Deletes their tokens; foreign keys delete their submissions and completions and set them to null in both logs |
+| DELETE | `/users/{user}` | `confirm_email` (the exact email) | Owner only. 204, or 422 if the email does not match. Deletes their sessions; foreign keys delete their submissions and completions and set them to null in both logs |
 | GET | `/audit-log?action=&actor=&from=&to=&page=` | | Owner only. 50 per page, newest first; `actor` is an id, an email or `console`; `from`/`to` are `YYYY-MM-DD` UTC days, both included |
 | GET | `/activity?event=&user=&from=&to=&page=` | | Owner only. 50 per page, newest first; `user` is an id or an email |
 
@@ -462,7 +544,9 @@ docker run -d --name algosproj-backend -p 8080:80 \
 ```
 
 - Environment variables: `APP_KEY`, `APP_ENV`, `APP_DEBUG`, `DB_*`, `SANDBOX_URL`,
-  `SANDBOX_SECRET`, `FRONTEND_URL`. Generate a key with
+  `SANDBOX_SECRET`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DRIVER`,
+  `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE`, `SESSION_SAME_SITE`, `SESSION_LIFETIME`,
+  `AUTH_REMEMBER_MINUTES` (see "Sessions"). Generate a key with
   `docker run --rm algosproj-backend php artisan key:generate --show`.
 - Inside a container, `DB_HOST` and `SANDBOX_URL` must point at `host.docker.internal`
   (or a Docker network name), not `127.0.0.1`.
@@ -476,6 +560,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
 - Run `php artisan activity:prune` once a day (cron or the Laravel scheduler); it is not
   scheduled in the code yet.
+- Set the production values from "Sessions": frontend and API on the same registrable domain,
+  `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS`, `FRONTEND_URL`.
 - Configure trusted proxies when running behind Cloudflare or any other proxy
   (`$middleware->trustProxies(...)` in `bootstrap/app.php`). Until then the request IP is the
   proxy's, so both logs record the wrong IP and the login and register rate limits, which key
