@@ -11,6 +11,9 @@ Laravel on PHP 8.3+, MySQL or Postgres, Sanctum in SPA mode (cookie sessions, no
 
 ## Setup
 
+No npm or Vite here: the backend serves only the JSON API under `/api` and the `/up` health
+check (`GET /` is 404).
+
 ```bash
 composer install
 cp .env.example .env

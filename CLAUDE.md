@@ -29,6 +29,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin),
   `SANCTUM_STATEFUL_DOMAINS`, `SESSION_*`, `AUTH_REMEMBER_MINUTES` (README "Sessions"). Commands: `composer
   install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`. Dockerfile: README.
+- No web pages, views, npm or Vite: `routes/web.php` is empty (`GET /` is 404), health is `/up`.
 
 ## Working rules
 
