@@ -17,7 +17,7 @@ return [
     |
     */
 
-    // AlgosProj: by default only the frontend (the host and port of FRONTEND_URL) gets a session,
+    // AlgosLab: by default only the frontend (the host and port of FRONTEND_URL) gets a session,
     // so only the frontend can log in. README "Sessions".
     'stateful' => explode(',', env(
         'SANCTUM_STATEFUL_DOMAINS',
