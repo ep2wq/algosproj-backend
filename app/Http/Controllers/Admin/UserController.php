@@ -24,6 +24,8 @@ class UserController extends Controller
         $query = User::query()
             ->select(['id', 'name', 'email', 'role', 'points', 'banned_at', 'created_at'])
             ->withCount(['completions as solved_count'])
+            // Newest first; the id only breaks ties of the same second.
+            ->orderByDesc('created_at')
             ->orderByDesc('id');
 
         if (isset($data['search'])) {
@@ -54,7 +56,7 @@ class UserController extends Controller
             ]);
 
         // Never the code: only the columns listed here are read.
-        $submissions = $user->submissions()->with('problem:id,title,slug')->orderByDesc('id')->limit(20)
+        $submissions = $user->submissions()->with('problem:id,title,slug')->orderByDesc('created_at')->orderByDesc('id')->limit(20)
             ->get(['id', 'problem_id', 'language', 'status', 'passed_count', 'total_count', 'runtime_ms', 'created_at'])
             ->map(fn ($submission) => [
                 'id' => $submission->id,

@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 
 class LessonController extends Controller
 {
+    // The id only makes equal sort_order values come back in a stable order.
     public function index(Module $module)
     {
         return response()->json($module->lessons()

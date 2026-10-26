@@ -11,7 +11,8 @@ class LeaderboardController extends Controller
     {
         $limit = min(max((int) $request->query('limit', 50), 1), 100);
 
-        // Banned users are left out of the list and of every rank.
+        // Banned users are left out of the list and of every rank. Equal points: the earlier sign-up
+        // first; the id only breaks ties of the same second (UUIDs carry no order).
         $users = User::where('points', '>', 0)
             ->whereNull('banned_at')
             ->orderByDesc('points')

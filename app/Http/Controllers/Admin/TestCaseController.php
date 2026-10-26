@@ -23,7 +23,7 @@ class TestCaseController extends Controller
     // Admin only, so hidden test cases and their expected output are included.
     public function index(Problem $problem)
     {
-        return response()->json($problem->testCases()->orderBy('id')->get());
+        return response()->json($problem->testCases()->orderBy('position')->orderBy('id')->get());
     }
 
     public function store(Request $request, Problem $problem)

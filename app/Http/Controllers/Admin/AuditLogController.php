@@ -20,7 +20,7 @@ class AuditLogController extends Controller
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
         ]);
 
-        $query = AdminAuditLog::query()->orderByDesc('id');
+        $query = AdminAuditLog::query()->orderByDesc('created_at')->orderByDesc('id');
 
         if (isset($data['action'])) {
             $query->where('action', $data['action']);

@@ -10,10 +10,10 @@ use Illuminate\Support\Str;
 
 class ActivityController extends Controller
 {
-    // Admins and owners: one user's activity, newest first.
+    // Admins and owners: one user's activity, newest first (the id only breaks ties of the same second).
     public function forUser(User $user)
     {
-        return response()->json($user->activityLogs()->orderByDesc('id')->paginate(25));
+        return response()->json($user->activityLogs()->orderByDesc('created_at')->orderByDesc('id')->paginate(25));
     }
 
     // Owner only: everyone's activity, newest first. Read-only, like the audit log.
@@ -27,7 +27,7 @@ class ActivityController extends Controller
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
         ]);
 
-        $query = UserActivityLog::query()->orderByDesc('id');
+        $query = UserActivityLog::query()->orderByDesc('created_at')->orderByDesc('id');
 
         if (isset($data['event'])) {
             $query->where('event', $data['event']);

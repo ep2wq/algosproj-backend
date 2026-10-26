@@ -35,7 +35,7 @@ class LessonController extends Controller
     public function show(string $slug)
     {
         $lesson = Lesson::where('slug', $slug)
-            ->with(['problems' => fn ($query) => $query->orderBy('id'), 'problems.visibleTestCases'])
+            ->with(['problems' => fn ($query) => $query->orderBy('created_at')->orderBy('id'), 'problems.visibleTestCases'])
             ->firstOrFail();
 
         return response()->json([

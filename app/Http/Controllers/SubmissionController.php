@@ -29,8 +29,9 @@ class SubmissionController extends Controller
             }],
         ]);
 
-        // All test cases, hidden ones included, are sent to the sandbox.
-        $testCases = $problem->testCases()->orderBy('id')->get();
+        // All test cases, hidden ones included, are sent to the sandbox, in their position order. The
+        // results come back in the same order and are matched by index below.
+        $testCases = $problem->testCases()->orderBy('position')->orderBy('id')->get();
 
         try {
             $response = Http::timeout(60)

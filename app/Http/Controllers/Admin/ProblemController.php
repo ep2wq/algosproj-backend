@@ -20,7 +20,8 @@ class ProblemController extends Controller
 
     public function index()
     {
-        return response()->json(Problem::orderBy('id')
+        // Oldest first; the id only breaks ties of the same second.
+        return response()->json(Problem::orderBy('created_at')->orderBy('id')
             ->get(['id', 'lesson_id', 'slug', 'title', 'difficulty', 'points']));
     }
 

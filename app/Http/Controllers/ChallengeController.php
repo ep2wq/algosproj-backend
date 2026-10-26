@@ -9,7 +9,8 @@ class ChallengeController extends Controller
 {
     public function index()
     {
-        // Module order, then lesson order; standalone problems (no lesson) last, oldest first.
+        // Module order, then lesson order; standalone problems (no lesson) last, oldest first. The
+        // id only breaks ties of the same second (UUIDs carry no order).
         $problems = Problem::query()
             ->select('problems.id', 'problems.lesson_id', 'problems.slug', 'problems.title', 'problems.title_ar', 'problems.difficulty', 'problems.points')
             ->leftJoin('lessons', 'lessons.id', '=', 'problems.lesson_id')
@@ -18,6 +19,7 @@ class ChallengeController extends Controller
             ->orderByRaw('problems.lesson_id is null')
             ->orderBy('modules.sort_order')
             ->orderBy('lessons.sort_order')
+            ->orderBy('problems.created_at')
             ->orderBy('problems.id')
             ->get();
 

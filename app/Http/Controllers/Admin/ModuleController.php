@@ -13,7 +13,8 @@ class ModuleController extends Controller
 {
     public function index()
     {
-        // Each module with its lessons (no body), so the content list needs one request.
+        // Each module with its lessons (no body), so the content list needs one request. The id
+        // only makes equal sort_order values come back in a stable order.
         return response()->json(Module::with(['lessons' => fn ($query) => $query
             ->select('id', 'module_id', 'slug', 'title', 'sort_order')
             ->orderBy('sort_order')

@@ -37,7 +37,7 @@ class Problem extends Model
 
     public function visibleTestCases(): HasMany
     {
-        return $this->testCases()->where('is_hidden', false);
+        return $this->testCases()->where('is_hidden', false)->orderBy('position')->orderBy('id');
     }
 
     public function submissions(): HasMany
