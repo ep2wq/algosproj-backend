@@ -22,6 +22,10 @@ php artisan migrate --seed   # seeds 19 modules with 65 lessons, one problem eac
 php artisan serve
 ```
 
+A database created before the UUID change (see "Database indexes", "Keys") needs
+`php artisan migrate:fresh` and then `php artisan content:sync`: plain `migrate` does not convert
+it, and `migrate:fresh` wipes users and progress.
+
 ### Content lives in the database
 
 After launch the database is the source of truth for modules, lessons, problems and test
@@ -53,7 +57,8 @@ run changes nothing. `ContentSeeder` uses the same code (`database/seeders/Conte
 so there is one import path; the seeder still runs only when no module exists.
 
 - **Dev:** `docker start algosproj-mysql`, `php artisan migrate`, `php artisan content:sync
-  --dry-run`, then `php artisan content:sync`.
+  --dry-run`, then `php artisan content:sync`. A database from before the UUID change needs
+  `php artisan migrate:fresh` first (it wipes users and progress).
 - **Production:** after deploying, `php artisan migrate --force`, then
   `php artisan content:sync --dry-run`; read the summary, then `php artisan content:sync`.
 
@@ -271,6 +276,12 @@ Run the tests with `php artisan test`.
 
 ## Database indexes
 
+Keys: every application table's key is a UUIDv7 string (`CHAR(36)`, Laravel `HasUuids`), and
+every foreign key is a `foreignUuid` with the same delete rule as before. Never order by id or
+read it as a number: ordering uses explicit columns (`test_cases.position`, `problems.created_at`,
+`created_at`, `sort_order`) and the id only breaks ties. `personal_access_tokens` (unused) keeps
+its own bigint id. The decision is in `docs/uuid-decision.md` in the workspace.
+
 Indexes on the tables the API reads, besides each primary key:
 
 - `users_email_unique`: login and the register uniqueness check look a user up by email.
@@ -282,7 +293,10 @@ Indexes on the tables the API reads, besides each primary key:
   already in its order (points down, then oldest account, then id) instead of sorting every
   user; with 20,000 users it read 51 rows instead of about 20,000. The banned filter is
   checked on those rows, so it still reads about the limit plus the banned ones among them.
+  The id is only the last tiebreaker, for a stable order.
 - `user_activity_logs.created_at`: `activity:prune` deletes by age.
+- `users.created_at`: the admin users list is read newest first.
+- `admin_audit_logs.created_at`: the audit log is read newest first.
 - `modules_slug_unique`, `lessons_slug_unique`: lesson pages are fetched by slug.
 - Foreign key indexes (`lessons.module_id`, `problems.lesson_id`, `test_cases.problem_id`,
   `submissions.user_id`, `submissions.problem_id`, `completions.problem_id`): MySQL creates
@@ -400,7 +414,7 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 | GET | `/api/me` | yes | The current user, with `points` |
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson (`body`, `body_lang`) with its problems (`description_lang`) and their visible test cases |
-| POST | `/api/problems/{id}/submit` | yes | Run code against all test cases; 10 requests per minute per user |
+| POST | `/api/problems/{id}/submit` | yes | `{id}` is the problem's UUID. Run code against all test cases, in `position` order; 10 requests per minute per user |
 | GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a session is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
@@ -418,9 +432,8 @@ lesson is the same completion and earns points once. `topic` is `{slug, title}` 
 problem's module. `solved` is true only for the requester (a session is optional, as on the
 leaderboard) and always false for guests. `problems.lesson_id` is nullable: a problem with no
 lesson is a standalone challenge, with `topic` and `lesson_slug` null; submit works the same
-for it. `problems.slug` is unique and nullable; the migration that added it filled it with the
-lesson slug (a second problem in the same lesson would get `-<id>` appended), and the seeder
-sets it the same way. A standalone problem needs its own slug to appear at
+for it. `problems.slug` is unique and nullable; the import (`ContentImport`) sets a problem's slug to
+its lesson slug. A standalone problem needs its own slug to appear at
 `/challenges/{slug}`.
 
 ```bash
@@ -428,14 +441,14 @@ sets it the same way. A standalone problem needs its own slug to appear at
 curl -X POST http://localhost:8000/api/register \
   -H "Accept: application/json" -H "Content-Type: application/json" \
   -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
-# -> {"user":{"id":1,"name":"Ada","points":0,...}}
+# -> {"user":{"id":"01a1792e-257b-7368-9b50-7f372b2a5c20","name":"Ada","points":0,...}}
 # Only the frontend origin gets a session, so plain curl answers 419 here. The frontend
 # sends the same request with its cookies and the CSRF header (see "Sessions").
 
 curl http://localhost:8000/api/lessons/warm-up -H "Accept: application/json"
 
 # Submit is sent by the logged-in frontend (session cookie and CSRF header), not by curl:
-# POST /api/problems/1/submit
+# POST /api/problems/01a1792e-257b-7368-9b50-7f372b2a5c21/submit
 #   {"language":"python","code":"print(int(input()) * 2)"}
 # -> {"status":"passed","passed_count":4,"total_count":4,"runtime_ms":31,"compile_error":null,
 #     "points_awarded":10,"results":[{"passed":true,"input":"2","expected":"4","actual":"4","error":null},
@@ -464,7 +477,8 @@ All under `/api/admin`, behind `auth:web`, `not-banned` and the `admin` middlewa
 (checked before route model binding, so they get 403 even for an id that does not exist),
 admins and owners pass. Owner-only routes add the `owner` middleware (`EnsureUserIsOwner`,
 403 for admins). The frontend hides these pages from others, but that is only convenience;
-these checks are the security. Ids, not slugs, in the paths. Edits show on the public routes
+these checks are the security. Ids, not slugs, in the paths; ids are UUIDs, and an id that is
+not a UUID or is unknown is 404 with the usual `{message}`. Edits show on the public routes
 at once. Every successful write is in the audit log (see "Logs").
 
 | Method | Path | Body | Result |
@@ -474,20 +488,20 @@ at once. Every successful write is in the audit log (see "Logs").
 | PUT | `/modules/{module}` | `title`, `slug`, `sort_order` | The module (track unchanged) |
 | DELETE | `/modules/{module}` | | 204, or 409 if it has lessons |
 | GET | `/modules/{module}/lessons` | | Its lessons (no body) |
-| POST | `/lessons` | `module_id`, `title`, `title_ar`, `slug`, `body`, `body_ar`, `sort_order` | 201 |
+| POST | `/lessons` | `module_id` (lower-case UUID of an existing module, else 422), `title`, `title_ar`, `slug`, `body`, `body_ar`, `sort_order` | 201 |
 | GET | `/lessons/{lesson}` | | The lesson with its full `body` and `body_ar` |
 | PUT | `/lessons/{lesson}` | as POST | The lesson |
 | DELETE | `/lessons/{lesson}` | | 204, or 409 if it has problems |
 | GET | `/problems` | | All problems (no description) |
-| POST | `/problems` | `lesson_id` (optional), `title`, `title_ar`, `slug`, `description`, `description_ar`, `difficulty` | 201 |
+| POST | `/problems` | `lesson_id` (optional; lower-case UUID of an existing lesson, else 422), `title`, `title_ar`, `slug`, `description`, `description_ar`, `difficulty` | 201 |
 | GET | `/problems/{problem}` | | The problem |
 | PUT | `/problems/{problem}` | as POST | The problem |
 | DELETE | `/problems/{problem}` | | 204 (its tests and submissions go with it), or 409 if anyone has a completion |
-| GET | `/problems/{problem}/test-cases` | | All its tests, hidden ones and expected outputs included |
+| GET | `/problems/{problem}/test-cases` | | All its tests, in `position` order, hidden ones and expected outputs included |
 | POST | `/problems/{problem}/test-cases` | `input`, `expected_output`, `is_hidden` | 201 |
 | PUT | `/problems/{problem}/test-cases/{testCase}` | as POST | The test case |
 | DELETE | `/problems/{problem}/test-cases/{testCase}` | | 204, always allowed |
-| GET | `/users?search=&role=&banned=&page=` | | 25 per page, newest first: `id, name, email, role, points, banned_at, created_at, solved_count`; `search` matches name or email (`%` and `_` are literal), `role` is user/admin/owner, `banned` 1 or 0 |
+| GET | `/users?search=&role=&banned=&page=` | | 25 per page, newest first (by `created_at`): `id, name, email, role, points, banned_at, created_at, solved_count`; `search` matches name or email (`%` and `_` are literal), `role` is user/admin/owner, `banned` 1 or 0 |
 | GET | `/users/{user}` | | The fields above plus `ban_reason`, `solved` (`title, slug, solved_at`) and the last 20 `submissions` (`problem, language, status, passed_count, total_count, runtime_ms, created_at`; never the code) |
 | GET | `/users/{user}/activity?page=` | | The user's activity, 25 per page, newest first |
 | POST | `/users/{user}/ban` | `reason` (required, max 255) | The user row; 409 if already banned |
@@ -497,8 +511,8 @@ at once. Every successful write is in the audit log (see "Logs").
 | POST | `/users/{user}/points` | `amount` (non-zero integer, -1,000,000 to 1,000,000), `reason` (max 255) | Owner only. The user row; 422 if points would go below 0 |
 | POST | `/users/{user}/reset-progress` | | Owner only. Deletes their completions and sets points to 0 (submissions stay) |
 | DELETE | `/users/{user}` | `confirm_email` (the exact email) | Owner only. 204, or 422 if the email does not match. Deletes their sessions; foreign keys delete their submissions and completions and set them to null in both logs |
-| GET | `/audit-log?action=&actor=&from=&to=&page=` | | Owner only. 50 per page, newest first; `actor` is an id, an email or `console`; `from`/`to` are `YYYY-MM-DD` UTC days, both included |
-| GET | `/activity?event=&user=&from=&to=&page=` | | Owner only. 50 per page, newest first; `user` is an id or an email |
+| GET | `/audit-log?action=&actor=&from=&to=&page=` | | Owner only. 50 per page, newest first; `actor` is a user UUID, an email or `console`; `from`/`to` are `YYYY-MM-DD` UTC days, both included |
+| GET | `/activity?event=&user=&from=&to=&page=` | | Owner only. 50 per page, newest first; `user` is a user UUID or an email |
 
 User actions (everything above that changes a user) follow the rules in "Roles"; ban, unban,
 log out everywhere, role, points, reset and delete never accept a password, a token or the

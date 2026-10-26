@@ -18,8 +18,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   share a registrable domain.
 - Tables: `users` (`points`, `role` user/admin/owner, `banned_at`/`ban_reason`, none fillable),
   `modules`, `lessons`, `problems` (+ `title_ar`, `body_ar`, `description_ar`; NULL =
-  untranslated), `test_cases` (`is_hidden`), `submissions`, `completions`, `admin_audit_logs`,
-  `user_activity_logs` (both append-only). Planned: `ai_hints`.
+  untranslated; problems also `created_at`), `test_cases` (`is_hidden`, `position`), `submissions`,
+  `completions`, `admin_audit_logs`, `user_activity_logs` (both append-only). Keys are UUIDv7
+  strings (`CHAR(36)`, `HasUuids`), FKs `foreignUuid`. Planned: `ai_hints`.
 - Language: global `SetContentLanguage` (first `ar`/`ar-XX` = Arabic locale, `Vary` always). Text
   falls back per field (`HasArabicText`, `*_lang`, no `*_ar` publicly). Messages only from `lang/`
   (README "API messages"; `ar/validation.php`, `ar.json`; admin keys English only).
@@ -59,5 +60,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   secret. Ties share a rank. Code max 65536 bytes. Points from difficulty. Admin delete 409 for
   a module with lessons, a lesson with problems, a solved problem. Tests: max 50, 20,000 bytes
   each, 25,000 total, untrimmed. Admin writes call `AdminAuditLog::record()` in the transaction.
+  Ids are UUIDv7 strings: never order by id or parse it as a number (explicit columns: `position`,
+  `created_at`, `sort_order`; id only breaks ties). Migrations were rewritten in place: an old DB
+  needs `migrate:fresh` + `content:sync`.
 - Gotchas: `docker start algosproj-mysql` first. Sandbox on 8001. Expected outputs come from a
   reference solution, matched on trimmed stdout. Next: AI hints.
