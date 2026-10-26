@@ -137,7 +137,7 @@ class ContentLanguageTest extends TestCase
             'sort_order' => 1,
             'lessons' => [
                 ['id' => $this->lesson->id, 'module_id' => $this->module->id, 'slug' => 'warm-up', 'title' => 'Warm-up', 'sort_order' => 1],
-                ['id' => $this->lesson->id + 1, 'module_id' => $this->module->id, 'slug' => 'partial', 'title' => 'Partial', 'sort_order' => 2],
+                ['id' => Lesson::where('slug', 'partial')->value('id'), 'module_id' => $this->module->id, 'slug' => 'partial', 'title' => 'Partial', 'sort_order' => 2],
             ],
         ]]);
     }

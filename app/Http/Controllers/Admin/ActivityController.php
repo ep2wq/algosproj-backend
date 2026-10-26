@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ActivityController extends Controller
 {
@@ -20,7 +21,7 @@ class ActivityController extends Controller
     {
         $data = $request->validate([
             'event' => ['nullable', 'string', 'max:255'],
-            // A user id, or an email (also finds failed logins for unknown emails).
+            // A user id (UUID), or an email (also finds failed logins for unknown emails).
             'user' => ['nullable', 'string', 'max:255'],
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
@@ -32,7 +33,7 @@ class ActivityController extends Controller
             $query->where('event', $data['event']);
         }
         if (isset($data['user'])) {
-            ctype_digit($data['user']) ? $query->where('user_id', (int) $data['user']) : $query->where('email', $data['user']);
+            Str::isUuid($data['user']) ? $query->where('user_id', $data['user']) : $query->where('email', $data['user']);
         }
         // Whole days, in the app's timezone (UTC), both ends included.
         if (isset($data['from'])) {

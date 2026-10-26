@@ -73,7 +73,8 @@ class ProblemController extends Controller
     {
         $data = $request->validate([
             // Optional: a problem without a lesson is a standalone challenge.
-            'lesson_id' => ['nullable', 'integer', 'exists:lessons,id'],
+            // lowercase: see Admin\LessonController (MySQL compares ids case-insensitively).
+            'lesson_id' => ['bail', 'nullable', 'uuid', 'lowercase', 'exists:lessons,id'],
             'title' => ['required', 'string', 'max:255'],
             // Arabic is optional; an empty value is stored as NULL (not translated).
             'title_ar' => ['nullable', 'string', 'max:255'],

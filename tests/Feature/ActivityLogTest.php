@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ActivityLogTest extends TestCase
@@ -17,7 +18,7 @@ class ActivityLogTest extends TestCase
 
     private function events(): array
     {
-        return UserActivityLog::orderBy('id')->get(['user_id', 'email', 'event', 'ip', 'user_agent'])->toArray();
+        return UserActivityLog::orderBy('created_at')->orderBy('id')->get(['user_id', 'email', 'event', 'ip', 'user_agent'])->toArray();
     }
 
     public function test_register_login_failures_and_logout_are_logged_with_user_ip_and_browser(): void
@@ -121,7 +122,7 @@ class ActivityLogTest extends TestCase
         }
 
         $this->artisan('activity:prune')->expectsOutput('Deleted 2 activity rows older than 90 days.')->assertExitCode(0);
-        $this->assertSame(['d1@example.com', 'd89@example.com'], UserActivityLog::orderBy('id')->pluck('email')->all());
+        $this->assertSame(['d1@example.com', 'd89@example.com'], UserActivityLog::orderByDesc('created_at')->pluck('email')->all());
 
         $this->artisan('activity:prune', ['--days' => 30])->expectsOutput('Deleted 1 activity rows older than 30 days.')->assertExitCode(0);
         $this->artisan('activity:prune', ['--days' => 0])->expectsOutput('--days must be a whole number of at least 1.')->assertExitCode(1);
@@ -150,7 +151,7 @@ class ActivityLogTest extends TestCase
         $this->assertSame(['login_failed'], $events('?from=2026-01-03'));
         $this->actingAs($owner)->getJson('/api/admin/activity?from=bad')->assertUnprocessable()->assertJsonValidationErrors('from');
 
-        UserActivityLog::insert(array_fill(0, 60, ['email' => 'x@example.com', 'event' => 'login', 'created_at' => now()]));
+        UserActivityLog::insert(array_map(fn () => ['id' => (string) Str::uuid7(), 'email' => 'x@example.com', 'event' => 'login', 'created_at' => now()], range(1, 60)));
         $this->actingAs($owner)->getJson('/api/admin/activity')->assertJsonPath('per_page', 50)->assertJsonCount(50, 'data')->assertJsonPath('total', 63);
     }
 

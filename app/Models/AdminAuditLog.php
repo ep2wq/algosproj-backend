@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 #[Fillable(['actor_id', 'actor_email', 'action', 'target_type', 'target_id', 'target_label', 'details', 'ip'])]
 class AdminAuditLog extends Model
 {
+    use HasUuids;
+
     const UPDATED_AT = null;
 
     private const MAX_VALUE_LENGTH = 200;

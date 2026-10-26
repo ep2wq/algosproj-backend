@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,8 @@ use Throwable;
 #[Fillable(['user_id', 'email', 'event', 'ip', 'user_agent'])]
 class UserActivityLog extends Model
 {
+    use HasUuids;
+
     const UPDATED_AT = null;
 
     // For register, login and logout: a logging failure is logged and never breaks the request.

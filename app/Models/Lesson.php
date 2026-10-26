@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['module_id', 'slug', 'title', 'title_ar', 'body', 'body_ar', 'sort_order'])]
 class Lesson extends Model
 {
-    use HasArabicText;
+    use HasArabicText, HasUuids;
 
     public $timestamps = false;
 

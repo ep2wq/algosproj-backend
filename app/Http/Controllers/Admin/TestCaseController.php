@@ -38,7 +38,8 @@ class TestCaseController extends Controller
         $this->checkTotalBytes($problem, $data);
 
         $testCase = DB::transaction(function () use ($request, $problem, $data) {
-            $testCase = $problem->testCases()->create($data);
+            // A new test goes last.
+            $testCase = $problem->testCases()->create($data + ['position' => $problem->testCases()->max('position') + 1]);
             AdminAuditLog::record($request->user(), 'test_case.create', $testCase, $this->label($problem, $testCase));
 
             return $testCase;

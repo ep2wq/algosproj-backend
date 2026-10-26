@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Lesson;
 use App\Models\Module;
 use App\Models\Problem;
-use Illuminate\Database\Eloquent\Model;
 
 // The one import path for course content, used by ContentSeeder and `php artisan content:sync`.
 // English lives in data/lessons.php and data/lesson_bodies.php, Arabic in data/ar/*.php, all keyed
@@ -74,7 +73,12 @@ class ContentImport
                 // Test cases only come with a new problem.
                 if ($created) {
                     $this->counts['test_cases'] += count($problemData['test_cases']);
-                    $problem?->testCases()->createMany($problemData['test_cases']);
+                    // position keeps the file's order (ids are UUIDs and carry none).
+                    $problem?->testCases()->createMany(array_map(
+                        fn ($testCase, $index) => $testCase + ['position' => $index + 1],
+                        $problemData['test_cases'],
+                        array_keys($problemData['test_cases']),
+                    ));
                 }
             }
         }

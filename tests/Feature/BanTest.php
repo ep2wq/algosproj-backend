@@ -45,7 +45,7 @@ class BanTest extends TestCase
         // Set directly, so no session is deleted as the ban endpoint would; actingAs is that session.
         $this->ban($user);
 
-        foreach ([['GET', '/api/me'], ['GET', '/api/leaderboard/me'], ['POST', '/api/logout'], ['POST', '/api/problems/99999/submit'], ['GET', '/api/admin/modules'], ['GET', '/api/admin/problems/99999']] as [$method, $uri]) {
+        foreach ([['GET', '/api/me'], ['GET', '/api/leaderboard/me'], ['POST', '/api/logout'], ['POST', '/api/problems/0199a000-0000-7000-8000-000000000000/submit'], ['GET', '/api/admin/modules'], ['GET', '/api/admin/problems/0199a000-0000-7000-8000-000000000000']] as [$method, $uri]) {
             $this->app['auth']->forgetGuards();
             $this->actingAs($user)->json($method, $uri)
                 ->assertForbidden()

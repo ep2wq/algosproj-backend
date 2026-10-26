@@ -11,8 +11,8 @@ return new class extends Migration
         // Append-only: register, login, logout and ban events. `activity:prune` deletes old rows
         // (created_at is indexed for it).
         Schema::create('user_activity_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('email')->nullable();
             $table->string('event');
             $table->string('ip', 45)->nullable();

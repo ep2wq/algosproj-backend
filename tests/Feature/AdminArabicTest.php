@@ -108,7 +108,7 @@ class AdminArabicTest extends TestCase
             'description_ar' => 'وصف جديد',
         ])->assertOk();
 
-        [$lessonRow, $problemRow] = AdminAuditLog::orderBy('id')->get()->all();
+        [$lessonRow, $problemRow] = AdminAuditLog::orderBy('created_at')->orderBy('id')->get()->all();
         $this->assertSame('lesson.update', $lessonRow->action);
         $this->assertSame(['old' => 'الإحماء', 'new' => mb_substr($longTitle, 0, 200)], $lessonRow->details['changes']['title_ar']);
         $this->assertSame('changed', $lessonRow->details['changes']['body_ar']);

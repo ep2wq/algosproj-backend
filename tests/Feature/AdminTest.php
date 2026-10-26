@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -154,11 +155,11 @@ class AdminTest extends TestCase
         $this->assertSame($registered, $tested);
     }
 
-    // "PUT /api/admin/modules/5" -> "PUT /api/admin/modules/{module}", as the router names it.
+    // "PUT /api/admin/modules/<uuid>" -> "PUT /api/admin/modules/{module}", as the router names it.
     private function pattern(string $method, string $uri): string
     {
         return $method.' '.preg_replace(
-            ['/modules\/\d+/', '/lessons\/\d+/', '/problems\/\d+/', '/test-cases\/\d+/', '/users\/\d+/'],
+            ['/modules\/[0-9a-f-]{36}/', '/lessons\/[0-9a-f-]{36}/', '/problems\/[0-9a-f-]{36}/', '/test-cases\/[0-9a-f-]{36}/', '/users\/[0-9a-f-]{36}/'],
             ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}'],
             $uri,
         );
@@ -207,11 +208,11 @@ class AdminTest extends TestCase
             }
             // Admins where they are allowed, otherwise the owner.
             [$actor, $status] = $adminStatus === 403 ? [$this->owner, $ownerStatus] : [$this->admin, $adminStatus];
-            $before = AdminAuditLog::max('id') ?? 0;
+            $before = AdminAuditLog::pluck('id')->all();
 
             $this->send($method, $uri, $data, $actor)->assertStatus($status);
 
-            $rows = AdminAuditLog::where('id', '>', $before)->get();
+            $rows = AdminAuditLog::whereNotIn('id', $before)->get();
             $this->assertCount(1, $rows, "$method $uri");
             $this->assertSame(self::AUDIT_ACTIONS[$this->pattern($method, $uri)], $rows[0]->action, "$method $uri");
             $this->assertSame($actor->id, $rows[0]->actor_id);
@@ -253,7 +254,7 @@ class AdminTest extends TestCase
         $this->asAdmin('PUT', "/api/admin/lessons/{$this->lesson->id}", ['module_id' => $this->module->id, 'title' => $longTitle, 'slug' => 'warm-up', 'body' => 'SECRET BODY', 'sort_order' => 1])->assertOk();
         $this->asAdmin('PUT', "/api/admin/problems/{$this->problem->id}/test-cases/{$this->testCase->id}", ['input' => 'SECRET-IN', 'expected_output' => 'SECRET-OUT', 'is_hidden' => true])->assertOk();
 
-        [$lessonRow, $testRow] = AdminAuditLog::orderBy('id')->get();
+        [$lessonRow, $testRow] = AdminAuditLog::orderBy('created_at')->orderBy('id')->get();
         $this->assertSame(['title' => ['old' => 'Warm-up', 'new' => str_repeat('t', 200)], 'body' => 'changed'], $lessonRow->details['changes']);
         $this->assertSame($longTitle, $lessonRow->target_label);
         $this->assertSame(['input' => 'changed', 'expected_output' => 'changed', 'is_hidden' => ['old' => false, 'new' => true]], $testRow->details['changes']);
@@ -289,7 +290,7 @@ class AdminTest extends TestCase
         $this->assertCount(0, $get('?to=2000-01-01')->json('data'));
         $this->send('GET', '/api/admin/audit-log?from=2026-02-01&to=2026-01-01', [], $this->owner)->assertUnprocessable()->assertJsonValidationErrors('to');
 
-        AdminAuditLog::insert(array_fill(0, 60, ['actor_email' => 'console', 'action' => 'x', 'created_at' => now()]));
+        AdminAuditLog::insert(array_map(fn () => ['id' => (string) Str::uuid7(), 'actor_email' => 'console', 'action' => 'x', 'created_at' => now()], range(1, 60)));
         $get()->assertJsonPath('per_page', 50)->assertJsonPath('total', 63)->assertJsonCount(50, 'data');
 
         // Nothing but GET touches the audit log.
@@ -334,9 +335,9 @@ class AdminTest extends TestCase
 
     public function test_a_non_admin_gets_403_even_for_ids_that_do_not_exist(): void
     {
-        $this->send('GET', '/api/admin/problems/99999', [], $this->user)->assertStatus(403);
-        $this->send('PUT', '/api/admin/problems/99999/test-cases/99999', [], $this->user)->assertStatus(403);
-        $this->send('GET', '/api/admin/problems/99999')->assertStatus(401);
+        $this->send('GET', '/api/admin/problems/0199a000-0000-7000-8000-000000000000', [], $this->user)->assertStatus(403);
+        $this->send('PUT', '/api/admin/problems/0199a000-0000-7000-8000-000000000000/test-cases/0199a000-0000-7000-8000-000000000000', [], $this->user)->assertStatus(403);
+        $this->send('GET', '/api/admin/problems/0199a000-0000-7000-8000-000000000000')->assertStatus(401);
     }
 
     public function test_admin_creates_a_module_lesson_problem_and_tests_and_the_public_pages_show_them(): void
@@ -447,11 +448,11 @@ class AdminTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors(['title', 'slug', 'sort_order']);
         $this->asAdmin('POST', '/api/admin/modules', ['title' => str_repeat('a', 256), 'slug' => str_repeat('a', 101), 'sort_order' => -1])
             ->assertUnprocessable()->assertJsonValidationErrors(['title', 'slug', 'sort_order']);
-        $this->asAdmin('POST', '/api/admin/lessons', ['module_id' => 99999, 'title' => 'X', 'slug' => 'x', 'body' => str_repeat('a', 20001), 'sort_order' => 1])
+        $this->asAdmin('POST', '/api/admin/lessons', ['module_id' => '0199a000-0000-7000-8000-000000000000', 'title' => 'X', 'slug' => 'x', 'body' => str_repeat('a', 20001), 'sort_order' => 1])
             ->assertUnprocessable()->assertJsonValidationErrors(['module_id', 'body']);
         $this->asAdmin('POST', '/api/admin/lessons', ['module_id' => $this->module->id, 'title' => 'X', 'slug' => 'x', 'body' => str_repeat('a', 20000), 'sort_order' => 1])
             ->assertCreated();
-        $this->asAdmin('POST', '/api/admin/problems', ['lesson_id' => 99999, 'title' => 'X', 'slug' => 'x', 'description' => str_repeat('a', 5001), 'difficulty' => 'easy'])
+        $this->asAdmin('POST', '/api/admin/problems', ['lesson_id' => '0199a000-0000-7000-8000-000000000000', 'title' => 'X', 'slug' => 'x', 'description' => str_repeat('a', 5001), 'difficulty' => 'easy'])
             ->assertUnprocessable()->assertJsonValidationErrors(['lesson_id', 'description']);
         $this->asAdmin('POST', "/api/admin/problems/{$this->problem->id}/test-cases", ['input' => '1'])
             ->assertUnprocessable()->assertJsonValidationErrors(['expected_output', 'is_hidden']);
@@ -551,8 +552,8 @@ class AdminTest extends TestCase
         $this->asAdmin('PUT', "/api/admin/problems/{$this->problem->id}/test-cases/{$otherCase->id}", $data)->assertNotFound();
         $this->asAdmin('DELETE', "/api/admin/problems/{$this->problem->id}/test-cases/{$otherCase->id}")->assertNotFound();
         // A problem that does not exist.
-        $this->asAdmin('GET', '/api/admin/problems/99999/test-cases')->assertNotFound();
-        $this->asAdmin('PUT', "/api/admin/problems/99999/test-cases/{$this->testCase->id}", $data)->assertNotFound();
+        $this->asAdmin('GET', '/api/admin/problems/0199a000-0000-7000-8000-000000000000/test-cases')->assertNotFound();
+        $this->asAdmin('PUT', "/api/admin/problems/0199a000-0000-7000-8000-000000000000/test-cases/{$this->testCase->id}", $data)->assertNotFound();
 
         $this->assertSame('VISIBLE-IN', $this->testCase->refresh()->input);
         $this->assertModelExists($otherCase);

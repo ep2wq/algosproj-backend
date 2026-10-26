@@ -3,14 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+// created_at (set by the database) only orders problems; it is not sent, like before.
 #[Fillable(['lesson_id', 'slug', 'title', 'title_ar', 'description', 'description_ar', 'difficulty', 'points'])]
+#[Hidden(['created_at'])]
 class Problem extends Model
 {
-    use HasArabicText;
+    use HasArabicText, HasUuids;
 
     public $timestamps = false;
 

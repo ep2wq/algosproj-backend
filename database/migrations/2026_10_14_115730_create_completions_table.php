@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('completions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('problem_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('problem_id')->constrained()->cascadeOnDelete();
             $table->timestamp('completed_at')->useCurrent();
             $table->unique(['user_id', 'problem_id']);
         });

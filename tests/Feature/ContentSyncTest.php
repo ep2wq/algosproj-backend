@@ -139,7 +139,7 @@ class ContentSyncTest extends TestCase
     {
         $this->seed(ContentSeeder::class);
         // The database has every lesson but this one, as if it were added to the seed files later.
-        $expectedTests = Problem::where('slug', 'maximum-of-an-array')->firstOrFail()->testCases()->orderBy('id')->get(['input', 'expected_output', 'is_hidden'])->toArray();
+        $expectedTests = Problem::where('slug', 'maximum-of-an-array')->firstOrFail()->testCases()->orderBy('position')->get(['input', 'expected_output', 'is_hidden'])->toArray();
         Problem::where('slug', 'maximum-of-an-array')->delete();
         Lesson::where('slug', 'maximum-of-an-array')->delete();
 
@@ -154,7 +154,7 @@ class ContentSyncTest extends TestCase
         $this->assertSame((require database_path('seeders/data/ar/lessons.php'))['maximum-of-an-array']['title'], $lesson->title_ar);
         $this->assertSame('maximum-of-an-array', $problem->slug);
         $this->assertSame(10, $problem->points);
-        $this->assertSame($expectedTests, $problem->testCases()->orderBy('id')->get(['input', 'expected_output', 'is_hidden'])->toArray());
+        $this->assertSame($expectedTests, $problem->testCases()->orderBy('position')->get(['input', 'expected_output', 'is_hidden'])->toArray());
     }
 
     public function test_the_test_cases_of_existing_problems_are_untouched(): void
@@ -162,7 +162,7 @@ class ContentSyncTest extends TestCase
         $this->seed(ContentSeeder::class);
         $problem = Problem::where('slug', 'warm-up')->firstOrFail();
         $problem->testCases()->first()->update(['expected_output' => 'EDITED']);
-        $problem->testCases()->orderByDesc('id')->first()->delete();
+        $problem->testCases()->orderByDesc('position')->first()->delete();
         $problem->testCases()->create(['input' => 'ADMIN-IN', 'expected_output' => 'ADMIN-OUT', 'is_hidden' => true]);
         $before = ProblemTestCase::orderBy('id')->get()->toArray();
 

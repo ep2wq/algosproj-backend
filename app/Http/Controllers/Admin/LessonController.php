@@ -69,7 +69,9 @@ class LessonController extends Controller
     private function validated(Request $request, ?Lesson $lesson = null): array
     {
         return $request->validate([
-            'module_id' => ['required', 'integer', 'exists:modules,id'],
+            // lowercase: MySQL compares ids case-insensitively, so an upper-case id would pass exists
+            // and be stored in a form that no longer equals the id as a string.
+            'module_id' => ['bail', 'required', 'uuid', 'lowercase', 'exists:modules,id'],
             'title' => ['required', 'string', 'max:255'],
             // Arabic is optional; an empty value is stored as NULL (not translated).
             'title_ar' => ['nullable', 'string', 'max:255'],
