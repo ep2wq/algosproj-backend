@@ -2,7 +2,7 @@
 
 ## Project overview
 
-AlgosProj teaches data structures and algorithms (English and Arabic): lessons, visualizations,
+AlgosLab teaches data structures and algorithms (English and Arabic): lessons, visualizations,
 in-browser code (Python, Java, JavaScript, C++) run against test cases, points, AI hints.
 Three repos, three deployments. Flow: frontend -> backend -> sandbox.
 - **algosproj-frontend**: React + TypeScript + Vite + Tailwind v4. Talks only to the backend.

@@ -1,6 +1,6 @@
 # algosproj-backend
 
-The API for AlgosProj, a platform for learning data structures and algorithms. It handles
+The API for AlgosLab, a platform for learning data structures and algorithms. It handles
 auth, lessons, problems, submissions, points and the leaderboard. The React frontend
 (`algosproj-frontend`) talks to this service, and this service is the only one that calls
 the sandbox (`algosproj-sandbox`) to run and grade user code.
@@ -312,7 +312,8 @@ authenticates, because the protected routes use the `web` session guard (`auth:w
   `XSRF-TOKEN` cookie (readable by JavaScript) and the session cookie. Every POST, PUT and
   DELETE sends that value back in the `X-XSRF-TOKEN` header; without it the answer is 419.
   Requests use `credentials: 'include'`; CORS allows credentials for `FRONTEND_URL` only.
-- The session cookie (`laravel-session`, from `APP_NAME`) is HttpOnly and `SameSite=Lax`
+- The session cookie (`algoslab-session`, `Str::slug(APP_NAME)-session` with `APP_NAME=AlgosLab`;
+  the frontend's Cookies page names it) is HttpOnly and `SameSite=Lax`
   (Sanctum sets Lax on API responses whatever `SESSION_SAME_SITE` says), and `Secure` with
   `SESSION_SECURE_COOKIE=true`. Sessions live in the `sessions` table: keep
   `SESSION_DRIVER=database`, because ban and log out everywhere delete rows by `user_id`.
@@ -344,24 +345,25 @@ SESSION_SECURE_COOKIE=false
 SESSION_SAME_SITE=lax
 ```
 
-Production: the frontend and the API on the same registrable domain, for example
-`https://app.example.com` and `https://api.example.com`, with the frontend built with
-`VITE_API_URL=https://api.example.com`:
+Production: the frontend and the API on the same registrable domain, `https://algoslab.sa` and
+`https://api.algoslab.sa`, with the frontend built with `VITE_API_URL=https://api.algoslab.sa`
+and `VITE_SITE_URL=https://algoslab.sa`:
 
 ```
-APP_URL=https://api.example.com
-FRONTEND_URL=https://app.example.com
-SANCTUM_STATEFUL_DOMAINS=app.example.com
-SESSION_DOMAIN=.example.com
+APP_NAME=AlgosLab
+APP_URL=https://api.algoslab.sa
+FRONTEND_URL=https://algoslab.sa
+SANCTUM_STATEFUL_DOMAINS=algoslab.sa
+SESSION_DOMAIN=.algoslab.sa
 SESSION_SECURE_COOKIE=true
 SESSION_SAME_SITE=lax
 SESSION_DRIVER=database
 ```
 
-`SESSION_DOMAIN=.example.com` shares the cookies with both subdomains, so the frontend can
+`SESSION_DOMAIN=.algoslab.sa` shares the cookies with the site and the API, so the frontend can
 read `XSRF-TOKEN`. One host for both (a reverse proxy sending `/api` and `/sanctum` to
 Laravel) also works, with `SESSION_DOMAIN=null`. On different registrable domains (say
-`app.example.com` and `api.example.net`) cookie login does not work: the cookies are
+`algoslab.sa` and an API on another domain) cookie login does not work: the cookies are
 third-party there, the browser does not send a Lax cookie on a cross-site request and the
 frontend cannot read `XSRF-TOKEN`, so every request after login is 401 or 419. Move the API
 under the frontend's domain (a subdomain or a proxied path); there is no token fallback.
@@ -539,14 +541,14 @@ The image runs PHP 8.4 with Apache (PHP 8.4 because `composer.lock` pins Symfony
 ```bash
 docker build -t algosproj-backend .
 docker run -d --name algosproj-backend -p 8080:80 \
-  -e APP_KEY=base64:... -e APP_ENV=production -e APP_DEBUG=false \
+  -e APP_NAME=AlgosLab -e APP_KEY=base64:... -e APP_ENV=production -e APP_DEBUG=false \
   -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3307 \
   -e DB_DATABASE=... -e DB_USERNAME=... -e DB_PASSWORD=... \
   -e SANDBOX_URL=http://host.docker.internal:8001 -e SANDBOX_SECRET=... \
   algosproj-backend
 ```
 
-- Environment variables: `APP_KEY`, `APP_ENV`, `APP_DEBUG`, `DB_*`, `SANDBOX_URL`,
+- Environment variables: `APP_NAME` (`AlgosLab`; the session cookie name), `APP_KEY`, `APP_ENV`, `APP_DEBUG`, `DB_*`, `SANDBOX_URL`,
   `SANDBOX_SECRET`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DRIVER`,
   `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE`, `SESSION_SAME_SITE`, `SESSION_LIFETIME`,
   `AUTH_REMEMBER_MINUTES` (see "Sessions"). Generate a key with
@@ -563,7 +565,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
 - Run `php artisan activity:prune` once a day (cron or the Laravel scheduler); it is not
   scheduled in the code yet.
-- Set the production values from "Sessions": frontend and API on the same registrable domain,
+- Set the production values from "Sessions": `APP_NAME=AlgosLab` (session cookie
+  `algoslab-session`, as the Cookies page says), frontend and API on the same registrable domain,
   `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS`, `FRONTEND_URL`.
 - Configure trusted proxies when running behind Cloudflare or any other proxy
   (`$middleware->trustProxies(...)` in `bootstrap/app.php`). Until then the request IP is the
