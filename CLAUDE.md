@@ -53,6 +53,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: auth, lessons, submit, leaderboard, limits, admin, roles, bans, logs, Arabic text+messages.
+- Done: register requires `accepted_terms` (`bail|required|accepted|boolean`; only `true`, `1`, `"1"`
+  pass). `users.terms_accepted_at` and `users.terms_version` are set only by register, not
+  mass-assignable, hidden from user JSON and `/api/me`; existing users stay NULL. Run the migration
+  `2026_10_28_100000_add_terms_acceptance_to_users_table` (`php artisan migrate`) on every database.
+  Tests: 334.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
