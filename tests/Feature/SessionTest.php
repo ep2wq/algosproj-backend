@@ -77,7 +77,7 @@ class SessionTest extends TestCase
 
     public function test_register_logs_in_with_a_session_and_returns_no_token(): void
     {
-        $response = $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password'])
+        $response = $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password', 'accepted_terms' => true])
             ->assertCreated()->assertJsonMissingPath('token');
         $this->assertSame(['user'], array_keys($response->json()));
 
@@ -229,7 +229,7 @@ class SessionTest extends TestCase
     {
         $this->serverVariables = [];
         $this->login()->assertStatus(419);
-        $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password'])->assertStatus(419);
+        $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password', 'accepted_terms' => true])->assertStatus(419);
 
         $this->withServerVariables(['HTTP_ORIGIN' => 'http://evil.test']);
         $this->fresh()->login()->assertStatus(419);

@@ -15,14 +15,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token', 'banned_at', 'ban_reason'])]
+#[Hidden(['password', 'remember_token', 'banned_at', 'ban_reason', 'terms_accepted_at', 'terms_version'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuids, Notifiable;
 
     // role ('user', 'admin' or 'owner') is not fillable. An owner changes admins through the API;
-    // owners only change through `php artisan user:make-admin`.
+    // owners only change through `php artisan user:make-admin`. terms_accepted_at and
+    // terms_version are not fillable either: only register sets them.
     protected $attributes = [
         'points' => 0,
         'role' => 'user',
@@ -40,6 +41,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'points' => 'integer',
             'banned_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

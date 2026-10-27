@@ -42,4 +42,16 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * A user who accepted the current Terms of use and Privacy policy at registration. Without
+     * this state the columns stay NULL, like accounts made before they existed.
+     */
+    public function acceptedTerms(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'terms_accepted_at' => now(),
+            'terms_version' => config('legal.terms_version'),
+        ]);
+    }
 }

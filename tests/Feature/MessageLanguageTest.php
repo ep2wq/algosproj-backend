@@ -44,7 +44,7 @@ class MessageLanguageTest extends TestCase
             ->assertStatus(401)->assertExactJson(['message' => 'Wrong email or password.']);
         $this->postJson('/api/register', [], $headers)
             ->assertStatus(422)
-            ->assertJsonPath('message', 'The name field is required. (and 2 more errors)')
+            ->assertJsonPath('message', 'The name field is required. (and 3 more errors)')
             ->assertJsonPath('errors.password.0', 'The password field is required.');
         $this->getJson('/api/me', $headers)->assertStatus(401)->assertExactJson(['message' => 'Unauthenticated.']);
         $this->actingAs($this->user)->postJson("/api/problems/{$this->problem->id}/submit", ['language' => 'cobol', 'code' => str_repeat('a', 65537)], $headers)
@@ -72,7 +72,7 @@ class MessageLanguageTest extends TestCase
 
     public function test_validation_errors_are_arabic(): void
     {
-        $this->postJson('/api/register', ['name' => 'Sara', 'email' => 'user@example.com', 'password' => 'short'], ['Accept-Language' => 'ar'])
+        $this->postJson('/api/register', ['name' => 'Sara', 'email' => 'user@example.com', 'password' => 'short', 'accepted_terms' => true], ['Accept-Language' => 'ar'])
             ->assertStatus(422)
             ->assertJsonPath('message', 'القيمة المدخلة في البريد الإلكتروني مستخدمة من قبل. (وخطأ آخر)')
             ->assertJsonPath('errors.email.0', 'القيمة المدخلة في البريد الإلكتروني مستخدمة من قبل.')

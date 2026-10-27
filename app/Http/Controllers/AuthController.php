@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,9 +21,15 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
+            // Accepting the Terms of use and Privacy policy: true, 1 or "1" only ("yes" and "on" fail boolean).
+            'accepted_terms' => ['bail', 'required', 'accepted', 'boolean'],
         ]);
 
-        $user = User::create($data)->refresh();
+        // The acceptance is recorded with the server's time and the current legal version
+        // (config/legal.php); nothing from the request is stored but the three fields.
+        $user = new User(Arr::only($data, ['name', 'email', 'password']));
+        $user->forceFill(['terms_accepted_at' => now(), 'terms_version' => config('legal.terms_version')])->save();
+        $user->refresh();
         UserActivityLog::record($user, $user->email, 'register', $request);
         $this->startSession($request, $user, false);
 

@@ -25,7 +25,7 @@ class ActivityLogTest extends TestCase
     {
         $this->withHeader('User-Agent', 'TestBrowser/1.0');
 
-        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password'])->assertCreated();
+        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password', 'accepted_terms' => true])->assertCreated();
         $id = User::where('email', 'ada@example.com')->value('id');
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
         $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
@@ -76,7 +76,7 @@ class ActivityLogTest extends TestCase
 
     public function test_no_row_holds_a_password_or_a_token(): void
     {
-        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password']);
+        $this->postJson('/api/register', ['name' => 'Ada', 'email' => 'ada@example.com', 'password' => 'secret-password', 'accepted_terms' => true]);
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password-guess']);
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password']);
         $this->app['auth']->forgetGuards();
@@ -95,7 +95,7 @@ class ActivityLogTest extends TestCase
         Log::shouldReceive('error')->twice()->withArgs(fn ($message) => $message === 'Could not write user activity');
 
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk()->assertJsonStructure(['user'])->assertJsonMissingPath('token');
-        $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password'])->assertCreated();
+        $this->postJson('/api/register', ['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'secret-password', 'accepted_terms' => true])->assertCreated();
     }
 
     public function test_a_ban_is_not_saved_when_its_activity_row_cannot_be(): void

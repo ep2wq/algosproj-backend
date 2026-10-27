@@ -100,8 +100,8 @@ Messages follow the same language (`MessageLanguageTest`). Every response carrie
   logged out, code too large, code runner unavailable, unauthenticated, not found, too many
   attempts). Code calls `__('messages.key')`; whole sentences with `:placeholders`.
 - `lang/ar/validation.php`: Arabic for the validation rules the public endpoints use
-  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`, `boolean`) and the field names
-  `name`, `email`, `password`, `remember`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
+  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`, `boolean`, `accepted`) and the field names
+  `name`, `email`, `password`, `remember`, `accepted_terms`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
   summary. English validation stays Laravel's built-in text; any rule missing in Arabic falls
   back to it.
 - `lang/en/admin.php`: admin API messages, English only (the admin frontend always sends `en`,
@@ -189,6 +189,19 @@ session. Register with that email still fails (the row exists). Banned users are
 `/leaderboard` and of the rank counts in `/leaderboard/me`. Unban clears both columns;
 points, completions and submissions are kept through a ban and an unban. Neither column
 appears in the user object of login, register or `/api/me`.
+
+### Terms acceptance
+
+Register needs `"accepted_terms": true` (the checkbox on the frontend's register form): `true`,
+`1` or `"1"`; anything else, or no field, is a 422 on `accepted_terms` and no account is made.
+The server then sets `users.terms_accepted_at` (the time) and `users.terms_version` (from
+`config/legal.php`, the legal pages' "last updated" date, the same value as `LEGAL_UPDATED` in
+the frontend's `src/site.ts`; change both when the Terms, Privacy or Cookies text changes). Only
+register sets the two columns: they are not mass-assignable, no other endpoint changes them,
+and they are hidden from the user object of login, register and `/api/me`. No IP address or
+user agent is stored with them. Accounts made before the columns existed (and the seeded Test
+User) keep NULL; nobody is asked to accept again yet. Login needs no field (its checkbox is
+frontend only). `TermsConsentTest` covers it.
 
 ### Logs
 
@@ -408,7 +421,7 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/register` | | Create a user (`name`, `email`, `password`); returns `user` and sets the session; 5 per minute per IP |
+| POST | `/api/register` | | Create a user (`name`, `email`, `password`, `accepted_terms`: true; see "Terms acceptance"); returns `user` and sets the session; 5 per minute per IP |
 | POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
 | POST | `/api/logout` | yes | Ends the session |
 | GET | `/api/me` | yes | The current user, with `points` |
@@ -440,7 +453,7 @@ its lesson slug. A standalone problem needs its own slug to appear at
 # Register (or log in with POST /api/login and the same email and password)
 curl -X POST http://localhost:8000/api/register \
   -H "Accept: application/json" -H "Content-Type: application/json" \
-  -d '{"name":"Ada","email":"ada@example.com","password":"secret-password"}'
+  -d '{"name":"Ada","email":"ada@example.com","password":"secret-password","accepted_terms":true}'
 # -> {"user":{"id":"01a1792e-257b-7368-9b50-7f372b2a5c20","name":"Ada","points":0,...}}
 # Only the frontend origin gets a session, so plain curl answers 419 here. The frontend
 # sends the same request with its cookies and the CSRF header (see "Sessions").

@@ -17,6 +17,7 @@ class RoleTest extends TestCase
             'name' => 'Mallory',
             'email' => 'mallory@example.com',
             'password' => 'secret-password',
+            'accepted_terms' => true,
             'role' => 'admin',
         ])->assertCreated()->assertJsonPath('user.role', 'user');
 

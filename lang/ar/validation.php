@@ -3,6 +3,7 @@
 // Only the rules the public endpoints use (register, login, submit); every other message
 // falls back to the framework's English. Attribute names are the public form fields.
 return [
+    'accepted' => 'يجب قبول :attribute.',
     'boolean' => 'يجب أن تكون قيمة :attribute إما true أو false.',
     'email' => 'يجب أن يكون :attribute عنوان بريد إلكتروني صحيحًا.',
     'in' => 'قيمة :attribute المحددة غير صالحة.',
@@ -23,5 +24,6 @@ return [
         'language' => 'لغة البرمجة',
         'code' => 'الكود',
         'remember' => 'تذكرني',
+        'accepted_terms' => 'شروط الاستخدام وسياسة الخصوصية',
     ],
 ];

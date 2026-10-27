@@ -16,6 +16,7 @@ class AuthTest extends TestCase
             'name' => 'Ada',
             'email' => 'ada@example.com',
             'password' => 'secret-password',
+            'accepted_terms' => true,
         ]);
 
         $response->assertCreated()
@@ -34,6 +35,7 @@ class AuthTest extends TestCase
             'name' => 'Ada',
             'email' => 'ada@example.com',
             'password' => 'secret-password',
+            'accepted_terms' => true,
         ])->assertUnprocessable();
     }
 
@@ -63,6 +65,7 @@ class AuthTest extends TestCase
                 'name' => "User $i",
                 'email' => "user$i@example.com",
                 'password' => 'secret-password',
+                'accepted_terms' => true,
             ])->assertCreated();
         }
 
@@ -70,6 +73,7 @@ class AuthTest extends TestCase
             'name' => 'User 6',
             'email' => 'user6@example.com',
             'password' => 'secret-password',
+            'accepted_terms' => true,
         ])->assertStatus(429);
     }
 
