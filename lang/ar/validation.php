@@ -1,10 +1,11 @@
 <?php
 
-// Only the rules the public endpoints use (register, login, submit); every other message
+// Only the rules the public endpoints use (register, login, submit, forgot and reset password); every other message
 // falls back to the framework's English. Attribute names are the public form fields.
 return [
     'accepted' => 'يجب قبول :attribute.',
     'boolean' => 'يجب أن تكون قيمة :attribute إما true أو false.',
+    'confirmed' => 'تأكيد :attribute غير مطابق.',
     'email' => 'يجب أن يكون :attribute عنوان بريد إلكتروني صحيحًا.',
     'in' => 'قيمة :attribute المحددة غير صالحة.',
     'max' => [
@@ -25,5 +26,7 @@ return [
         'code' => 'الكود',
         'remember' => 'تذكرني',
         'accepted_terms' => 'شروط الاستخدام وسياسة الخصوصية',
+        'token' => 'رمز إعادة التعيين',
+        'password_confirmation' => 'تأكيد كلمة المرور',
     ],
 ];

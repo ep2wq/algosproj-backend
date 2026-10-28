@@ -98,10 +98,10 @@ Messages follow the same language (`MessageLanguageTest`). Every response carrie
 
 - `lang/en/messages.php` and `lang/ar/messages.php`: the public messages (wrong login, banned,
   logged out, code too large, code runner unavailable, unauthenticated, not found, too many
-  attempts). Code calls `__('messages.key')`; whole sentences with `:placeholders`.
+  attempts, the email and password reset messages). `lang/*/mail.php`: the two emails ("Email"). Code calls `__('messages.key')`; whole sentences with `:placeholders`.
 - `lang/ar/validation.php`: Arabic for the validation rules the public endpoints use
-  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`, `boolean`, `accepted`) and the field names
-  `name`, `email`, `password`, `remember`, `accepted_terms`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
+  (`required`, `string`, `email`, `max`, `min`, `unique`, `in`, `boolean`, `accepted`, `confirmed`) and the field names
+  `name`, `email`, `password`, `password_confirmation`, `token`, `remember`, `accepted_terms`, `language`, `code`; `lang/ar.json`: the "(and :count more errors)"
   summary. English validation stays Laravel's built-in text; any rule missing in Arabic falls
   back to it.
 - `lang/en/admin.php`: admin API messages, English only (the admin frontend always sends `en`,
@@ -159,7 +159,8 @@ php artisan user:make-admin you@example.com --remove   # back to a normal user
 
 The account must already exist (register first). An unknown email prints `No user has the
 email ...` and exits with 1; `--owner` with `--remove` is refused. Each run writes an audit
-row with actor `console`. The role is in the user object of login, register and `/api/me`;
+row with actor `console`. It also marks the email as verified (an explicit server-side action by
+the owner) and says so (`The email ... is marked as verified.`); an earlier verification date is kept. The role is in the user object of login, register and `/api/me`;
 no public response includes it.
 
 | | user | admin | owner |
@@ -413,6 +414,7 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 - `SESSION_SAME_SITE` — `lax`; see "Sessions"
 - `SESSION_LIFETIME` — idle timeout in minutes (120); see "Sessions"
 - `AUTH_REMEMBER_MINUTES` — "remember me" length (43200 = 30 days); see "Sessions"
+- `MAIL_*` — the mailer; `log` locally, Resend SMTP in production; see "Email"
 
 ## API
 
@@ -424,10 +426,14 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 | POST | `/api/register` | | Create a user (`name`, `email`, `password`, `accepted_terms`: true; see "Terms acceptance"); returns `user` and sets the session; 5 per minute per IP |
 | POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
 | POST | `/api/logout` | yes | Ends the session |
-| GET | `/api/me` | yes | The current user, with `points` |
+| GET | `/api/me` | yes | The current user, with `points` and `email_verified` (boolean) |
+| GET | `/api/email/verify/{id}/{hash}` | | The signed link from the verification email (see "Email"); redirects to the frontend |
+| POST | `/api/email/verification-notification` | yes | Sends a new verification email (202); 200 "already verified" sends nothing; 3 per hour per user and 10 per hour per IP |
+| POST | `/api/forgot-password` | | `email`; always 202 with the same message; 3 per hour per email and IP, 10 per hour per IP |
+| POST | `/api/reset-password` | | `token`, `email`, `password`, `password_confirmation`; 200, or 422 with one generic message; 5 per hour per IP |
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson (`body`, `body_lang`) with its problems (`description_lang`) and their visible test cases |
-| POST | `/api/problems/{id}/submit` | yes | `{id}` is the problem's UUID. Run code against all test cases, in `position` order; 10 requests per minute per user |
+| POST | `/api/problems/{id}/submit` | yes, verified email | `{id}` is the problem's UUID. Run code against all test cases, in `position` order; 10 requests per minute per user; 403 `reason: email_unverified` without a verified email |
 | GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a session is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
@@ -482,6 +488,81 @@ Submit details:
   The failure is logged with `Log::error` (status code, at most 300 characters of the body,
   the exception message), never with the code, test cases or secret.
 - Going over a rate limit returns 429.
+
+## Email
+
+Two transactional emails, nothing else (no marketing, no images, no tracking pixels): the
+verification email after register (and on request), and the password reset email. Both are
+plain HTML plus a text part (`resources/views/mail/account*.blade.php`), in the language the
+request was answered in (`lang/en/mail.php`, `lang/ar/mail.php`; Arabic is `dir="rtl"`).
+
+- **Sent after the response.** There is no queue worker, so mail goes out in a deferred callback
+  (`defer()`, `User::notifyAfterResponse`) once the response has been sent. A mail failure never
+  fails or slows the request: it is caught and logged as `Mail could not be sent` with only the
+  notification and exception class names (never the address, link or token); the user can ask
+  again. Forgot password does the account lookup, the token and the mail all after the
+  response, so neither the body nor the timing shows whether an account exists.
+- **Verification.** New accounts start unverified and are logged in. The link is
+  `GET /api/email/verify/{id}/{hash}`, signed, valid 60 minutes, `hash` = sha1 of the email. It
+  works without a session and always redirects to `FRONTEND_URL/verify-email?status=success` or
+  `?status=invalid` (bad or expired signature, wrong hash, unknown id; a non-UUID id is 404).
+  Opening it again keeps the first verification. Responses show `email_verified` (boolean) only.
+- **What needs a verified email.** Only `POST /api/problems/{id}/submit` (the only route that runs
+  code and the only one that awards points): the `verified-email` middleware answers 403
+  `{message, reason: "email_unverified"}`, before route binding. Everything else stays open;
+  admin and owner routes keep their role rules. `user:make-admin` verifies the email; factory
+  users are verified unless `->unverified()`.
+- **Password reset.** Laravel's password broker: tokens hashed in `password_reset_tokens`, valid
+  60 minutes, one use, one per account (a new one replaces the old). The link is
+  `FRONTEND_URL/reset-password?token=...&email=...`. A successful reset sets the password, ends
+  every session and remember cookie of the account (`User::endSessions()`, and the requesting
+  browser's own session if it was logged in to that account) and does not log in. A banned user
+  can reset and stays banned.
+
+Local testing: keep `MAIL_MAILER=log`. Each email, link included, is written to
+`storage/logs/laravel.log`; copy the link from there. Nothing is sent. Tests use the `array`
+mailer (`phpunit.xml`) and `Notification::fake()`.
+
+Production (Resend over SMTP, from `no-reply@algoslab.sa`), in the production `.env` only:
+
+```
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=587
+MAIL_USERNAME=resend
+MAIL_PASSWORD=<the Resend API key>
+MAIL_FROM_ADDRESS="no-reply@algoslab.sa"
+MAIL_FROM_NAME="AlgosLab"
+```
+
+Port 587 with the `smtp` scheme upgrades to TLS (STARTTLS). Never commit the key. `MAIL_TIMEOUT`
+(default 10 seconds) limits how long one SMTP connection may hang.
+
+"After the response" depends on the server: with PHP-FPM (`fastcgi_finish_request`) the client
+gets its answer before the mail is sent. The Docker image runs Apache with mod_php, where the
+connection may stay open until the deferred mail is done (not verified here). After the deploy,
+compare the time of `POST /api/forgot-password` for a known and an unknown email; if the known one
+is clearly slower, switch the image to PHP-FPM.
+
+Resend setup for `algoslab.sa` (owner steps):
+
+1. Create a Resend account, then Domains > Add domain > `algoslab.sa` (pick the region closest
+   to the users).
+2. Add the DNS records Resend shows at the DNS host (Cloudflare: DNS only, not proxied):
+   - SPF: the `MX` and `TXT` records on the `send` subdomain (`send.algoslab.sa`), exactly as
+     shown. They do not change an SPF record on `algoslab.sa` itself.
+   - DKIM: the `TXT` record `resend._domainkey` with the public key Resend shows.
+   - DMARC: a `TXT` record `_dmarc` with `v=DMARC1; p=none; rua=mailto:contact@algoslab.sa` to
+     start; move to `p=quarantine` once reports look clean.
+3. Click Verify in Resend and wait until every record is green.
+4. API Keys > Create, permission "Sending access", limited to `algoslab.sa`; put it in
+   `MAIL_PASSWORD` in the production `.env`.
+5. After the deploy, register with a real address and use forgot password once; check both
+   emails arrive (not in spam), the links work and the Arabic one reads right to left.
+
+Free plan limits: 3,000 emails a month and 100 a day. Every registration and every reset or
+resend is one email.
 
 ## Admin API
 
@@ -598,5 +679,9 @@ docker run -d --name algosproj-backend -p 8080:80 \
 - Configure trusted proxies when running behind Cloudflare or any other proxy
   (`$middleware->trustProxies(...)` in `bootstrap/app.php`). Until then the request IP is the
   proxy's, so both logs record the wrong IP and the login and register rate limits, which key
-  on the IP, count every user behind the same proxy together.
+  on the IP, count every user behind the same proxy together. The hourly email limits too: without
+  it, 10 forgot-password or resend requests an hour would be shared by every visitor.
 - The logs store IP addresses and emails; cover that in the privacy policy before launch.
+- Email: the production `MAIL_*` values, the Resend DNS steps and the response-time check in "Email". Trusted proxies also
+  matter here: without them the verification link is built and checked with the proxy's `http`
+  scheme instead of `https`.

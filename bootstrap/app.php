@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\EnsureUserIsOwner;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'owner' => EnsureUserIsOwner::class,
             'not-banned' => EnsureUserIsNotBanned::class,
+            'verified-email' => EnsureEmailIsVerified::class,
         ]);
         // Cookie sessions for the frontend (README "Sessions"): requests from an origin in
         // sanctum.stateful get the session, encrypted cookies and the CSRF check.
@@ -37,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsNotBanned::class);
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsAdmin::class);
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsOwner::class);
+        $middleware->prependToPriorityList(SubstituteBindings::class, EnsureEmailIsVerified::class);
         // Test case text is stored exactly as sent: leading and trailing whitespace can matter.
         $middleware->trimStrings(except: ['input', 'expected_output']);
     })

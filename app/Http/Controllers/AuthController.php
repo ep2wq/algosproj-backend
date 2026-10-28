@@ -32,8 +32,11 @@ class AuthController extends Controller
         $user->refresh();
         UserActivityLog::record($user, $user->email, 'register', $request);
         $this->startSession($request, $user, false);
+        // New accounts start unverified; the email goes out after the response, and a mail failure
+        // never fails the registration (User::notifyAfterResponse).
+        $user->sendEmailVerificationNotification();
 
-        return response()->json(['user' => $user], 201);
+        return response()->json(['user' => $this->userJson($user)], 201);
     }
 
     public function login(Request $request)
@@ -64,7 +67,7 @@ class AuthController extends Controller
         UserActivityLog::record($user, $user->email, 'login', $request);
         $this->startSession($request, $user, $request->boolean('remember'));
 
-        return response()->json(['user' => $user]);
+        return response()->json(['user' => $this->userJson($user)]);
     }
 
     public function logout(Request $request)
@@ -82,7 +85,13 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($this->userJson($request->user()));
+    }
+
+    // The user's own JSON plus email_verified, a boolean only (email_verified_at stays hidden).
+    private function userJson(User $user): array
+    {
+        return $user->toArray() + ['email_verified' => $user->hasVerifiedEmail()];
     }
 
     // Only requests from the frontend (an origin in sanctum.stateful) get a session. Any other

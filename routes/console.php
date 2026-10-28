@@ -33,6 +33,10 @@ Artisan::command('user:make-admin {email} {--owner : Make the user an owner} {--
     DB::transaction(function () use ($user, $role) {
         $old = $user->role;
         $user->role = $role;
+        // An explicit server-side action by the owner, so it also counts as a verified email.
+        if (! $user->hasVerifiedEmail()) {
+            $user->email_verified_at = now();
+        }
         $user->save();
         AdminAuditLog::record(null, 'user.role_change', $user, $user->email, ['old' => $old, 'new' => $role]);
     });
@@ -42,6 +46,7 @@ Artisan::command('user:make-admin {email} {--owner : Make the user an owner} {--
         'admin' => "$email is now an admin.",
         'owner' => "$email is now an owner.",
     });
+    $this->info("The email $email is marked as verified.");
 
     return 0;
 })->purpose('Make a user an admin, an owner with --owner, or a normal user with --remove');

@@ -30,7 +30,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - `.env`: `SANDBOX_URL`, `SANDBOX_SECRET`, `FRONTEND_URL` (only CORS origin),
   `SANCTUM_STATEFUL_DOMAINS`, `SESSION_*`, `AUTH_REMEMBER_MINUTES` (README "Sessions"). Commands: `composer
   install`, `php artisan serve`, `migrate`, `content:sync [--dry-run]`, `test`. Dockerfile: README.
-- No web pages, views, npm or Vite: `routes/web.php` is empty (`GET /` is 404), health is `/up`.
+- No web pages, npm or Vite: `routes/web.php` is empty (`GET /` is 404), health is `/up`. The only
+  views are the two email templates in `resources/views/mail/` (README "Email").
 
 ## Working rules
 
@@ -57,7 +58,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   pass). `users.terms_accepted_at` and `users.terms_version` are set only by register, not
   mass-assignable, hidden from user JSON and `/api/me`; existing users stay NULL. Run the migration
   `2026_10_28_100000_add_terms_acceptance_to_users_table` (`php artisan migrate`) on every database.
-  Tests: 334.
+  Tests: 381.
+- Done: email verification + password reset (README "Email"). Mail is sent after the response
+  (`defer()`, no queue), failures logged without address or token; `log` mailer locally, Resend SMTP
+  in production. Only submit needs a verified email (`verified-email`, 403 `reason: email_unverified`);
+  responses carry `email_verified` (boolean), `email_verified_at` is hidden. `user:make-admin`
+  verifies. No migration (the users table already had both).
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.

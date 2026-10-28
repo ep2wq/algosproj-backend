@@ -3,14 +3,23 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 // Guests are throttled per IP; login is throttled per IP plus email (see AppServiceProvider).
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// Email (README "Email"). The verification link is signed (checked in the controller, which
+// redirects to the frontend) and works without a session. Forgot and reset are for guests.
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->whereUuid('id')->name('verification.verify');
+Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:forgot-password');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:reset-password');
 
 // Course content in Arabic or English, from the Accept-Language header (README "Content languages").
 Route::get('/modules', [LessonController::class, 'modules']);
@@ -25,10 +34,13 @@ Route::middleware(['auth:web', 'not-banned'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/leaderboard/me', [LeaderboardController::class, 'me']);
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:verification-email');
 
-    // throttle keys on the authenticated user, so the limit is per user.
+    // Running code and earning points need a verified email (verified-email). throttle keys on the
+    // authenticated user, so the limit is per user.
     Route::post('/problems/{problem}/submit', [SubmissionController::class, 'submit'])
-        ->middleware('throttle:10,1');
+        ->middleware(['verified-email', 'throttle:10,1']);
 });
 
 // The admin area. Guests get 401, users who are neither admin nor owner 403 (the admin middleware).
