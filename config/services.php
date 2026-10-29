@@ -35,6 +35,19 @@ return [
         ],
     ],
 
+    // Social login (README "Social login"). The callback is on the API host, in routes/web.php.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => rtrim((string) env('APP_URL', 'http://localhost:8000'), '/').'/auth/google/callback',
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => rtrim((string) env('APP_URL', 'http://localhost:8000'), '/').'/auth/github/callback',
+    ],
+
     'sandbox' => [
         'url' => env('SANDBOX_URL'),
         'secret' => env('SANDBOX_SECRET'),

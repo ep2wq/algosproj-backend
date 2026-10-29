@@ -7,12 +7,18 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\SocialLoginController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 // Guests are throttled per IP; login is throttled per IP plus email (see AppServiceProvider).
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// The second step of a Google or GitHub sign-up (README "Social login"): the pending sign-in lives
+// in the session, so only the frontend can use these. complete shares register's limit.
+Route::get('/auth/pending', [SocialLoginController::class, 'pending']);
+Route::post('/auth/complete', [SocialLoginController::class, 'complete'])->middleware('throttle:register');
 
 // Email (README "Email"). The verification link is signed (checked in the controller, which
 // redirects to the frontend) and works without a session. Forgot and reset are for guests.

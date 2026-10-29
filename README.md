@@ -222,7 +222,8 @@ body, a lesson body or a test.
 - `user_activity_logs` (what users do): `user_id` (null after the user is deleted, or for a
   failed login with an unknown email), `email` (snapshot, or the attempted email cut to 255
   characters), `event`, `ip`, `user_agent` (cut to 255), `created_at`. Events: `register`,
-  `login`, `login_failed`, `login_blocked_banned`, `logout`, and `banned_by_admin` /
+  `login`, `login_failed`, `login_blocked_banned`, `logout` (Google and GitHub sign-ins write the same
+  `register`, `login` and `login_blocked_banned`), and `banned_by_admin` /
   `unbanned`, which are written in the ban's transaction and have no IP or browser (the
   request was the admin's; the audit log has the admin's IP). Not logged: throttled 429s,
   validation errors, page views, submissions (the `submissions` table has those). Each of
@@ -415,6 +416,7 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 - `SESSION_LIFETIME` — idle timeout in minutes (120); see "Sessions"
 - `AUTH_REMEMBER_MINUTES` — "remember me" length (43200 = 30 days); see "Sessions"
 - `MAIL_*` — the mailer; `log` locally, Resend SMTP in production; see "Email"
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` — the OAuth apps; see "Social login"
 
 ## API
 
@@ -425,6 +427,8 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 |---|---|---|---|
 | POST | `/api/register` | | Create a user (`name`, `email`, `password`, `accepted_terms`: true; see "Terms acceptance"); returns `user` and sets the session; 5 per minute per IP |
 | POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
+| GET | `/api/auth/pending` | | The pending Google or GitHub sign-up of this session: `{name, email, provider}`, or 404 (see "Social login") |
+| POST | `/api/auth/complete` | | `name`, `accepted_terms`: true; creates the account of the pending sign-up, returns `user` (201) and sets the session; 410 without one; register's limit |
 | POST | `/api/logout` | yes | Ends the session |
 | GET | `/api/me` | yes | The current user, with `points` and `email_verified` (boolean) |
 | GET | `/api/email/verify/{id}/{hash}` | | The signed link from the verification email (see "Email"); redirects to the frontend |
@@ -564,6 +568,116 @@ Resend setup for `algoslab.sa` (owner steps):
 Free plan limits: 3,000 emails a month and 100 a day. Every registration and every reset or
 resend is one email.
 
+## Social login
+
+"Continue with Google" and "Continue with GitHub" on the frontend's login and register pages,
+with Laravel Socialite (`laravel/socialite`). Code: `app/Http/Controllers/SocialLoginController.php`,
+`app/Models/SocialAccount.php`; tests: `tests/Feature/SocialLoginTest.php`.
+
+**Flow.** The buttons are plain links (a full page visit, not a fetch) to
+`GET /auth/{provider}/redirect` on the API host (`google` or `github`; anything else is 404). It
+redirects to the provider with a random `state` and a PKCE challenge (S256), both kept in the
+session. The provider sends the browser back to `GET /auth/{provider}/callback`, which checks
+the state, swaps the code for a token (with the PKCE verifier), reads the profile and then
+redirects to the frontend: `FRONTEND_URL/` (logged in), `FRONTEND_URL/auth/complete` (new
+account, see below) or `FRONTEND_URL/login?error=<code>`. The app only redirects to these paths;
+nothing in the request chooses where to go.
+
+**Why `routes/web.php`, not `routes/api.php`.** The API gets a session only for requests whose
+`Origin` or `Referer` is the frontend (Sanctum's stateful check, "Sessions"). The callback is a
+page visit coming from `accounts.google.com` or `github.com`, so in the API group it would have no
+session, and Socialite keeps the state and the PKCE verifier in the session. The `web` group always
+starts the session. Both groups use the same `algoslab-session` cookie, so the login made by the
+callback is the one the frontend then uses. The cookie is `SameSite=Lax`, which a top-level GET
+from the provider still carries. `SocialLoginTest` checks the callback with a provider Referer
+and no Origin.
+
+**What counts as a verified email.** Google: `email_verified` must be `true` in its userinfo
+(scopes `openid email profile`). GitHub: scope `user:email`; Socialite then reads `/user/emails`
+and gives only the address that is both primary and verified (else none; the public profile
+email is never used, and an unreadable list counts as none). This was checked by running the
+real drivers against mocked answers. Emails are lower-cased.
+
+**Decision table** (in this order):
+
+| Case | Result |
+|---|---|
+| Denied on the provider's page | `login?error=social_cancelled` |
+| Bad or missing state, provider error, failed token or profile call | `login?error=social_failed` |
+| No verified email from the provider | `login?error=social_email_unverified` |
+| (provider, provider user id) already linked | that user: banned -> `social_banned`, else log in |
+| Not linked, a user with this email, email verified | banned -> `social_banned`, else link and log in |
+| Not linked, a user with this email, email NOT verified | `social_email_exists`; no link, no login (stops pre-account takeover) |
+| Not linked, the user already has another account of this provider | `social_failed`; no link |
+| New email | nothing created; pending sign-in in the session (15 minutes) -> `/auth/complete` |
+
+Logging in writes the same `login` activity row as the password login (the log has no provider
+column); a banned user gets `login_blocked_banned` and no session. Each login starts a new
+session id. Failures log only `Social login failed` with the provider and an exception class or
+code, never the email, the token or the provider's answer.
+
+**Completing a new account.** `GET /api/auth/pending` returns `{name, email, provider}` (404 when
+there is none or it expired). `POST /api/auth/complete` `{name, accepted_terms}` validates like
+register (`accepted_terms`: `bail|required|accepted|boolean`) and makes the user: role `user`,
+email verified, no password, `terms_accepted_at` and `terms_version` like register, plus the
+`social_accounts` row; then it logs in (new session id), writes the `register` activity row and
+returns `{user}` (201). Without a pending sign-in, or when the email or the provider account was
+taken meanwhile (a second tab), it answers 410 and creates nothing; the pending sign-in works
+once. Both are API routes, so only the frontend gets the session they need.
+
+**Data.** `social_accounts`: `id` (UUIDv7), `user_id` (cascade delete), `provider`,
+`provider_user_id`, timestamps; unique (provider, provider_user_id) and (user_id, provider). No
+access or refresh token, avatar or profile is stored, and no endpoint returns the table.
+`users.password` is nullable: a social-only account cannot log in with a password (the same 401
+as a wrong password) until it sets one with "Forgot password"; the reset keeps the email verified.
+
+**Limits.** Redirect and callback: 30 per minute per IP (`throttle:social`). Complete shares
+register's limit (5 per minute per IP).
+
+**Environment** (`.env.example` has empty placeholders; real values only in your own `.env`):
+
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+```
+
+The callback URL is `APP_URL/auth/{provider}/callback` (`config/services.php`), so `APP_URL` must be
+the API's public address.
+
+**Owner steps.**
+
+1. Run `php artisan migrate` on every database (two migrations: `password` nullable and the
+   `social_accounts` table).
+2. Google (Google Cloud Console, console.cloud.google.com):
+   1. Create or pick a project.
+   2. Google Auth Platform (the "OAuth consent screen"): app name AlgosLab, support email,
+      audience External, developer contact. Add the home page `https://algoslab.sa`, the privacy
+      policy `https://algoslab.sa/privacy` and the terms `https://algoslab.sa/terms`; `algoslab.sa`
+      goes under authorized domains (Google may ask you to verify it in Search Console).
+   3. Data access (scopes): `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`. These
+      are non-sensitive scopes.
+   4. Clients > Create client > Web application. Authorized redirect URIs, exactly:
+      `http://localhost:8000/auth/google/callback` and `https://api.algoslab.sa/auth/google/callback`.
+      No JavaScript origins are needed.
+   5. Copy the client ID and secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   6. While the app is in "Testing", only the test users you add can sign in. Publish it
+      ("In production") before launch; Google may still check the branding (name, logo, domain,
+      privacy policy link). Google's rules change: check the current Google Auth Platform help and
+      the "Sign in with Google" branding guidelines when you do this.
+3. GitHub (Settings > Developer settings > OAuth Apps > New OAuth App, or the organization's):
+   1. Application name AlgosLab, homepage `https://algoslab.sa`.
+   2. Authorization callback URL: `https://api.algoslab.sa/auth/github/callback`. An OAuth app has
+      one callback URL, so make a second app for local work with
+      `http://localhost:8000/auth/github/callback`.
+   3. Generate a client secret; put the ID and secret into `GITHUB_CLIENT_ID` and
+      `GITHUB_CLIENT_SECRET` (the local app's in your local `.env`, the production app's in the
+      production `.env`). The app asks for the `user:email` scope itself.
+4. Never commit the IDs or secrets; they live only in the `.env` files.
+5. After the deploy, sign in once with each provider for real: a new account (the complete page),
+   logging out and in again, and an existing verified account with the same email.
+
 ## Admin API
 
 All under `/api/admin`, behind `auth:web`, `not-banned` and the `admin` middleware
@@ -682,6 +796,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
   on the IP, count every user behind the same proxy together. The hourly email limits too: without
   it, 10 forgot-password or resend requests an hour would be shared by every visitor.
 - The logs store IP addresses and emails; cover that in the privacy policy before launch.
+- Social login: run the migrations, create the Google and GitHub OAuth apps with the production
+  callback URLs, set the four `GOOGLE_*`/`GITHUB_*` values and test a real sign-in ("Social login").
 - Email: the production `MAIL_*` values, the Resend DNS steps and the response-time check in "Email". Trusted proxies also
   matter here: without them the verification link is built and checked with the proxy's `http`
   scheme instead of `https`.

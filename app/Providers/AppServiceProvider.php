@@ -52,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perHour(10)->by('ip:'.$request->ip()),
             ];
         });
+        // Social login redirect and callback (routes/web.php): per IP, generous for shared networks.
+        RateLimiter::for('social', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
         RateLimiter::for('reset-password', function (Request $request) {
             return Limit::perHour(5)->by($request->ip());
         });

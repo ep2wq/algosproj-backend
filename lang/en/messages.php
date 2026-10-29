@@ -15,6 +15,7 @@ return [
     'reset_link_sent' => 'If an account exists for that email, we have sent a link to reset the password.',
     'password_reset' => 'Your password has been reset. You can now log in.',
     'reset_invalid' => 'This reset link is invalid or has expired. Request a new one.',
+    'social_expired' => 'Your sign-in expired. Please start again.',
 
     // Framework errors, only replaced in Arabic (bootstrap/app.php); English keeps Laravel's text.
     'not_found' => 'Not found.',
