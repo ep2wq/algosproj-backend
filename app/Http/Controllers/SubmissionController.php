@@ -33,6 +33,12 @@ class SubmissionController extends Controller
         // results come back in the same order and are matched by index below.
         $testCases = $problem->testCases()->orderBy('position')->orderBy('id')->get();
 
+        // Without tests any code would "pass": refused before the sandbox and before anything is stored.
+        // The message is the runner one (no text of its own yet); reason tells the frontend and staff.
+        if ($testCases->isEmpty()) {
+            return response()->json(['message' => __('messages.runner_unavailable'), 'reason' => 'no_tests'], 422);
+        }
+
         try {
             $response = Http::timeout(60)
                 ->withHeaders(['X-Sandbox-Secret' => config('services.sandbox.secret')])
@@ -69,6 +75,14 @@ class SubmissionController extends Controller
 
         $results = $response->json('results') ?? [];
         $passedCount = collect($results)->where('passed', true)->count();
+
+        // "passed" only counts when every test case has a passing result; anything else is a broken
+        // answer, handled like an unknown status (nothing stored, no points).
+        if ($response->json('status') === 'passed' && $passedCount !== $testCases->count()) {
+            Log::error('Sandbox reported passed without a passing result for every test', ['status' => $response->status()]);
+
+            return $this->runnerUnavailable();
+        }
 
         $user = $request->user();
         $user->submissions()->create([

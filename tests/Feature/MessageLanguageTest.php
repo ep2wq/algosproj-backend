@@ -29,6 +29,8 @@ class MessageLanguageTest extends TestCase
         $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'track' => 'basics', 'sort_order' => 1]);
         $lesson = $module->lessons()->create(['slug' => 'warm-up', 'title' => 'Warm-up', 'sort_order' => 1]);
         $this->problem = $lesson->problems()->create(['slug' => 'warm-up', 'title' => 'Double', 'description' => 'Double it', 'difficulty' => 'easy', 'points' => 10]);
+        // A problem without tests is refused before the sandbox; one test reaches the sandbox errors.
+        $this->problem->testCases()->create(['input' => '21', 'expected_output' => '42', 'is_hidden' => false]);
         $this->user = User::factory()->create(['email' => 'user@example.com', 'password' => 'password1']);
     }
 

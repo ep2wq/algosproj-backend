@@ -209,6 +209,44 @@ class SubmitTest extends TestCase
         });
     }
 
+    public function test_a_problem_without_tests_cannot_be_graded(): void
+    {
+        Http::fake();
+        $this->problem->testCases()->delete();
+
+        $this->submit()->assertUnprocessable()
+            ->assertExactJson(['message' => __('messages.runner_unavailable'), 'reason' => 'no_tests']);
+
+        Http::assertNothingSent();
+        $this->assertSame(0, $this->user->submissions()->count());
+        $this->assertSame(0, $this->user->completions()->count());
+        $this->assertSame(0, $this->user->refresh()->points);
+    }
+
+    public function test_a_passed_status_without_a_passing_result_for_every_test_is_refused(): void
+    {
+        foreach ([[], [['passed' => true, 'actual' => 'x', 'expected' => 'x', 'error' => null]]] as $results) {
+            Http::fake(['sandbox.test/*' => Http::response(['status' => 'passed', 'results' => $results, 'runtime_ms' => 1, 'compile_error' => null])]);
+            Log::shouldReceive('error')->once();
+
+            $this->submit()->assertStatus(503)->assertJsonPath('message', __('messages.runner_unavailable'));
+        }
+
+        $this->assertSame(0, $this->user->submissions()->count());
+        $this->assertSame(0, $this->user->completions()->count());
+        $this->assertSame(0, $this->user->refresh()->points);
+    }
+
+    public function test_a_busy_sandbox_returns_503_without_submission(): void
+    {
+        Http::fake(['sandbox.test/*' => Http::response(['detail' => 'Sandbox busy'], 503, ['Retry-After' => '5'])]);
+
+        $this->submit()->assertStatus(503)->assertExactJson(['message' => __('messages.runner_unavailable')]);
+
+        $this->assertSame(0, $this->user->submissions()->count());
+        $this->assertSame(0, $this->user->refresh()->points);
+    }
+
     public function test_invalid_language_is_rejected(): void
     {
         Http::fake();
