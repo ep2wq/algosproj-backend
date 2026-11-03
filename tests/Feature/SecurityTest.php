@@ -57,6 +57,32 @@ class SecurityTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function test_production_refuses_log_and_array_inside_failover_and_roundrobin(): void
+    {
+        $this->app['env'] = 'production';
+
+        foreach (['failover', 'roundrobin'] as $mailer) {
+            foreach (['log', 'array'] as $fake) {
+                config(['mail.default' => $mailer, "mail.mailers.$mailer.mailers" => ['smtp', $fake]]);
+                try {
+                    (new AppServiceProvider($this->app))->boot();
+                    $this->fail("Booted in production with $fake inside $mailer.");
+                } catch (RuntimeException $e) {
+                    $this->assertStringContainsString('MAIL_MAILER', $e->getMessage());
+                }
+            }
+
+            config(["mail.mailers.$mailer.mailers" => ['smtp', 'resend']]);
+            (new AppServiceProvider($this->app))->boot();
+        }
+
+        // A mailer of another name with the log transport.
+        config(['mail.default' => 'failover', 'mail.mailers.failover.mailers' => ['smtp', 'audit'], 'mail.mailers.audit' => ['transport' => 'log']]);
+        $this->expectException(RuntimeException::class);
+        (new AppServiceProvider($this->app))->boot();
+        $this->addToAssertionCount(1);
+    }
+
     public function test_other_environments_accept_the_log_mailer(): void
     {
         config(['mail.default' => 'log']);

@@ -31,8 +31,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // The log mailer writes verification and reset links into the log, and array drops every
-        // email: production must have a real mailer, or it does not start.
-        if (app()->isProduction() && in_array(config('mail.default'), ['log', 'array'], true)) {
+        // email: production must have a real mailer, or it does not start. A failover or roundrobin
+        // mailer is checked through its list of mailers; each name counts by its transport.
+        $mailer = (string) config('mail.default');
+        $mailers = [$mailer, ...(array) config("mail.mailers.$mailer.mailers", [])];
+        $transports = array_map(fn ($name) => config("mail.mailers.$name.transport", $name), $mailers);
+        if (app()->isProduction() && array_intersect($transports, ['log', 'array']) !== []) {
             throw new RuntimeException('MAIL_MAILER must be a real mailer in production, not log or array.');
         }
 
