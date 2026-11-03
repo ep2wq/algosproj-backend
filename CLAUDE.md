@@ -72,7 +72,20 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   and `POST /api/auth/complete` (Terms like register, role user, verified, password NULL; 410 without a
   pending one). `social_accounts` (no tokens), `users.password` nullable. Env `GOOGLE_*`, `GITHUB_*`.
   Owner: run the two 2026_10_29 migrations, create both OAuth apps, set the env values, test a real login.
-  Tests: 429.
+- Done: performance pass (`docs/performance-backend.md` in the workspace). Migration
+  `2026_11_03_100000_add_admin_filter_indexes` (activity email/event, users role): run `php artisan migrate`.
+  `/api/challenges` list cached 60 s per language (`solved` per request; `content:sync` forgets it,
+  admin edits show after <= 60 s); ETag + 304 on `/api/modules` and `/api/lessons/{slug}`;
+  `Model::preventLazyLoading` outside production.
+- Done (security audit 2026-11-03, `docs/security-audit.md` in the workspace): login limiter no longer
+  500s on a non-string email; production refuses `MAIL_MAILER=log|array` at boot; `DatabaseSeeder` makes the
+  Test User only in local/testing; global `AddSecurityHeaders` (nosniff, Referrer-Policy); `activity:prune`
+  scheduled daily (host needs the `schedule:run` cron). Audit fixes: submit to a problem with no tests is
+  422 `reason: no_tests` (message `runner_unavailable`, nothing stored, sandbox not called); a sandbox
+  `passed` without a passing result per test is a 503; the mail guard also checks failover/roundrobin lists
+  by transport. Tests: 446, pass on SQLite and on MySQL
+  (`assertSameJson` in `tests/TestCase.php` for JSON key order). Open: symfony/http-foundation and
+  symfony/mime advisories need PHP >= 8.4.1 locally (PC has 8.4.0), then `composer update` of those two.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
