@@ -230,7 +230,7 @@ body, a lesson body or a test.
   register, login and logout adds one INSERT; if it fails, the request still succeeds and
   the error goes to the Laravel log.
 - Retention: `php artisan activity:prune` deletes activity rows older than 90 days
-  (`--days=30` for another limit). It is not scheduled; see "Deploy checklist".
+  (`--days=30` for another limit). It runs daily via the scheduler; see "Deploy checklist".
 - `ip` is the request IP. Locally it is `127.0.0.1`. Behind Cloudflare or another proxy it is
   the proxy's IP until trusted proxies are configured (see "Deploy checklist"). Both logs
   store IP addresses and emails, which the privacy policy must cover.
@@ -365,7 +365,6 @@ authenticates, because the protected routes use the `web` session guard (`auth:w
   middleware still refuses a banned user if a session survives.
 - Rate limits: login 5 per minute per email and IP; register 5 per minute per IP (a named
   limiter: `throttle:5,1` would count per logged-in user, and register logs the new user in).
-- No password reset: "forgot password" needs email, which the app does not send.
 
 Local development (`.env`; the frontend's `VITE_API_URL` must use the same host name as the
 page, `http://localhost:8000` next to `http://localhost:5173`, never `127.0.0.1`: cookies
@@ -798,8 +797,12 @@ docker run -d --name algosproj-backend -p 8080:80 \
 - Run `php artisan migrate --force` and `php artisan content:sync` (see "content:sync"), then
   make the first owner with
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
-- Run `php artisan activity:prune` once a day (cron or the Laravel scheduler); it is not
-  scheduled in the code yet.
+- `activity:prune` runs daily through the Laravel scheduler (`routes/console.php`): add the cron
+  entry `* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1` on the host.
+- `MAIL_MAILER` must be a real mailer: with `APP_ENV=production` the app refuses to start with
+  `log` or `array`. `DatabaseSeeder` creates its "Test User" only in `local` and `testing`.
+- Every response carries `X-Content-Type-Options: nosniff` and
+  `Referrer-Policy: strict-origin-when-cross-origin` (`AddSecurityHeaders`).
 - Set the production values from "Sessions": `APP_NAME=AlgosLab` (session cookie
   `algoslab-session`, as the Cookies page says), frontend and API on the same registrable domain,
   `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS`, `FRONTEND_URL`.
