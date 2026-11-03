@@ -124,6 +124,49 @@ class ChallengeTest extends TestCase
         $this->assertSame($few, $count());
     }
 
+    public function test_list_is_cached_for_60_seconds_per_language(): void
+    {
+        $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'title_ar' => 'الأساسيات', 'track' => 'basics', 'sort_order' => 1]);
+        $this->problemIn($module, 'p-1', 1);
+
+        $english = $this->getJson('/api/challenges')->assertOk()->assertJsonPath('0.topic.title', 'Basics')->json();
+        $arabic = $this->getJson('/api/challenges', ['Accept-Language' => 'ar'])->assertOk()->assertJsonPath('0.topic.title', 'الأساسيات')->json();
+        $this->problemIn($module, 'p-2', 2);
+
+        // Within 60 seconds each language gets its cached list back unchanged.
+        $this->assertSame($english, $this->getJson('/api/challenges')->assertOk()->json());
+        $this->assertSame($arabic, $this->getJson('/api/challenges', ['Accept-Language' => 'ar'])->assertOk()->json());
+
+        $this->travel(61)->seconds();
+        $this->getJson('/api/challenges')->assertOk()->assertJsonCount(2)->assertJsonPath('1.slug', 'p-2');
+        $this->getJson('/api/challenges', ['Accept-Language' => 'ar'])->assertOk()->assertJsonCount(2);
+    }
+
+    public function test_cached_list_marks_solved_for_each_requester_only(): void
+    {
+        $module = Module::create(['slug' => 'basics', 'title' => 'Basics', 'track' => 'basics', 'sort_order' => 1]);
+        $problem = $this->problemIn($module, 'p-1', 1);
+        [$solver, $other] = User::factory()->count(2)->create();
+        Completion::create(['user_id' => $solver->id, 'problem_id' => $problem->id, 'completed_at' => now()]);
+
+        // The solver fills the cache first; nobody else may see their solved flag from it.
+        $this->actingAs($solver)->getJson('/api/challenges')->assertJsonPath('0.solved', true);
+        $this->app['auth']->forgetGuards();
+        $this->actingAs($other)->getJson('/api/challenges')->assertJsonPath('0.solved', false);
+        $this->app['auth']->forgetGuards();
+        $this->getJson('/api/challenges')->assertJsonPath('0.solved', false)->assertJsonMissingPath('0.id');
+        $this->assertTrue(Cache::has('content.challenges.en'));
+    }
+
+    public function test_content_sync_forgets_the_cached_list(): void
+    {
+        $this->getJson('/api/challenges')->assertOk()->assertExactJson([]);
+
+        $this->artisan('content:sync')->assertExitCode(0);
+
+        $this->getJson('/api/challenges')->assertOk()->assertJsonCount(Problem::count());
+    }
+
     public function test_challenge_shows_the_statement_and_visible_test_cases_only(): void
     {
         ['graphA' => $graphA] = $this->seedChallenges();
