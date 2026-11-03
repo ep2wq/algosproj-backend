@@ -6,6 +6,7 @@ use App\Models\UserActivityLog;
 use Database\Seeders\ContentImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 Artisan::command('inspire', function () {
@@ -83,6 +84,11 @@ Artisan::command('content:sync {--dry-run : Print the summary without writing an
 
     if ($dryRun) {
         $this->warn('Dry run: nothing was written.');
+    } else {
+        // The cached challenge list (ChallengeController::index) shows the new problems now.
+        foreach (['en', 'ar'] as $locale) {
+            Cache::forget("content.challenges.$locale");
+        }
     }
     $this->info("Added: {$counts['modules']} modules, {$counts['lessons']} lessons, {$counts['problems']} problems, {$counts['test_cases']} test cases.");
     $this->info("Arabic fields filled: {$counts['arabic_filled']}.");

@@ -28,8 +28,11 @@ Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->mid
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:reset-password');
 
 // Course content in Arabic or English, from the Accept-Language header (README "Content languages").
-Route::get('/modules', [LessonController::class, 'modules']);
-Route::get('/lessons/{slug}', [LessonController::class, 'show']);
+// These two are the same for every user (per language, Vary: Accept-Language), so they carry an
+// ETag and answer 304 to a matching If-None-Match. No max-age and not public: the frontend's
+// requests also get the session and XSRF cookies.
+Route::get('/modules', [LessonController::class, 'modules'])->middleware('cache.headers:etag');
+Route::get('/lessons/{slug}', [LessonController::class, 'show'])->middleware('cache.headers:etag');
 Route::get('/challenges', [ChallengeController::class, 'index']);
 Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);

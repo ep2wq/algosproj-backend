@@ -465,6 +465,13 @@ for it. `problems.slug` is unique and nullable; the import (`ContentImport`) set
 its lesson slug. A standalone problem needs its own slug to appear at
 `/challenges/{slug}`.
 
+Caching: the `/challenges` list (everything but `solved`) is cached per language for 60 seconds
+in the default cache store, so a problem added, changed or deleted in the admin area shows in the
+list after at most 60 seconds; `content:sync` clears it at once. `/modules` and `/lessons/{slug}`
+send an `ETag` and answer 304 with no body to a matching `If-None-Match` (still `no-cache, private`,
+no `max-age`). Nothing else is cached; details and measurements: `docs/performance-backend.md` in
+the workspace folder.
+
 ```bash
 # Register (or log in with POST /api/login and the same email and password)
 curl -X POST http://localhost:8000/api/register \

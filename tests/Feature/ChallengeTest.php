@@ -7,6 +7,7 @@ use App\Models\Module;
 use App\Models\Problem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -98,6 +99,8 @@ class ChallengeTest extends TestCase
         $this->standalone('s-1');
 
         $count = function () use ($user) {
+            // The list itself is cached; this counts the queries that build it.
+            Cache::flush();
             DB::flushQueryLog();
             DB::enableQueryLog();
             $this->app['auth']->forgetGuards();
