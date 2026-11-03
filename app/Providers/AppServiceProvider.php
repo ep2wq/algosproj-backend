@@ -34,7 +34,10 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! app()->isProduction());
 
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by(Str::lower((string) $request->input('email')).'|'.$request->ip());
+            // Not a string (an array, say): validation refuses it after the limit is counted.
+            $email = is_string($request->input('email')) ? Str::lower($request->input('email')) : '';
+
+            return Limit::perMinute(5)->by($email.'|'.$request->ip());
         });
         // Per IP only. A plain throttle:5,1 would key on the logged-in user, and register logs the
         // new user in, so each new account would start a fresh count.

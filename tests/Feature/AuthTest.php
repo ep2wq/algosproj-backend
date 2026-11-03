@@ -99,6 +99,19 @@ class AuthTest extends TestCase
         $this->postJson('/api/login', [])->assertUnprocessable();
     }
 
+    // The login rate limiter reads the email before validation: an array or object must not crash it.
+    public function test_an_email_that_is_not_a_string_is_a_validation_error_not_a_server_error(): void
+    {
+        foreach ([['ada@example.com'], ['a' => 'ada@example.com']] as $email) {
+            $this->postJson('/api/login', ['email' => $email, 'password' => 'x'])->assertUnprocessable()->assertJsonValidationErrors('email');
+            $this->postJson('/api/register', ['name' => 'Ada', 'email' => $email, 'password' => 'secret-password', 'accepted_terms' => true])
+                ->assertUnprocessable()->assertJsonValidationErrors('email');
+            $this->postJson('/api/forgot-password', ['email' => $email])->assertUnprocessable()->assertJsonValidationErrors('email');
+            $this->postJson('/api/reset-password', ['token' => 't', 'email' => $email, 'password' => 'secret-password', 'password_confirmation' => 'secret-password'])
+                ->assertUnprocessable()->assertJsonValidationErrors('email');
+        }
+    }
+
     public function test_me_returns_user_with_points(): void
     {
         $user = User::factory()->create(['email' => 'ada@example.com']);
