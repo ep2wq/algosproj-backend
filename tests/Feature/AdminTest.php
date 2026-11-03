@@ -255,9 +255,9 @@ class AdminTest extends TestCase
         $this->asAdmin('PUT', "/api/admin/problems/{$this->problem->id}/test-cases/{$this->testCase->id}", ['input' => 'SECRET-IN', 'expected_output' => 'SECRET-OUT', 'is_hidden' => true])->assertOk();
 
         [$lessonRow, $testRow] = AdminAuditLog::orderBy('created_at')->orderBy('id')->get();
-        $this->assertSame(['title' => ['old' => 'Warm-up', 'new' => str_repeat('t', 200)], 'body' => 'changed'], $lessonRow->details['changes']);
+        $this->assertSameJson(['title' => ['old' => 'Warm-up', 'new' => str_repeat('t', 200)], 'body' => 'changed'], $lessonRow->details['changes']);
         $this->assertSame($longTitle, $lessonRow->target_label);
-        $this->assertSame(['input' => 'changed', 'expected_output' => 'changed', 'is_hidden' => ['old' => false, 'new' => true]], $testRow->details['changes']);
+        $this->assertSameJson(['input' => 'changed', 'expected_output' => 'changed', 'is_hidden' => ['old' => false, 'new' => true]], $testRow->details['changes']);
         $this->assertStringNotContainsString('SECRET', AdminAuditLog::all()->toJson());
     }
 
@@ -269,7 +269,7 @@ class AdminTest extends TestCase
         $this->assertNull($row->actor_id);
         $this->assertSame('console', $row->actor_email);
         $this->assertSame('user.role_change', $row->action);
-        $this->assertSame(['old' => 'user', 'new' => 'admin'], $row->details);
+        $this->assertSameJson(['old' => 'user', 'new' => 'admin'], $row->details);
         $this->assertSame($this->user->email, $row->target_label);
     }
 

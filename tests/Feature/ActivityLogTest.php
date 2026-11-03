@@ -8,7 +8,6 @@ use App\Models\UserActivityLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -91,7 +90,7 @@ class ActivityLogTest extends TestCase
     public function test_a_logging_failure_does_not_break_login_or_register(): void
     {
         User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
-        Schema::drop('user_activity_logs');
+        $this->breakActivityLog();
         Log::shouldReceive('error')->twice()->withArgs(fn ($message) => $message === 'Could not write user activity');
 
         $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk()->assertJsonStructure(['user'])->assertJsonMissingPath('token');
@@ -104,7 +103,7 @@ class ActivityLogTest extends TestCase
         $user = User::factory()->create();
         $rememberToken = $user->remember_token;
         DB::table('sessions')->insert(['id' => str_repeat('a', 40), 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
-        Schema::drop('user_activity_logs');
+        $this->breakActivityLog();
 
         $this->actingAs($owner)->postJson("/api/admin/users/{$user->id}/ban", ['reason' => 'Spam'])->assertServerError();
 
@@ -164,5 +163,11 @@ class ActivityLogTest extends TestCase
         $this->actingAs($owner)->deleteJson("/api/admin/users/{$user->id}", ['confirm_email' => 'ada@example.com'])->assertNoContent();
 
         $this->assertSame([['user_id' => null, 'email' => 'ada@example.com', 'event' => 'login', 'ip' => null, 'user_agent' => null]], $this->events());
+    }
+
+    // Every activity insert fails. Not by dropping the table: DDL commits MySQL's test transaction.
+    private function breakActivityLog(): void
+    {
+        UserActivityLog::creating(fn () => throw new \RuntimeException('activity log unavailable'));
     }
 }

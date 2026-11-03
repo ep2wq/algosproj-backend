@@ -83,7 +83,11 @@ class UuidKeyTest extends TestCase
 
     public function test_foreign_keys_are_enforced_in_the_test_database(): void
     {
-        $this->assertSame(1, (int) DB::selectOne('PRAGMA foreign_keys')->foreign_keys);
+        // SQLite needs the pragma; MySQL (InnoDB) enforces them unless foreign_key_checks is off.
+        $enabled = DB::getDriverName() === 'sqlite'
+            ? DB::selectOne('PRAGMA foreign_keys')->foreign_keys
+            : DB::selectOne('SELECT @@foreign_key_checks AS checks')->checks;
+        $this->assertSame(1, (int) $enabled);
 
         foreach ([
             fn () => Lesson::create(['module_id' => self::UNKNOWN, 'slug' => 'x', 'title' => 'X', 'sort_order' => 1]),

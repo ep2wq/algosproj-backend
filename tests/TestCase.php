@@ -19,4 +19,21 @@ abstract class TestCase extends BaseTestCase
         config(['sanctum.stateful' => ['localhost:5173']]);
         $this->withServerVariables(['HTTP_ORIGIN' => self::FRONTEND]);
     }
+
+    // Like assertSame for JSON column values, but key order does not count: MySQL stores JSON
+    // object keys sorted, SQLite keeps them as written.
+    protected function assertSameJson(array $expected, mixed $actual): void
+    {
+        $sort = function ($value) use (&$sort) {
+            if (! is_array($value)) {
+                return $value;
+            }
+            $value = array_map($sort, $value);
+            ksort($value);
+
+            return $value;
+        };
+
+        $this->assertSame($sort($expected), $sort($actual));
+    }
 }

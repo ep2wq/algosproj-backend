@@ -110,9 +110,9 @@ class AdminArabicTest extends TestCase
 
         [$lessonRow, $problemRow] = AdminAuditLog::orderBy('created_at')->orderBy('id')->get()->all();
         $this->assertSame('lesson.update', $lessonRow->action);
-        $this->assertSame(['old' => 'الإحماء', 'new' => mb_substr($longTitle, 0, 200)], $lessonRow->details['changes']['title_ar']);
+        $this->assertSameJson(['old' => 'الإحماء', 'new' => mb_substr($longTitle, 0, 200)], $lessonRow->details['changes']['title_ar']);
         $this->assertSame('changed', $lessonRow->details['changes']['body_ar']);
         $this->assertStringNotContainsString('نص سري جديد', json_encode($lessonRow->details, JSON_UNESCAPED_UNICODE));
-        $this->assertSame(['old' => 'ضاعفه', 'new' => 'وصف جديد'], $problemRow->details['changes']['description_ar']);
+        $this->assertSameJson(['old' => 'ضاعفه', 'new' => 'وصف جديد'], $problemRow->details['changes']['description_ar']);
     }
 }

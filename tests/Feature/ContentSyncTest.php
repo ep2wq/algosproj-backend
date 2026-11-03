@@ -202,7 +202,7 @@ class ContentSyncTest extends TestCase
         $this->assertNull($row->actor_id);
         $this->assertNull($row->target_type);
         $this->assertNull($row->ip);
-        $this->assertSame(['modules' => 19, 'lessons' => 65, 'problems' => 65], array_intersect_key($row->details, ['modules' => 0, 'lessons' => 0, 'problems' => 0]));
+        $this->assertSameJson(['modules' => 19, 'lessons' => 65, 'problems' => 65], array_intersect_key($row->details, ['modules' => 0, 'lessons' => 0, 'problems' => 0]));
         $this->assertSame($this->arabicFieldCount(), $row->details['arabic_filled']);
         $this->assertSame(ProblemTestCase::count(), $row->details['test_cases']);
     }
