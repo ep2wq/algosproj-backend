@@ -312,6 +312,12 @@ Indexes on the tables the API reads, besides each primary key:
 - `user_activity_logs.created_at`: `activity:prune` deletes by age.
 - `users.created_at`: the admin users list is read newest first.
 - `admin_audit_logs.created_at`: the audit log is read newest first.
+- `user_activity_logs (email, created_at)` and `(event, created_at)`: the owner's activity
+  filters `?user=<email>` and `?event=` read only the matching rows, newest first, for the page
+  and its count. Without them, with 200,000 rows, an email filter walked the whole table (about
+  1 s) and a rare event about 1 s; with them both take under 1 ms.
+- `users (role, created_at)`: the admin users list filtered by `?role=` (5 admins among 20,000
+  users: 57 ms before, under 0.1 ms after).
 - `modules_slug_unique`, `lessons_slug_unique`: lesson pages are fetched by slug.
 - Foreign key indexes (`lessons.module_id`, `problems.lesson_id`, `test_cases.problem_id`,
   `submissions.user_id`, `submissions.problem_id`, `completions.problem_id`): MySQL creates
