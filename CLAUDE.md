@@ -84,8 +84,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   422 `reason: no_tests` (message `runner_unavailable`, nothing stored, sandbox not called); a sandbox
   `passed` without a passing result per test is a 503; the mail guard also checks failover/roundrobin lists
   by transport. Tests: 446, pass on SQLite and on MySQL
-  (`assertSameJson` in `tests/TestCase.php` for JSON key order). Open: symfony/http-foundation and
-  symfony/mime advisories need PHP >= 8.4.1 locally (PC has 8.4.0), then `composer update` of those two.
+  (`assertSameJson` in `tests/TestCase.php` for JSON key order). symfony/http-foundation and symfony/mime
+  advisories fixed (Symfony 8.1.10, Laravel 13.39.0; `composer audit` clean). Symfony 8.1 needs PHP >= 8.4.1:
+  rebuild the image with `docker build --pull`.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
