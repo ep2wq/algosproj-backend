@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The log mailer writes verification and reset links into the log, and array drops every
+        // email: production must have a real mailer, or it does not start.
+        if (app()->isProduction() && in_array(config('mail.default'), ['log', 'array'], true)) {
+            throw new RuntimeException('MAIL_MAILER must be a real mailer in production, not log or array.');
+        }
+
         // Outside production a relation that was not eager-loaded throws, so an N+1 query shows up
         // in development and in the tests instead of slowing a list down unnoticed.
         Model::preventLazyLoading(! app()->isProduction());
