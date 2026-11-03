@@ -6,12 +6,37 @@ use App\Models\User;
 use App\Providers\AppServiceProvider;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use RuntimeException;
 use Tests\TestCase;
 
 class SecurityTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_responses_carry_nosniff_and_a_referrer_policy(): void
+    {
+        foreach ([$this->getJson('/api/modules'), $this->getJson('/api/me'), $this->getJson('/api/no-such-route'), $this->get('/up')] as $response) {
+            $response->assertHeader('X-Content-Type-Options', 'nosniff');
+            $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
+    }
+
+    public function test_a_header_already_set_is_kept(): void
+    {
+        Route::get('/api/test-own-referrer-policy', fn () => response()->json([])->header('Referrer-Policy', 'no-referrer'));
+
+        $this->getJson('/api/test-own-referrer-policy')->assertHeader('Referrer-Policy', 'no-referrer');
+    }
+
+    public function test_per_user_responses_are_private(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['/api/me', '/api/leaderboard/me', '/api/leaderboard'] as $path) {
+            $this->assertStringContainsString('private', (string) $this->actingAs($user)->getJson($path)->headers->get('Cache-Control'));
+        }
+    }
 
     public function test_production_refuses_the_log_and_array_mailers(): void
     {
@@ -51,5 +76,10 @@ class SecurityTest extends TestCase
         $this->app['env'] = 'testing';
         $seed();
         $this->assertTrue(User::where('email', 'test@example.com')->exists());
+    }
+
+    public function test_activity_prune_is_scheduled_daily(): void
+    {
+        $this->artisan('schedule:list')->expectsOutputToContain('activity:prune')->assertSuccessful();
     }
 }

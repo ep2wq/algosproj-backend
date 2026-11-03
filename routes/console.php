@@ -8,6 +8,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -52,7 +53,7 @@ Artisan::command('user:make-admin {email} {--owner : Make the user an owner} {--
     return 0;
 })->purpose('Make a user an admin, an owner with --owner, or a normal user with --remove');
 
-// Not scheduled yet: run it daily in production (README "Deploy checklist").
+// Scheduled daily below; the host needs a cron entry for `schedule:run` (README "Deploy checklist").
 Artisan::command('activity:prune {--days=90 : Delete rows older than this many days}', function () {
     $days = $this->option('days');
 
@@ -67,6 +68,8 @@ Artisan::command('activity:prune {--days=90 : Delete rows older than this many d
 
     return 0;
 })->purpose('Delete user activity log rows older than --days (default 90)');
+
+Schedule::command('activity:prune')->daily();
 
 // Adds seed content the database doesn't have yet and fills empty Arabic columns, in one
 // transaction; never overwrites a non-empty value (README "content:sync"). Safe to run again.

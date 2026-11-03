@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
@@ -34,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Every request answers in the Accept-Language language (ar or en), messages included.
         // Global, so it also runs for unknown routes and before route binding.
         $middleware->prepend(SetContentLanguage::class);
+        // nosniff and Referrer-Policy on every response (README "Deploy checklist").
+        $middleware->append(AddSecurityHeaders::class);
         // Check the ban and the role before route model binding, so a banned user or a non-admin gets
         // 403 for any id, never 404.
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsNotBanned::class);
