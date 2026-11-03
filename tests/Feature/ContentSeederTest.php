@@ -24,7 +24,7 @@ class ContentSeederTest extends TestCase
         );
         $this->assertSame(65, Problem::count());
 
-        foreach (Problem::with('testCases')->get() as $problem) {
+        foreach (Problem::with(['testCases', 'lesson'])->get() as $problem) {
             $this->assertGreaterThanOrEqual(2, $problem->testCases->where('is_hidden', false)->count(), $problem->title);
             $this->assertGreaterThanOrEqual(3, $problem->testCases->where('is_hidden', true)->count(), $problem->title);
             $this->assertSame(['easy' => 10, 'medium' => 20, 'hard' => 30][$problem->difficulty], $problem->points, $problem->title);
