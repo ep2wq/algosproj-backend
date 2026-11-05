@@ -235,6 +235,53 @@ body, a lesson body or a test.
   the proxy's IP until trusted proxies are configured (see "Deploy checklist"). Both logs
   store IP addresses and emails, which the privacy policy must cover.
 
+### Security events and IP bans
+
+When a request does something forbidden, a row goes into `security_events`; the owner sees them
+on the admin Security page (a count badge on the nav item) and can ban the IP. Nothing here
+blocks a request on its own: only a ban does.
+
+- Types: `forbidden_admin_route` (logged in, but not admin/owner: `EnsureUserIsAdmin`/`Owner`,
+  `detail.required`), `unauthenticated_admin_route` (401 under `/api/admin`), `honeypot_filled`
+  (the hidden `form_extra` field on login, register or forgot-password was filled),
+  `decoy_url` (404 on `.env`, `.git/config`, `wp-login.php`, `wp-admin`, `xmlrpc.php`,
+  `phpmyadmin`, `admin.php` or a path under them), `suspicious_input` (a GET query under `/api`,
+  except the admin content lists, or `name`/`email` on the auth POSTs, matches `sql_injection`,
+  `script_tag`, `path_traversal` or `null_byte`; field names that look like a secret, such as
+  `password`, `token` or `code`, are skipped), `rate_limited` (429), `csrf_mismatch` (419).
+  The last five are recorded by the global `RecordSecurityEvents` middleware after the response.
+- A row: `type`, `ip`, `user_agent` (cut to 200), `method`, `path`, `user_id` (null when logged
+  out, and after the user is deleted), `detail` JSON (only `route`, `rule`, `fields`, `value`,
+  `required`; strings cut to 200, control characters replaced), `count`, `first_seen_at`,
+  `last_seen_at`, `seen_at` (null = unseen). Never a password, a token, a cookie or a body.
+- The same IP and type within 10 minutes (`rate_limited`: also the same method and path) update
+  the row: `count` + 1, the latest browser, path and detail, `seen_at` back to null. An IP makes
+  at most 200 new rows a day (a cache counter); after that, only existing rows grow. If the
+  INSERT fails, the request still gets its normal response and the error goes to the Laravel log.
+- Honeypot: the request is answered like a real failure, with no account, session or email:
+  login 401 "wrong email or password", register 422 "email already taken", forgot-password 202
+  "link sent". The frontend sends `form_extra` only when it is non-empty, so a person never sends it.
+- Bans (`banned_ips`: `ip` unique, `expires_at` null = permanent, `note`, `banned_by`,
+  `blocked_count`, `last_blocked_at`): the global `BlockBannedIps` middleware answers every
+  request from an active ban with 403 `{"message": "Forbidden."}` before the session starts (no
+  cookie). The list is cached for 60 s (`security.banned_ips`, cleared on ban and unban), and
+  the expiry is checked on each request. `blocked_count` is written at most once a minute per
+  IP. If the cache or the table fails, the request is let through and a warning is logged.
+  Only a public IP can be banned (no loopback, private, CGNAT, link-local or reserved range),
+  never the owner's own, and not one that is already banned (422 each). Ban and unban are in
+  the audit log (`security.ban`, `security.unban`, `security.event_seen`, `security.events_seen`).
+  IPv4 addresses seen through IPv6 (`::ffff:8.8.4.4`) count as the IPv4 address; an IPv6 ban covers one
+  address, not its /64. Locked out (your IP changed to a banned one): unban from another network, or on the
+  host delete the row from `banned_ips` and run `php artisan cache:forget security.banned_ips`.
+- Trusted proxies: `TRUSTED_PROXIES` (comma-separated IPs or CIDR ranges, or `*` only if the app
+  cannot be reached except through the proxy). Empty means none: `X-Forwarded-For` is ignored.
+  Behind Cloudflare without it, every event, ban and rate limit sees Cloudflare's IP, and a ban
+  would block everyone behind that edge.
+- Retention: `php artisan security:prune` (daily via the scheduler) deletes events whose
+  `last_seen_at` is older than 90 days and bans that expired more than 30 days ago
+  (`config/security.php`). Permanent bans stay until unbanned.
+- Tests: `SecurityEventTest`, `IpBanTest`, `HoneypotTest`, and the routes in `AdminTest`.
+
 Seed content lives in `database/seeders/data/lessons.php`: Getting started (slug `basics`;
 titled Basics until the Programming basics module was added), Programming basics, Core programming, Object-oriented programming (slug `oop`), Algorithm basics, Arrays and strings,
 Stacks and queues, Linked lists, Hash tables, Trees and BSTs, Heaps and priority queues (slug `heaps`), Recursion and backtracking, Graphs, Tries and union-find (slug `tries-union-find`), Sorting and searching, Greedy algorithms (slug `greedy`), Dynamic programming basics (slug `dp-basics`), Dynamic programming: tables (slug `dp-tables`), Bit manipulation and math (slug `bits-math`). Each problem has 2 visible and 3-6 hidden tests (Make change has 10, one per amount it must cover; Count set bits has 10, one per required value),
@@ -422,6 +469,7 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 - `AUTH_REMEMBER_MINUTES` — "remember me" length (43200 = 30 days); see "Sessions"
 - `MAIL_*` — the mailer; `log` locally, Resend SMTP in production; see "Email"
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` — the OAuth apps; see "Social login"
+- `TRUSTED_PROXIES` — proxies allowed to set `X-Forwarded-For` (empty = none); see "Security events and IP bans"
 
 ## API
 
@@ -733,6 +781,13 @@ at once. Every successful write is in the audit log (see "Logs").
 | DELETE | `/users/{user}` | `confirm_email` (the exact email) | Owner only. 204, or 422 if the email does not match. Deletes their sessions; foreign keys delete their submissions and completions and set them to null in both logs |
 | GET | `/audit-log?action=&actor=&from=&to=&page=` | | Owner only. 50 per page, newest first; `actor` is a user UUID, an email or `console`; `from`/`to` are `YYYY-MM-DD` UTC days, both included |
 | GET | `/activity?event=&user=&from=&to=&page=` | | Owner only. 50 per page, newest first; `user` is a user UUID or an email |
+| GET | `/security/summary` | | Owner only. `{"unseen": n}` (the nav badge) |
+| GET | `/security/events?type=&status=&ip=&from=&to=&page=` | | Owner only. 50 per page, by `last_seen_at` newest first; `status` is `seen` or `unseen`; each row adds `user` (`id, name, email` or null) and `ip_banned` |
+| POST | `/security/events/{securityEvent}/seen` | | Owner only. `{id, seen_at}` |
+| POST | `/security/events/seen` | | Owner only. Marks every unseen event as seen: `{"updated": n}` |
+| GET | `/security/bans?page=` | | Owner only. 50 per page, newest first; each with `banned_by_user` and `active` |
+| POST | `/security/bans` | `ip`, `duration` (`1h`, `24h`, `7d` or `permanent`), `note` (optional, max 255) | Owner only. 201 with the ban; 422 for a non-public IP, your own IP or an active ban (an expired ban of that IP is replaced) |
+| DELETE | `/security/bans/{bannedIp}` | | Owner only. 204; requests from the IP are allowed again at once |
 
 User actions (everything above that changes a user) follow the rules in "Roles"; ban, unban,
 log out everywhere, role, points, reset and delete never accept a password, a token or the
@@ -797,7 +852,7 @@ docker run -d --name algosproj-backend -p 8080:80 \
 - Run `php artisan migrate --force` and `php artisan content:sync` (see "content:sync"), then
   make the first owner with
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
-- `activity:prune` runs daily through the Laravel scheduler (`routes/console.php`): add the cron
+- `activity:prune` and `security:prune` run daily through the Laravel scheduler (`routes/console.php`): add the cron
   entry `* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1` on the host.
 - `MAIL_MAILER` must be a real mailer: with `APP_ENV=production` the app refuses to start with
   `log` or `array`. `DatabaseSeeder` creates its "Test User" only in `local` and `testing`.
@@ -806,12 +861,13 @@ docker run -d --name algosproj-backend -p 8080:80 \
 - Set the production values from "Sessions": `APP_NAME=AlgosLab` (session cookie
   `algoslab-session`, as the Cookies page says), frontend and API on the same registrable domain,
   `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, `SANCTUM_STATEFUL_DOMAINS`, `FRONTEND_URL`.
-- Configure trusted proxies when running behind Cloudflare or any other proxy
-  (`$middleware->trustProxies(...)` in `bootstrap/app.php`). Until then the request IP is the
-  proxy's, so both logs record the wrong IP and the login and register rate limits, which key
+- Set `TRUSTED_PROXIES` when running behind Cloudflare or any other proxy (Cloudflare's published
+  IP ranges, or `*` if the app is reachable only through the proxy; "Security events and IP bans").
+  Until then the request IP is the proxy's, so both logs and the security events record the wrong IP,
+  an IP ban would block every visitor behind that proxy and the login and register rate limits, which key
   on the IP, count every user behind the same proxy together. The hourly email limits too: without
   it, 10 forgot-password or resend requests an hour would be shared by every visitor.
-- The logs store IP addresses and emails; cover that in the privacy policy before launch.
+- The logs and the security events store IP addresses and emails; cover that in the privacy policy before launch.
 - Social login: run the migrations, create the Google and GitHub OAuth apps with the production
   callback URLs, set the four `GOOGLE_*`/`GITHUB_*` values and test a real sign-in ("Social login").
 - Email: the production `MAIL_*` values, the Resend DNS steps and the response-time check in "Email". Trusted proxies also

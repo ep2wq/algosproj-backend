@@ -87,6 +87,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   (`assertSameJson` in `tests/TestCase.php` for JSON key order). symfony/http-foundation and symfony/mime
   advisories fixed (Symfony 8.1.10, Laravel 13.39.0; `composer audit` clean). Symfony 8.1 needs PHP >= 8.4.1:
   rebuild the image with `docker build --pull`.
+- Done (2026-11-05): security events and IP bans (README "Security events and IP bans"). Tables
+  `security_events`, `banned_ips` (migrations `2026_11_05_100000`/`100100`: run `php artisan migrate`);
+  `SecurityEvent::record()` (aggregates per IP+type for 10 min, 200 new rows per IP a day, never breaks
+  the request); global `BlockBannedIps` (403 `Forbidden.` before the session, cached list 60 s, fails open)
+  and `RecordSecurityEvents` (401 admin, 419, 429, decoy 404s, suspicious query/auth input); honeypot
+  `form_extra` on login/register/forgot (answers like a normal failure); owner API under
+  `/api/admin/security/*`; `security:prune` daily. `TRUSTED_PROXIES` env (`App\Http\Middleware\TrustProxies`):
+  set it behind Cloudflare. Tests: 478 on SQLite and MySQL.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
