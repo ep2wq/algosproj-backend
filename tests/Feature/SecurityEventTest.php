@@ -242,4 +242,26 @@ class SecurityEventTest extends TestCase
         $this->withServerVariables(['REMOTE_ADDR' => '9.9.9.9'])->withHeader('X-Forwarded-For', '8.8.8.8')->get('/.env');
         $this->assertSame('9.9.9.9', SecurityEvent::sole()->ip);
     }
+
+    public function test_prune_deletes_old_events_and_long_expired_bans(): void
+    {
+        $event = fn ($daysAgo) => SecurityEvent::create(['type' => 'decoy_url', 'ip' => '9.9.9.9', 'method' => 'GET', 'path' => "/$daysAgo",
+            'first_seen_at' => now()->subDays($daysAgo), 'last_seen_at' => now()->subDays($daysAgo)]);
+        $event(91);
+        $event(89);
+        BannedIp::create(['ip' => '9.9.9.1', 'expires_at' => now()->subDays(31)]);
+        BannedIp::create(['ip' => '9.9.9.2', 'expires_at' => now()->subDays(29)]);
+        BannedIp::create(['ip' => '9.9.9.3', 'expires_at' => null]);
+        BannedIp::create(['ip' => '9.9.9.4', 'expires_at' => now()->addDay()]);
+
+        $this->artisan('security:prune')->assertSuccessful();
+
+        $this->assertSame(['/89'], SecurityEvent::pluck('path')->all());
+        $this->assertSame(['9.9.9.2', '9.9.9.3', '9.9.9.4'], BannedIp::orderBy('ip')->pluck('ip')->all());
+    }
+
+    public function test_security_prune_is_scheduled_daily(): void
+    {
+        $this->artisan('schedule:list')->expectsOutputToContain('security:prune')->assertSuccessful();
+    }
 }

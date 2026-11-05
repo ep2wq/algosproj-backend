@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\AdminAuditLog;
+use App\Models\BannedIp;
+use App\Models\SecurityEvent;
 use App\Models\User;
 use App\Models\UserActivityLog;
 use Database\Seeders\ContentImport;
@@ -70,6 +72,21 @@ Artisan::command('activity:prune {--days=90 : Delete rows older than this many d
 })->purpose('Delete user activity log rows older than --days (default 90)');
 
 Schedule::command('activity:prune')->daily();
+
+// Retention of security events and IP bans (config/security.php, README "Security events and IP bans").
+// Scheduled daily below, like activity:prune.
+Artisan::command('security:prune', function () {
+    $days = (int) config('security.retention_days');
+    $banDays = (int) config('security.ban_retention_days');
+
+    $events = SecurityEvent::where('last_seen_at', '<', now()->subDays($days))->delete();
+    $bans = BannedIp::whereNotNull('expires_at')->where('expires_at', '<', now()->subDays($banDays))->delete();
+    $this->info("Deleted $events security events last seen more than $days days ago and $bans bans that expired more than $banDays days ago.");
+
+    return 0;
+})->purpose('Delete old security events and long-expired IP bans');
+
+Schedule::command('security:prune')->daily();
 
 // Adds seed content the database doesn't have yet and fills empty Arabic columns, in one
 // transaction; never overwrites a non-empty value (README "content:sync"). Safe to run again.

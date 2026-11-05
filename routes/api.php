@@ -95,5 +95,14 @@ Route::middleware(['auth:web', 'not-banned', 'admin'])->prefix('admin')->group(f
         Route::delete('/users/{user}', [Admin\UserController::class, 'destroy']);
         Route::get('/audit-log', [Admin\AuditLogController::class, 'index']);
         Route::get('/activity', [Admin\ActivityController::class, 'index']);
+
+        // Security events and IP bans (README "Security events and IP bans").
+        Route::get('/security/summary', [Admin\SecurityController::class, 'summary']);
+        Route::get('/security/events', [Admin\SecurityController::class, 'events']);
+        Route::post('/security/events/seen', [Admin\SecurityController::class, 'markAllSeen']);
+        Route::post('/security/events/{securityEvent}/seen', [Admin\SecurityController::class, 'markSeen']);
+        Route::get('/security/bans', [Admin\SecurityController::class, 'bans']);
+        Route::post('/security/bans', [Admin\SecurityController::class, 'ban']);
+        Route::delete('/security/bans/{bannedIp}', [Admin\SecurityController::class, 'unban']);
     });
 });

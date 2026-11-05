@@ -21,4 +21,7 @@ return [
     'amount_zero' => 'The amount may not be zero.',
     'points_below_zero' => "Points can't go below 0. This user has :points.",
     'confirm_email' => "Type the user's exact email to confirm.",
+    'ip_not_public' => 'Only a public IP address can be banned, not a loopback, private or reserved one.',
+    'ip_is_yours' => "This is your own IP address. You can't ban it.",
+    'ip_already_banned' => 'This IP address is already banned.',
 ];

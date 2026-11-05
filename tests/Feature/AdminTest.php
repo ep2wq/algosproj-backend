@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\AdminAuditLog;
+use App\Models\BannedIp;
 use App\Models\Completion;
 use App\Models\Lesson;
 use App\Models\Module;
 use App\Models\Problem;
+use App\Models\SecurityEvent;
 use App\Models\TestCase as ProblemTestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,6 +45,10 @@ class AdminTest extends TestCase
 
     private ProblemTestCase $testCase;
 
+    private SecurityEvent $securityEvent;
+
+    private BannedIp $bannedIp;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -71,6 +77,8 @@ class AdminTest extends TestCase
         $this->testCase = $this->problem->testCases()->create(['input' => 'VISIBLE-IN', 'expected_output' => 'VISIBLE-OUT', 'is_hidden' => false]);
         $this->problem->testCases()->create(['input' => 'HIDDEN-IN', 'expected_output' => 'HIDDEN-OUT', 'is_hidden' => true]);
         $this->setUpTargets();
+        $this->securityEvent = SecurityEvent::create(['type' => 'decoy_url', 'ip' => '9.9.9.9', 'method' => 'GET', 'path' => '/.env', 'first_seen_at' => now(), 'last_seen_at' => now()]);
+        $this->bannedIp = BannedIp::create(['ip' => '9.9.9.10', 'banned_by' => $this->owner->id]);
     }
 
     // Each request starts clean: no user from an earlier request and no cached guard.
@@ -130,6 +138,13 @@ class AdminTest extends TestCase
             ['GET', "/api/admin/users/$u/activity", [], 200, 200],
             ['GET', '/api/admin/audit-log', [], 403, 200],
             ['GET', '/api/admin/activity', [], 403, 200],
+            ['GET', '/api/admin/security/summary', [], 403, 200],
+            ['GET', '/api/admin/security/events', [], 403, 200],
+            ['POST', '/api/admin/security/events/seen', [], 403, 200],
+            ['POST', "/api/admin/security/events/{$this->securityEvent->id}/seen", [], 403, 200],
+            ['GET', '/api/admin/security/bans', [], 403, 200],
+            ['POST', '/api/admin/security/bans', ['ip' => '9.9.9.11', 'duration' => '24h'], 403, 201],
+            ['DELETE', "/api/admin/security/bans/{$this->bannedIp->id}", [], 403, 204],
         ];
     }
 
@@ -159,8 +174,8 @@ class AdminTest extends TestCase
     private function pattern(string $method, string $uri): string
     {
         return $method.' '.preg_replace(
-            ['/modules\/[0-9a-f-]{36}/', '/lessons\/[0-9a-f-]{36}/', '/problems\/[0-9a-f-]{36}/', '/test-cases\/[0-9a-f-]{36}/', '/users\/[0-9a-f-]{36}/'],
-            ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}'],
+            ['/modules\/[0-9a-f-]{36}/', '/lessons\/[0-9a-f-]{36}/', '/problems\/[0-9a-f-]{36}/', '/test-cases\/[0-9a-f-]{36}/', '/users\/[0-9a-f-]{36}/', '/events\/[0-9a-f-]{36}/', '/bans\/[0-9a-f-]{36}/'],
+            ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}', 'events/{securityEvent}', 'bans/{bannedIp}'],
             $uri,
         );
     }
@@ -187,7 +202,14 @@ class AdminTest extends TestCase
         'POST /api/admin/users/{user}/points' => 'user.points_adjust',
         'POST /api/admin/users/{user}/reset-progress' => 'user.reset_progress',
         'DELETE /api/admin/users/{user}' => 'user.delete',
+        'POST /api/admin/security/events/seen' => 'security.events_seen',
+        'POST /api/admin/security/events/{securityEvent}/seen' => 'security.event_seen',
+        'POST /api/admin/security/bans' => 'security.ban',
+        'DELETE /api/admin/security/bans/{bannedIp}' => 'security.unban',
     ];
+
+    // Write actions on no single row.
+    private const NO_TARGET = ['security.events_seen'];
 
     public function test_every_admin_write_route_has_an_audit_action(): void
     {
@@ -218,7 +240,9 @@ class AdminTest extends TestCase
             $this->assertSame($actor->id, $rows[0]->actor_id);
             $this->assertSame($actor->email, $rows[0]->actor_email);
             $this->assertSame('127.0.0.1', $rows[0]->ip);
-            $this->assertNotNull($rows[0]->target_id);
+            if (! in_array($rows[0]->action, self::NO_TARGET, true)) {
+                $this->assertNotNull($rows[0]->target_id);
+            }
             $this->assertNotNull($rows[0]->target_label);
 
             $this->refreshContent();
@@ -330,6 +354,8 @@ class AdminTest extends TestCase
         Lesson::query()->delete();
         Module::query()->delete();
         User::whereKey([$this->target->id, $this->bannedTarget->id])->delete();
+        SecurityEvent::query()->delete();
+        BannedIp::query()->delete();
         $this->setUpContent();
     }
 
