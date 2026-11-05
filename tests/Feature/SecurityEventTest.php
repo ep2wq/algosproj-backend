@@ -158,6 +158,7 @@ class SecurityEventTest extends TestCase
     {
         $secrets = ['Sup3r-Secret-Pass', 'COOKIE-SECRET-VALUE', 'BEARER-SECRET-TOKEN', 'RESET-TOKEN-SECRET'];
 
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'Sup3r-Secret-Pass', SecurityEvent::HONEYPOT_FIELD => 'bot'])->assertUnauthorized();
         $this->withHeaders(['Authorization' => 'Bearer BEARER-SECRET-TOKEN', 'Cookie' => 'algoslab-session=COOKIE-SECRET-VALUE; XSRF-TOKEN=COOKIE-SECRET-VALUE'])
             ->withUnencryptedCookie('algoslab-session', 'COOKIE-SECRET-VALUE')
             ->getJson('/api/admin/users')->assertUnauthorized();
@@ -165,7 +166,7 @@ class SecurityEventTest extends TestCase
         $this->postJson('/api/reset-password', ['token' => 'RESET-TOKEN-SECRET', 'email' => "x' OR '1'='1", 'password' => 'Sup3r-Secret-Pass', 'password_confirmation' => 'Sup3r-Secret-Pass']);
         $this->get('/.env?password=Sup3r-Secret-Pass');
 
-        $this->assertSame(['decoy_url', 'suspicious_input', 'unauthenticated_admin_route'], SecurityEvent::orderBy('type')->pluck('type')->all());
+        $this->assertSame(['decoy_url', 'honeypot_filled', 'suspicious_input', 'unauthenticated_admin_route'], SecurityEvent::orderBy('type')->pluck('type')->all());
         $stored = json_encode(SecurityEvent::all()->map->getAttributes());
         foreach ($secrets as $secret) {
             $this->assertStringNotContainsString($secret, $stored);

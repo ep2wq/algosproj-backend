@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SecurityEvent;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ class PasswordResetController extends Controller
         $data = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
         ]);
+        // The hidden field was filled (a bot): the same 202, and no email.
+        if (SecurityEvent::honeypotFilled($request)) {
+            return response()->json(['message' => __('messages.reset_link_sent')], 202);
+        }
         $locale = app()->getLocale();
 
         defer(function () use ($data, $locale) {

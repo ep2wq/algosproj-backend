@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SecurityEvent;
 use App\Models\User;
 use App\Models\UserActivityLog;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 // Cookie sessions (README "Sessions"): login and register start a session, logout ends it.
 // No token is ever issued or returned.
@@ -24,6 +27,15 @@ class AuthController extends Controller
             // Accepting the Terms of use and Privacy policy: true, 1 or "1" only ("yes" and "on" fail boolean).
             'accepted_terms' => ['bail', 'required', 'accepted', 'boolean'],
         ]);
+
+        // The hidden field was filled (a bot): the same 422 as an email that is already taken, and
+        // no account (README "Security events and IP bans").
+        if (SecurityEvent::honeypotFilled($request)) {
+            $validator = Validator::make([], []);
+            $validator->errors()->add('email', __('validation.unique', ['attribute' => $validator->getDisplayableAttribute('email')]));
+
+            throw new ValidationException($validator);
+        }
 
         // The acceptance is recorded with the server's time and the current legal version
         // (config/legal.php); nothing from the request is stored but the three fields.
@@ -47,6 +59,11 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
             'remember' => ['sometimes', 'boolean'],
         ]);
+
+        // The hidden field was filled (a bot): the usual wrong-credentials answer, nothing checked.
+        if (SecurityEvent::honeypotFilled($request)) {
+            return response()->json(['message' => __('messages.invalid_credentials')], 401);
+        }
 
         $user = User::where('email', $data['email'])->first();
 
