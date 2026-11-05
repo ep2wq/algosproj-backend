@@ -20,4 +20,5 @@ return [
     // Framework errors, only replaced in Arabic (bootstrap/app.php); English keeps Laravel's text.
     'not_found' => 'Not found.',
     'too_many_attempts' => 'Too Many Attempts.',
+    'forbidden' => 'Forbidden.',
 ];

@@ -171,7 +171,8 @@ class ContentLanguageTest extends TestCase
                 DB::flushQueryLog();
                 DB::enableQueryLog();
                 $this->getJson($uri, $headers)->assertOk();
-                $counts[] = count(DB::getQueryLog());
+                // The IP ban list is read once and then cached (BlockBannedIps), so it is left out.
+                $counts[] = collect(DB::getQueryLog())->reject(fn ($query) => str_contains($query['query'], 'banned_ips'))->count();
                 DB::disableQueryLog();
             }
             $this->assertSame($counts[0], $counts[1], $uri);

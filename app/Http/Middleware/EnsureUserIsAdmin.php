@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SecurityEvent;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,11 @@ class EnsureUserIsAdmin
         $user = $request->user();
 
         abort_if(! $user, 401, __('messages.unauthenticated'));
-        abort_if(! in_array($user->role, ['admin', 'owner'], true), 403, __('admin.forbidden'));
+        if (! in_array($user->role, ['admin', 'owner'], true)) {
+            // A logged-in user on a route above their role (README "Security events and IP bans").
+            SecurityEvent::record('forbidden_admin_route', $request, ['required' => 'admin']);
+            abort(403, __('admin.forbidden'));
+        }
 
         return $next($request);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SecurityEvent;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,11 @@ class EnsureUserIsOwner
         $user = $request->user();
 
         abort_if(! $user, 401, __('messages.unauthenticated'));
-        abort_if($user->role !== 'owner', 403, __('admin.owner_only'));
+        if ($user->role !== 'owner') {
+            // A logged-in user on a route above their role (README "Security events and IP bans").
+            SecurityEvent::record('forbidden_admin_route', $request, ['required' => 'owner']);
+            abort(403, __('admin.owner_only'));
+        }
 
         return $next($request);
     }

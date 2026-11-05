@@ -107,9 +107,9 @@ class ChallengeTest extends TestCase
             $this->actingAs($user)->getJson('/api/challenges')->assertOk();
             DB::disableQueryLog();
 
-            // Leave out the user lookup of authentication.
+            // Leave out the user lookup of authentication and the IP ban list (cached for 60 s, flushed here).
             return collect(DB::getQueryLog())
-                ->reject(fn ($query) => preg_match('/from "users"/', $query['query']))
+                ->reject(fn ($query) => preg_match('/from [`"](users|banned_ips)[`"]/', $query['query']))
                 ->count();
         };
 

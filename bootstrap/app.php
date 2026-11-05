@@ -1,16 +1,20 @@
 <?php
 
 use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\BlockBannedIps;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\EnsureUserIsOwner;
+use App\Http\Middleware\RecordSecurityEvents;
 use App\Http\Middleware\SetContentLanguage;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\Middleware\TrustProxies as BaseTrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -37,6 +41,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(SetContentLanguage::class);
         // nosniff and Referrer-Policy on every response (README "Deploy checklist").
         $middleware->append(AddSecurityHeaders::class);
+        // Proxies from TRUSTED_PROXIES only (config/security.php); none by default, so a client can't
+        // fake its IP with X-Forwarded-For (README "Security events and IP bans").
+        $middleware->replace(BaseTrustProxies::class, TrustProxies::class);
+        // A banned IP gets a plain 403 before the session or any route middleware runs. Then the
+        // finished response is checked for security events (both after TrustProxies, so the IP is right).
+        $middleware->append(BlockBannedIps::class);
+        $middleware->append(RecordSecurityEvents::class);
         // Check the ban and the role before route model binding, so a banned user or a non-admin gets
         // 403 for any id, never 404.
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureUserIsNotBanned::class);
