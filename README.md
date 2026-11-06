@@ -26,12 +26,14 @@ flowchart TD
         challengeb["Challenge browsing"]
         submit["Code submission<br/>[SubmissionController.php]"]
         board["Leaderboard"]
+        bugsend["Bug report intake<br/>[BugReportController.php]"]
     end
     subgraph adm["Administration and security"]
         contentm["Content management"]
         useradmin["User administration<br/>[UserController.php]"]
         secmgmt["Security management<br/>[SecurityController.php]"]
         secrec["Security event recording<br/>[RecordSecurityEvents.php, BlockBannedIps.php]"]
+        bugadmin["Bug report review<br/>[Admin/BugReportController.php]"]
         prune["Daily prune<br/>[console.php]"]
     end
     subgraph ext["External runtime"]
@@ -47,7 +49,9 @@ flowchart TD
         secev["Security events and honeypot<br/>[SecurityEvent.php]"]
         bans["IP bans<br/>[BannedIp.php]"]
         activity["User activity<br/>[UserActivityLog.php]"]
+        bugs["Bug reports<br/>[BugReport.php]"]
     end
+    private[("Private screenshot disk")]
     frontend -->|calls API| safeguards
     safeguards -->|registers globally| lang
     safeguards -->|blocks banned IPs, records events| secrec
@@ -63,6 +67,14 @@ flowchart TD
     routes -->|routes to| contentm
     routes -->|routes to| useradmin
     routes -->|routes to| secmgmt
+    routes -->|routes to| bugsend
+    routes -->|routes to| bugadmin
+    bugsend -->|stores sanitized report| bugs
+    bugsend -->|stores screenshot| private
+    bugsend -->|checks honeypot| secev
+    bugadmin -->|reviews and updates| bugs
+    bugadmin -->|serves screenshot| private
+    bugadmin -->|records actions| audit
     secrec -->|checks| bans
     secrec -->|records| secev
     lessonb -->|reads content| lessonm
@@ -89,6 +101,7 @@ flowchart TD
     prune -->|deletes old rows| activity
     prune -->|deletes old rows| secev
     prune -->|deletes long-expired bans| bans
+    prune -->|deletes old reports and files| bugs
 ```
 
 ## Stack
@@ -368,6 +381,57 @@ blocks a request on its own: only a ban does.
   (`config/security.php`). Permanent bans stay until unbanned.
 - Tests: `SecurityEventTest`, `IpBanTest`, `HoneypotTest`, and the routes in `AdminTest`.
 
+### Bug reports
+
+The "Report a bug" dialog of the frontend sends `POST /api/bug-reports` (multipart; logged out or
+logged in, with the session and CSRF header like the other POSTs). The owner reads the reports on
+the admin Bug reports page (a count badge on the nav item). Code: `BugReportController`,
+`Admin\BugReportController`, `BugReport`, table `bug_reports`.
+
+- Always stored: `description` (10 to 2000 characters), `page_path` (the path only: scheme, host,
+  query string and fragment are dropped), `page_title`, `app_version`, `language`, `theme`,
+  `viewport`, `timezone`, `user_agent` (from the request header, cut to 255), `error_context`
+  (`status`, `path`, `code`, `message`; only when the report was opened from an error screen) and
+  `included` (which optional parts were stored).
+- Optional, stored only when the user's `included` flag is `true`, even if the client sent the
+  data anyway: `account` (logged in only: `user_id` and the account's email as `contact_email`;
+  without it a logged-in report is anonymous), `diagnostics` (`failed_requests` and
+  `console_errors`, at most 10 each, the newest kept), `problem` (`problem_context`: `slug`,
+  `language`, the user's `code` cut to 20,000 characters, and the last run's `status`,
+  `passed_count`, `total_count`, `message`), `screenshot`. A logged-out visitor may type a
+  `contact_email`.
+- Never stored: the IP address, request or response bodies, headers, cookies, query strings, and
+  any key that is not on the list for its part (so `password`, `token`, `cookie`, `authorization`,
+  `api_key`, `csrf` and the like are dropped). In the free text, the messages and the paths,
+  `Bearer` values, JWTs, runs of 32 or more token characters (UUIDs are kept) and the values of
+  secret-named parameters (`password=`, `token=`, `key=`, `token:` and the like) become
+  `[redacted]`. In the code only `Bearer` values and JWTs are redacted, so `key = 5` stays.
+  Messages are cut to 300 characters. A top-level field that is not on the list is a 422.
+- Screenshot: optional, at most 1.5 MB. PNG, WebP or JPEG only, judged from the content
+  (`getimagesize` and `finfo` must agree), never from the file name or the mime type the client
+  sent: SVG, HTML and anything else get 422. At most 4000 px a side (read by `getimagesize`, no
+  GD needed). Stored on the private `local` disk (`storage/app/private/bug-reports/`, never under
+  `public/`) as `<uuid>.<real extension>`. The path is never sent in a response, only
+  `has_screenshot`. The owner gets the file from `GET /api/admin/bug-reports/{id}/screenshot`
+  with a fixed `image/*` content type, `X-Content-Type-Options: nosniff` and
+  `Cache-Control: private, no-store`.
+- Limits: 5 reports per hour per IP, and 5 per hour per account when logged in (`bug-reports`
+  limiter); a 429 is recorded as `rate_limited`. The hidden `form_extra` field: when filled, the
+  answer is a 201 with a random id like a real report, nothing is saved, and `honeypot_filled` is
+  recorded. The `suspicious_input` check does not look at this endpoint (reports contain code and
+  error text on purpose).
+- Owner only (the `owner` middleware, like the Security routes): list, summary, detail (opening a
+  report sets `seen_at`), status and note, screenshot, delete. A status change
+  (`bug_report.status`, `{from, to}`) and a delete (`bug_report.delete`) go to the audit log, ids
+  only, never the report's text. A note change sets `handled_by` but is not audited.
+- Retention: `php artisan bugreports:prune` (daily via the scheduler) deletes `fixed` and
+  `wont_fix` reports 30 days after `status_changed_at`, and any report 180 days after it was
+  created (`config/bug_reports.php`), with their screenshot files.
+- Deleting a user sets `user_id` (and `handled_by`) to null; the report and its `contact_email` stay.
+- Host: PHP `upload_max_filesize` and `post_max_size` at least 3M; `storage/app/private` must be
+  writable and not served.
+- Tests: `BugReportTest`, `BugReportAdminTest`, and the routes in `AdminTest`.
+
 Seed content lives in `database/seeders/data/lessons.php`: Getting started (slug `basics`;
 titled Basics until the Programming basics module was added), Programming basics, Core programming, Object-oriented programming (slug `oop`), Algorithm basics, Arrays and strings,
 Stacks and queues, Linked lists, Hash tables, Trees and BSTs, Heaps and priority queues (slug `heaps`), Recursion and backtracking, Graphs, Tries and union-find (slug `tries-union-find`), Sorting and searching, Greedy algorithms (slug `greedy`), Dynamic programming basics (slug `dp-basics`), Dynamic programming: tables (slug `dp-tables`), Bit manipulation and math (slug `bits-math`). Each problem has 2 visible and 3-6 hidden tests (Make change has 10, one per amount it must cover; Count set bits has 10, one per required value),
@@ -577,6 +641,7 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 | GET | `/api/modules` | | Modules with their lessons (no lesson body), in `sort_order` |
 | GET | `/api/lessons/{slug}` | | A lesson (`body`, `body_lang`) with its problems (`description_lang`) and their visible test cases |
 | POST | `/api/problems/{id}/submit` | yes, verified email | `{id}` is the problem's UUID. Run code against all test cases, in `position` order; 10 requests per minute per user; 403 `reason: email_unverified` without a verified email |
+| POST | `/api/bug-reports` | | Multipart: `description`, `page_path`, `included` (JSON flags) and the optional fields of "Bug reports", `screenshot` file optional; 201 `{id}`; 5 per hour per IP and per account |
 | GET | `/api/leaderboard?limit=50` | | `[{rank, name, points, is_you}]`, users with points > 0 who are not banned (limit max 100); `is_you` is true only on the logged-in requester's row (a session is optional), false on every row when logged out |
 | GET | `/api/leaderboard/me` | yes | `{rank, points}` for the current user |
 | GET | `/api/challenges` | | Every problem: `[{slug, title, difficulty, points, topic, lesson_slug, solved}]`, in module order, then lesson order; standalone problems last |
@@ -874,6 +939,12 @@ at once. Every successful write is in the audit log (see "Logs").
 | GET | `/security/bans?page=` | | Owner only. 50 per page, newest first; each with `banned_by_user` and `active` |
 | POST | `/security/bans` | `ip`, `duration` (`1h`, `24h`, `7d` or `permanent`), `note` (optional, max 255) | Owner only. 201 with the ban; 422 for a non-public IP, your own IP or an active ban (an expired ban of that IP is replaced) |
 | DELETE | `/security/bans/{bannedIp}` | | Owner only. 204; requests from the IP are allowed again at once |
+| GET | `/bug-reports?status=&seen=&search=&screenshot=&from=&to=&page=` | | Owner only. 50 per page, newest first: `id, user_id, contact_email, description, status, page_path, seen_at, created_at, has_screenshot, user` (`id, name, email, role` or null); `status` is `new`, `in_progress`, `fixed` or `wont_fix`, `seen` is `seen` or `unseen`, `search` matches the description, page path or contact email (`%` and `_` literal), `screenshot` 1 or 0, `from`/`to` UTC days on `created_at` |
+| GET | `/bug-reports/summary` | | Owner only. `{"unseen": n}`: new reports nobody opened (the nav badge) |
+| GET | `/bug-reports/{bugReport}` | | Owner only. Every field plus `user` and `handler`; sets `seen_at` |
+| PATCH | `/bug-reports/{bugReport}` | `status`, `admin_note` (max 5000), both optional | Owner only. The report; a status change sets `status_changed_at` and is audited |
+| GET | `/bug-reports/{bugReport}/screenshot` | | Owner only. The image (404 without one) |
+| DELETE | `/bug-reports/{bugReport}` | | Owner only. 204; the screenshot file goes too |
 
 User actions (everything above that changes a user) follow the rules in "Roles"; ban, unban,
 log out everywhere, role, points, reset and delete never accept a password, a token or the
@@ -938,8 +1009,10 @@ docker run -d --name algosproj-backend -p 8080:80 \
 - Run `php artisan migrate --force` and `php artisan content:sync` (see "content:sync"), then
   make the first owner with
   `php artisan user:make-admin <email> --owner` (the account must be registered first).
-- `activity:prune` and `security:prune` run daily through the Laravel scheduler (`routes/console.php`): add the cron
+- `activity:prune`, `security:prune` and `bugreports:prune` run daily through the Laravel scheduler (`routes/console.php`): add the cron
   entry `* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1` on the host.
+- Bug reports: `storage/app/private` exists, is writable by PHP and is not served by the web server;
+  PHP `upload_max_filesize` and `post_max_size` are at least 3M (README "Bug reports").
 - `MAIL_MAILER` must be a real mailer: with `APP_ENV=production` the app refuses to start with
   `log` or `array`. `DatabaseSeeder` creates its "Test User" only in `local` and `testing`.
 - Every response carries `X-Content-Type-Options: nosniff` and
