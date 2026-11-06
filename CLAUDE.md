@@ -19,7 +19,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Tables: `users` (`points`, `role` user/admin/owner, `banned_at`/`ban_reason`, none fillable),
   `modules`, `lessons`, `problems` (+ `title_ar`, `body_ar`, `description_ar`; NULL =
   untranslated; problems also `created_at`), `test_cases` (`is_hidden`, `position`), `submissions`,
-  `completions`, `admin_audit_logs`, `user_activity_logs` (both append-only). Keys are UUIDv7
+  `completions`, `admin_audit_logs`, `user_activity_logs` (both append-only), `security_events`,
+  `banned_ips`, `bug_reports`. Keys are UUIDv7
   strings (`CHAR(36)`, `HasUuids`), FKs `foreignUuid`. Planned: `ai_hints`.
 - Language: global `SetContentLanguage` (first `ar`/`ar-XX` = Arabic locale, `Vary` always). Text
   falls back per field (`HasArabicText`, `*_lang`, no `*_ar` publicly). Messages only from `lang/`
@@ -95,6 +96,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `form_extra` on login/register/forgot (answers like a normal failure); owner API under
   `/api/admin/security/*`; `security:prune` daily. `TRUSTED_PROXIES` env (`App\Http\Middleware\TrustProxies`):
   set it behind Cloudflare. Tests: 478 on SQLite and MySQL.
+- Done (2026-11-06): bug reports (README "Bug reports"). Table `bug_reports` (migration `2026_11_06_100000`:
+  run `php artisan migrate`), public `POST /api/bug-reports` (multipart, 5/h per IP and per account, honeypot
+  `form_extra` = fake 201, server-side sanitizing and redaction, optional parts only with their `included` flag,
+  no IP stored), screenshot PNG/WebP/JPEG by content, max 1.5 MB and 4000 px, on the private `local` disk; owner
+  API under `/api/admin/bug-reports*` (status/delete audited); `bugreports:prune` daily (`config/bug_reports.php`).
+  Host: PHP upload_max_filesize/post_max_size >= 3M. Tests: 498 on SQLite and MySQL.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
