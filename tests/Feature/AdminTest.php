@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AdminAuditLog;
 use App\Models\BannedIp;
+use App\Models\BugReport;
 use App\Models\Completion;
 use App\Models\Lesson;
 use App\Models\Module;
@@ -14,6 +15,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -49,9 +51,12 @@ class AdminTest extends TestCase
 
     private BannedIp $bannedIp;
 
+    private BugReport $bugReport;
+
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
 
         $this->owner = User::factory()->create(['role' => 'owner']);
         $this->admin = User::factory()->create(['role' => 'admin']);
@@ -79,6 +84,8 @@ class AdminTest extends TestCase
         $this->setUpTargets();
         $this->securityEvent = SecurityEvent::create(['type' => 'decoy_url', 'ip' => '9.9.9.9', 'method' => 'GET', 'path' => '/.env', 'first_seen_at' => now(), 'last_seen_at' => now()]);
         $this->bannedIp = BannedIp::create(['ip' => '9.9.9.10', 'banned_by' => $this->owner->id]);
+        Storage::disk('local')->put('bug-reports/admin-test.png', 'png');
+        $this->bugReport = BugReport::create(['description' => 'Something broke.', 'page_path' => '/lessons', 'included' => [], 'screenshot_path' => 'bug-reports/admin-test.png']);
     }
 
     // Each request starts clean: no user from an earlier request and no cached guard.
@@ -145,6 +152,12 @@ class AdminTest extends TestCase
             ['GET', '/api/admin/security/bans', [], 403, 200],
             ['POST', '/api/admin/security/bans', ['ip' => '9.9.9.11', 'duration' => '24h'], 403, 201],
             ['DELETE', "/api/admin/security/bans/{$this->bannedIp->id}", [], 403, 204],
+            ['GET', '/api/admin/bug-reports', [], 403, 200],
+            ['GET', '/api/admin/bug-reports/summary', [], 403, 200],
+            ['GET', "/api/admin/bug-reports/{$this->bugReport->id}", [], 403, 200],
+            ['GET', "/api/admin/bug-reports/{$this->bugReport->id}/screenshot", [], 403, 200],
+            ['PATCH', "/api/admin/bug-reports/{$this->bugReport->id}", ['status' => 'in_progress', 'admin_note' => 'Checking'], 403, 200],
+            ['DELETE', "/api/admin/bug-reports/{$this->bugReport->id}", [], 403, 204],
         ];
     }
 
@@ -174,8 +187,8 @@ class AdminTest extends TestCase
     private function pattern(string $method, string $uri): string
     {
         return $method.' '.preg_replace(
-            ['/modules\/[0-9a-f-]{36}/', '/lessons\/[0-9a-f-]{36}/', '/problems\/[0-9a-f-]{36}/', '/test-cases\/[0-9a-f-]{36}/', '/users\/[0-9a-f-]{36}/', '/events\/[0-9a-f-]{36}/', '/bans\/[0-9a-f-]{36}/'],
-            ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}', 'events/{securityEvent}', 'bans/{bannedIp}'],
+            ['/modules\/[0-9a-f-]{36}/', '/lessons\/[0-9a-f-]{36}/', '/problems\/[0-9a-f-]{36}/', '/test-cases\/[0-9a-f-]{36}/', '/users\/[0-9a-f-]{36}/', '/events\/[0-9a-f-]{36}/', '/bans\/[0-9a-f-]{36}/', '/bug-reports\/[0-9a-f-]{36}/'],
+            ['modules/{module}', 'lessons/{lesson}', 'problems/{problem}', 'test-cases/{testCase}', 'users/{user}', 'events/{securityEvent}', 'bans/{bannedIp}', 'bug-reports/{bugReport}'],
             $uri,
         );
     }
@@ -206,6 +219,8 @@ class AdminTest extends TestCase
         'POST /api/admin/security/events/{securityEvent}/seen' => 'security.event_seen',
         'POST /api/admin/security/bans' => 'security.ban',
         'DELETE /api/admin/security/bans/{bannedIp}' => 'security.unban',
+        'PATCH /api/admin/bug-reports/{bugReport}' => 'bug_report.status',
+        'DELETE /api/admin/bug-reports/{bugReport}' => 'bug_report.delete',
     ];
 
     // Write actions on no single row.

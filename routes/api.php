@@ -108,5 +108,13 @@ Route::middleware(['auth:web', 'not-banned', 'admin'])->prefix('admin')->group(f
         Route::get('/security/bans', [Admin\SecurityController::class, 'bans']);
         Route::post('/security/bans', [Admin\SecurityController::class, 'ban']);
         Route::delete('/security/bans/{bannedIp}', [Admin\SecurityController::class, 'unban']);
+
+        // Bug reports (README "Bug reports").
+        Route::get('/bug-reports', [Admin\BugReportController::class, 'index']);
+        Route::get('/bug-reports/summary', [Admin\BugReportController::class, 'summary']);
+        Route::get('/bug-reports/{bugReport}', [Admin\BugReportController::class, 'show']);
+        Route::patch('/bug-reports/{bugReport}', [Admin\BugReportController::class, 'update']);
+        Route::get('/bug-reports/{bugReport}/screenshot', [Admin\BugReportController::class, 'screenshot']);
+        Route::delete('/bug-reports/{bugReport}', [Admin\BugReportController::class, 'destroy']);
     });
 });

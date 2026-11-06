@@ -2,6 +2,7 @@
 
 use App\Models\AdminAuditLog;
 use App\Models\BannedIp;
+use App\Models\BugReport;
 use App\Models\SecurityEvent;
 use App\Models\User;
 use App\Models\UserActivityLog;
@@ -87,6 +88,25 @@ Artisan::command('security:prune', function () {
 })->purpose('Delete old security events and long-expired IP bans');
 
 Schedule::command('security:prune')->daily();
+
+// Retention of bug reports and their screenshots (config/bug_reports.php, README "Bug reports").
+// Scheduled daily below, like activity:prune.
+Artisan::command('bugreports:prune', function () {
+    $closedDays = (int) config('bug_reports.closed_retention_days');
+    $days = (int) config('bug_reports.retention_days');
+
+    $reports = BugReport::where(fn ($query) => $query
+        ->where(fn ($q) => $q->whereIn('status', ['fixed', 'wont_fix'])->where('status_changed_at', '<', now()->subDays($closedDays)))
+        ->orWhere('created_at', '<', now()->subDays($days)))
+        ->get(['id', 'screenshot_path']);
+    $reports->each(fn (BugReport $report) => $report->deleteScreenshot());
+    $deleted = BugReport::whereIn('id', $reports->pluck('id'))->delete();
+    $this->info("Deleted $deleted bug reports closed more than $closedDays days ago or created more than $days days ago.");
+
+    return 0;
+})->purpose('Delete closed bug reports after 30 days and every bug report after 180 days, with their screenshots');
+
+Schedule::command('bugreports:prune')->daily();
 
 // Adds seed content the database doesn't have yet and fills empty Arabic columns, in one
 // transaction; never overwrites a non-empty value (README "content:sync"). Safe to run again.
