@@ -5,6 +5,92 @@ auth, lessons, problems, submissions, points and the leaderboard. The React fron
 (`algosproj-frontend`) talks to this service, and this service is the only one that calls
 the sandbox (`algosproj-sandbox`) to run and grade user code.
 
+## Architecture
+
+Global middleware runs first, then the route's own checks, then a controller that uses the models.
+
+```mermaid
+flowchart TD
+    frontend(("React frontend"))
+    subgraph entry["API entry and auth"]
+        safeguards["Global middleware<br/>[app.php]"]
+        routes["API routes<br/>[api.php]"]
+        roles["Ban and role checks<br/>[EnsureUserIsNotBanned.php, EnsureUserIsAdmin.php, EnsureUserIsOwner.php]"]
+        email["Email verification and password reset"]
+        lang["Content language<br/>[SetContentLanguage.php]"]
+        social["Social sign-in<br/>[SocialLoginController.php]"]
+        auth["Session authentication<br/>[AuthController.php]"]
+    end
+    subgraph learning["Learning and progress"]
+        lessonb["Lesson browsing"]
+        challengeb["Challenge browsing"]
+        submit["Code submission<br/>[SubmissionController.php]"]
+        board["Leaderboard"]
+    end
+    subgraph adm["Administration and security"]
+        contentm["Content management"]
+        useradmin["User administration<br/>[UserController.php]"]
+        secmgmt["Security management<br/>[SecurityController.php]"]
+        secrec["Security event recording<br/>[RecordSecurityEvents.php, BlockBannedIps.php]"]
+        prune["Daily prune<br/>[console.php]"]
+    end
+    subgraph ext["External runtime"]
+        sandbox{{"Code sandbox"}}
+    end
+    subgraph models["Domain models"]
+        problem["Problems and tests<br/>[Problem.php]"]
+        lessonm["Lessons and modules<br/>[Lesson.php]"]
+        subm["Submission records<br/>[Submission.php]"]
+        compl["Completions<br/>[Completion.php]"]
+        audit["Admin audit<br/>[AdminAuditLog.php]"]
+        user["Users and progress<br/>[User.php]"]
+        secev["Security events and honeypot<br/>[SecurityEvent.php]"]
+        bans["IP bans<br/>[BannedIp.php]"]
+        activity["User activity<br/>[UserActivityLog.php]"]
+    end
+    frontend -->|calls API| safeguards
+    safeguards -->|registers globally| lang
+    safeguards -->|blocks banned IPs, records events| secrec
+    safeguards -->|passes request| routes
+    routes -->|guards user and admin routes| roles
+    routes -->|routes to| email
+    routes -->|routes to| social
+    routes -->|routes to| auth
+    routes -->|routes to| lessonb
+    routes -->|routes to| challengeb
+    routes -->|routes to| submit
+    routes -->|routes to| board
+    routes -->|routes to| contentm
+    routes -->|routes to| useradmin
+    routes -->|routes to| secmgmt
+    secrec -->|checks| bans
+    secrec -->|records| secev
+    lessonb -->|reads content| lessonm
+    challengeb -->|reads problems| problem
+    submit -->|sends code and tests| sandbox
+    submit -->|loads tests| problem
+    submit -->|stores result| subm
+    submit -->|awards completion| compl
+    board -->|reads rankings| user
+    contentm -->|manages content| lessonm
+    contentm -->|manages content| problem
+    contentm -->|records actions| audit
+    useradmin -->|records actions| audit
+    useradmin -->|manages accounts| user
+    secmgmt -->|records actions| audit
+    secmgmt -->|reviews events| secev
+    secmgmt -->|manages bans| bans
+    social -->|resolves account| user
+    email -->|verifies and resets| user
+    email -->|checks honeypot| secev
+    auth -->|authenticates| user
+    auth -->|checks honeypot| secev
+    auth -->|logs activity| activity
+    prune -->|deletes old rows| activity
+    prune -->|deletes old rows| secev
+    prune -->|deletes long-expired bans| bans
+```
+
 ## Stack
 
 Laravel on PHP 8.3+, MySQL or Postgres, Sanctum in SPA mode (cookie sessions, no API tokens; see "Sessions").
