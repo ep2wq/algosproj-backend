@@ -78,6 +78,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('reset-password', function (Request $request) {
             return Limit::perHour(5)->by($request->ip());
         });
+        // Bug reports (README "Bug reports"): per IP, and per account when logged in.
+        RateLimiter::for('bug-reports', function (Request $request) {
+            return array_filter([
+                Limit::perHour(5)->by('ip:'.$request->ip()),
+                $request->user() ? Limit::perHour(5)->by('user:'.$request->user()->id) : null,
+            ]);
+        });
 
         // The verification link is the API's signed route (60 minutes), which redirects to the
         // frontend. The reset link goes straight to the frontend's form.

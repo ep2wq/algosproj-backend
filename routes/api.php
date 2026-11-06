@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\LeaderboardController;
@@ -36,6 +37,9 @@ Route::get('/lessons/{slug}', [LessonController::class, 'show'])->middleware('ca
 Route::get('/challenges', [ChallengeController::class, 'index']);
 Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+// The "Report a bug" dialog (README "Bug reports"), logged out or logged in, CSRF like the other POSTs.
+Route::post('/bug-reports', [BugReportController::class, 'store'])->middleware('throttle:bug-reports');
 
 // The session guard only: a bearer token never authenticates. not-banned refuses a banned user's
 // session (banning deletes their sessions; this catches any left).

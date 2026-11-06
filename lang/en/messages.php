@@ -16,6 +16,9 @@ return [
     'password_reset' => 'Your password has been reset. You can now log in.',
     'reset_invalid' => 'This reset link is invalid or has expired. Request a new one.',
     'social_expired' => 'Your sign-in expired. Please start again.',
+    'bug_report_unknown_field' => 'This field is not accepted.',
+    'bug_report_invalid_field' => 'This field is not valid.',
+    'screenshot_invalid' => 'The screenshot must be a PNG, WebP or JPEG image of at most 4000 pixels a side.',
 
     // Framework errors, only replaced in Arabic (bootstrap/app.php); English keeps Laravel's text.
     'not_found' => 'Not found.',
