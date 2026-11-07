@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Off: no GET/PUT storage/{path} route. Bug report screenshots reach the owner only through
+            // the admin API (README "Bug reports").
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -39,6 +39,11 @@ class AppServiceProvider extends ServiceProvider
         if (app()->isProduction() && array_intersect($transports, ['log', 'array']) !== []) {
             throw new RuntimeException('MAIL_MAILER must be a real mailer in production, not log or array.');
         }
+        // The session cookie gets the Secure flag only from SESSION_SECURE_COOKIE: production must set
+        // it to true, or it does not start (README "Sessions").
+        if (app()->isProduction() && config('session.secure') !== true) {
+            throw new RuntimeException('SESSION_SECURE_COOKIE must be true in production.');
+        }
 
         // Outside production a relation that was not eager-loaded throws, so an N+1 query shows up
         // in development and in the tests instead of slowing a list down unnoticed.

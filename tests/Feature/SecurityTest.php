@@ -41,6 +41,7 @@ class SecurityTest extends TestCase
     public function test_production_refuses_the_log_and_array_mailers(): void
     {
         $this->app['env'] = 'production';
+        config(['session.secure' => true]);
 
         foreach (['log', 'array'] as $mailer) {
             config(['mail.default' => $mailer]);
@@ -60,6 +61,7 @@ class SecurityTest extends TestCase
     public function test_production_refuses_log_and_array_inside_failover_and_roundrobin(): void
     {
         $this->app['env'] = 'production';
+        config(['session.secure' => true]);
 
         foreach (['failover', 'roundrobin'] as $mailer) {
             foreach (['log', 'array'] as $fake) {
@@ -88,6 +90,44 @@ class SecurityTest extends TestCase
         config(['mail.default' => 'log']);
         (new AppServiceProvider($this->app))->boot();
         $this->addToAssertionCount(1);
+    }
+
+    public function test_production_refuses_a_session_cookie_without_the_secure_flag(): void
+    {
+        $this->app['env'] = 'production';
+        config(['mail.default' => 'smtp']);
+
+        foreach ([false, null, 'true'] as $secure) {
+            config(['session.secure' => $secure]);
+            try {
+                (new AppServiceProvider($this->app))->boot();
+                $this->fail('Booted in production with session.secure '.var_export($secure, true).'.');
+            } catch (RuntimeException $e) {
+                $this->assertStringContainsString('SESSION_SECURE_COOKIE', $e->getMessage());
+            }
+        }
+
+        config(['session.secure' => true]);
+        (new AppServiceProvider($this->app))->boot();
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_other_environments_boot_without_the_secure_flag(): void
+    {
+        foreach (['local', 'testing'] as $env) {
+            $this->app['env'] = $env;
+            config(['session.secure' => null]);
+            (new AppServiceProvider($this->app))->boot();
+        }
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_the_storage_route_does_not_exist(): void
+    {
+        $this->get('/storage/bug-reports/anything.png')->assertNotFound();
+        $this->put('/storage/anything.txt', ['x' => 'y'])->assertNotFound();
+        $this->assertFalse(Route::has('storage.local'));
+        $this->assertFalse(Route::has('storage.local.upload'));
     }
 
     public function test_the_seeder_creates_the_test_user_only_locally_and_in_tests(): void
