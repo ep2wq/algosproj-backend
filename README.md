@@ -205,6 +205,11 @@ Messages follow the same language (`MessageLanguageTest`). Every response carrie
   back to it.
 - `lang/en/admin.php`: admin API messages, English only (the admin frontend always sends `en`,
   and `app.fallback_locale` is `en`).
+- Every `/api/*` error is JSON (`{"message": ...}`, plus `errors` for a 422), whatever the
+  `Accept` header says (`shouldRenderJsonWhen` in `bootstrap/app.php`). There is no `login` route
+  and no guest redirect (`redirectGuestsTo(fn () => null)`): a logged-out request is a JSON 401,
+  never a redirect or a 500, and a logged-out `/api/admin/*` request is recorded as
+  `unauthenticated_admin_route` (`ApiErrorTest`).
 - Laravel's own 401, 404 and 429 messages are replaced only in Arabic (`bootstrap/app.php`);
   in English the framework's text is kept exactly as before. The ban reason is returned as
   typed; only the sentence around it is translated.
@@ -411,7 +416,8 @@ the admin Bug reports page (a count badge on the nav item). Code: `BugReportCont
   (`getimagesize` and `finfo` must agree), never from the file name or the mime type the client
   sent: SVG, HTML and anything else get 422. At most 4000 px a side (read by `getimagesize`, no
   GD needed). Stored on the private `local` disk (`storage/app/private/bug-reports/`, never under
-  `public/`) as `<uuid>.<real extension>`. The path is never sent in a response, only
+  `public/`) as `<uuid>.<real extension>`. The disk has `'serve' => false` (`config/filesystems.php`),
+  so there is no `storage/{path}` route (`/storage/...` is 404). The path is never sent in a response, only
   `has_screenshot`. The owner gets the file from `GET /api/admin/bug-reports/{id}/screenshot`
   with a fixed `image/*` content type, `X-Content-Type-Options: nosniff` and
   `Cache-Control: private, no-store`.
@@ -546,8 +552,10 @@ authenticates, because the protected routes use the `web` session guard (`auth:w
   Requests use `credentials: 'include'`; CORS allows credentials for `FRONTEND_URL` only.
 - The session cookie (`algoslab-session`, `Str::slug(APP_NAME)-session` with `APP_NAME=AlgosLab`;
   the frontend's Cookies page names it) is HttpOnly and `SameSite=Lax`
-  (Sanctum sets Lax on API responses whatever `SESSION_SAME_SITE` says), and `Secure` with
-  `SESSION_SECURE_COOKIE=true`. Sessions live in the `sessions` table: keep
+  (Sanctum sets Lax on API responses whatever `SESSION_SAME_SITE` says), and `Secure` only with
+  `SESSION_SECURE_COOKIE=true` (no default; `APP_ENV` does not change it). With
+  `APP_ENV=production` the app refuses to start unless it is `true` (`AppServiceProvider`, next to
+  the mail check; write `true`, not `1`). Sessions live in the `sessions` table: keep
   `SESSION_DRIVER=database`, because ban and log out everywhere delete rows by `user_id`.
 - Idle timeout: `SESSION_LIFETIME` minutes (120); each request renews it. Login and register
   start a new session id (against session fixation). Logout ends the session, makes a new
@@ -560,8 +568,15 @@ authenticates, because the protected routes use the `web` session guard (`auth:w
 - Ban, log out everywhere and delete call `User::endSessions()` in the action's transaction:
   it deletes the user's session rows and changes the remember token. The `not-banned`
   middleware still refuses a banned user if a session survives.
-- Rate limits: login 5 per minute per email and IP; register 5 per minute per IP (a named
-  limiter: `throttle:5,1` would count per logged-in user, and register logs the new user in).
+- Rate limits: login 5 per minute per email and IP, and 30 per minute per IP across all emails
+  (against password spraying; `security.login_per_ip_per_minute`, env `LOGIN_PER_IP_PER_MINUTE`).
+  A shared network (a university, an office, a mobile carrier's NAT) sits behind one IP, so its
+  users share the 30; behind Cloudflare the per-IP limit needs `TRUSTED_PROXIES`, or every visitor
+  shares one count. Register 5 per minute per IP (a named limiter: `throttle:5,1` would count per
+  logged-in user, and register logs the new user in). A 429 is recorded as `rate_limited`.
+- Login timing: an unknown email (or an account without a password) is checked against a dummy
+  bcrypt hash of the configured cost, made once and cached, so it takes as long as a wrong
+  password; same 401 and message. Register still says "email already taken" (accepted risk).
 
 Local development (`.env`; the frontend's `VITE_API_URL` must use the same host name as the
 page, `http://localhost:8000` next to `http://localhost:5173`, never `127.0.0.1`: cookies
@@ -613,13 +628,14 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 - `SANCTUM_STATEFUL_DOMAINS` — hosts (with port) that get a session; see "Sessions"
 - `SESSION_DRIVER` — keep `database`; see "Sessions"
 - `SESSION_DOMAIN` — cookie domain; see "Sessions"
-- `SESSION_SECURE_COOKIE` — `true` in production; see "Sessions"
+- `SESSION_SECURE_COOKIE` — `true` in production (required: production does not start without it); see "Sessions"
 - `SESSION_SAME_SITE` — `lax`; see "Sessions"
 - `SESSION_LIFETIME` — idle timeout in minutes (120); see "Sessions"
 - `AUTH_REMEMBER_MINUTES` — "remember me" length (43200 = 30 days); see "Sessions"
 - `MAIL_*` — the mailer; `log` locally, Resend SMTP in production; see "Email"
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` — the OAuth apps; see "Social login"
 - `TRUSTED_PROXIES` — proxies allowed to set `X-Forwarded-For` (empty = none); see "Security events and IP bans"
+- `LOGIN_PER_IP_PER_MINUTE` — login attempts per minute from one IP across all emails (30); see "Sessions"
 
 ## API
 
@@ -629,7 +645,7 @@ session cookie set by login or register (see "Sessions"); `Authorization: Bearer
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | POST | `/api/register` | | Create a user (`name`, `email`, `password`, `accepted_terms`: true; see "Terms acceptance"); returns `user` and sets the session; 5 per minute per IP |
-| POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email |
+| POST | `/api/login` | | `email`, `password`, optional `remember` (boolean); returns `user` and sets the session (401 on a wrong password, 403 with `reason` for a banned account); 5 per minute per IP and email, 30 per minute per IP |
 | GET | `/api/auth/pending` | | The pending Google or GitHub sign-up of this session: `{name, email, provider}`, or 404 (see "Social login") |
 | POST | `/api/auth/complete` | | `name`, `accepted_terms`: true; creates the account of the pending sign-up, returns `user` (201) and sets the session; 410 without one; register's limit |
 | POST | `/api/logout` | yes | Ends the session |
@@ -1015,6 +1031,10 @@ docker run -d --name algosproj-backend -p 8080:80 \
   PHP `upload_max_filesize` and `post_max_size` are at least 3M (README "Bug reports").
 - `MAIL_MAILER` must be a real mailer: with `APP_ENV=production` the app refuses to start with
   `log` or `array`. `DatabaseSeeder` creates its "Test User" only in `local` and `testing`.
+- `SESSION_SECURE_COOKIE=true`: with `APP_ENV=production` the app refuses to start without it
+  (the session cookie's `Secure` flag comes only from this value).
+- Check for `X-Powered-By: PHP/...` on the production setup (the PHP dev server sends it); if it
+  shows, set `expose_php = Off` in php.ini.
 - Every response carries `X-Content-Type-Options: nosniff` and
   `Referrer-Policy: strict-origin-when-cross-origin` (`AddSecurityHeaders`).
 - Set the production values from "Sessions": `APP_NAME=AlgosLab` (session cookie
@@ -1024,7 +1044,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
   IP ranges, or `*` if the app is reachable only through the proxy; "Security events and IP bans").
   Until then the request IP is the proxy's, so both logs and the security events record the wrong IP,
   an IP ban would block every visitor behind that proxy and the login and register rate limits, which key
-  on the IP, count every user behind the same proxy together. The hourly email limits too: without
+  on the IP, count every user behind the same proxy together (the 30-per-minute login limit per IP
+  would then be shared by every visitor). The hourly email limits too: without
   it, 10 forgot-password or resend requests an hour would be shared by every visitor.
 - The logs and the security events store IP addresses and emails; cover that in the privacy policy before launch.
 - Social login: run the migrations, create the Google and GitHub OAuth apps with the production

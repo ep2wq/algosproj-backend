@@ -102,6 +102,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   no IP stored), screenshot PNG/WebP/JPEG by content, max 1.5 MB and 4000 px, on the private `local` disk; owner
   API under `/api/admin/bug-reports*` (status/delete audited); `bugreports:prune` daily (`config/bug_reports.php`).
   Host: PHP upload_max_filesize/post_max_size >= 3M. Tests: 498 on SQLite and MySQL.
+- Done (2026-11-07, `docs/security-checks-1.md` in the workspace): every `/api/*` error is JSON and a
+  logged-out request is a JSON 401 without `Accept: application/json` (`redirectGuestsTo(fn () => null)`);
+  login also 30/min per IP (`security.login_per_ip_per_minute`); unknown emails checked against a cached
+  dummy hash (same timing); `local` disk `serve` off (no `storage/{path}` route); production refuses to
+  boot without `SESSION_SECURE_COOKIE=true`. No migration. Host: `SESSION_SECURE_COOKIE=true`,
+  `TRUSTED_PROXIES`. Tests: 508 on SQLite and MySQL.
 - Content lives in the DB. One import path, `ContentImport`: `ContentSeeder` (only if no module)
   and `content:sync` (adds missing slugs, fills empty `*_ar`, never overwrites). Arabic (in
   `data/ar/*.php`, a test requires it per slug): README "Content languages", `data/ar/GLOSSARY.md`.
