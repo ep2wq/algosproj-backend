@@ -56,8 +56,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(SubstituteBindings::class, EnsureEmailIsVerified::class);
         // Test case text is stored exactly as sent: leading and trailing whitespace can matter.
         $middleware->trimStrings(except: ['input', 'expected_output']);
+        // There is no login page to send a guest to (the frontend has it). Laravel's default guest
+        // redirect calls route('login'), which does not exist here, so a logged-out request without
+        // "Accept: application/json" was a 500. With no redirect the AuthenticationException is
+        // thrown as usual, and shouldRenderJsonWhen below renders it as a JSON 401 for /api.
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Every /api error is JSON, whatever the Accept header says (README "API messages").
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
