@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\SecurityEvent;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -92,6 +95,56 @@ class AuthTest extends TestCase
         // The limit is per IP plus email, so another email from the same IP still gets through.
         $this->postJson('/api/login', ['email' => 'other@example.com', 'password' => 'wrong-password'])
             ->assertUnauthorized();
+    }
+
+    public function test_the_31st_login_from_one_ip_across_emails_is_throttled(): void
+    {
+        for ($i = 1; $i <= 30; $i++) {
+            $this->postJson('/api/login', ['email' => "spray$i@example.com", 'password' => 'wrong-password'])->assertUnauthorized();
+        }
+        $this->postJson('/api/login', ['email' => 'spray31@example.com', 'password' => 'wrong-password'])->assertStatus(429);
+        $this->assertSame(['/api/login'], SecurityEvent::where('type', 'rate_limited')->pluck('path')->all());
+
+        // Another IP has its own count, and a correct login from it still works.
+        User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
+        $other = fn () => $this->withServerVariables(['HTTP_ORIGIN' => self::FRONTEND, 'REMOTE_ADDR' => '203.0.113.9']);
+        $other()->postJson('/api/login', ['email' => 'spray31@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
+        $other()->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk();
+    }
+
+    public function test_a_successful_login_still_works_under_both_limits(): void
+    {
+        User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
+
+        for ($i = 1; $i <= 4; $i++) {
+            $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
+        }
+        $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'secret-password'])->assertOk();
+    }
+
+    public function test_an_unknown_email_is_checked_against_a_dummy_hash_and_answers_like_a_wrong_password(): void
+    {
+        User::factory()->create(['email' => 'ada@example.com', 'password' => 'secret-password']);
+        $wrong = $this->postJson('/api/login', ['email' => 'ada@example.com', 'password' => 'wrong-password']);
+
+        // The unknown email still runs one password check, against a bcrypt hash.
+        Hash::shouldReceive('make')->once()->andReturn('$2y$04$dummydummydummydummydu2E8tqSgx3YI8U6MQIdBpbLUXxDq5Z9S');
+        Hash::shouldReceive('check')->once()->with('wrong-password', '$2y$04$dummydummydummydummydu2E8tqSgx3YI8U6MQIdBpbLUXxDq5Z9S')->andReturnFalse();
+        $unknown = $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'wrong-password']);
+
+        $this->assertSame([401, $wrong->getContent()], [$unknown->getStatusCode(), $unknown->getContent()]);
+        $unknown->assertExactJson(['message' => 'Wrong email or password.']);
+    }
+
+    public function test_the_dummy_hash_is_made_at_the_configured_cost_and_only_once(): void
+    {
+        $key = 'login-dummy-hash:'.config('hashing.bcrypt.rounds');
+        $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
+        $hash = Cache::get($key);
+        $this->postJson('/api/login', ['email' => 'nobody2@example.com', 'password' => 'wrong-password'])->assertUnauthorized();
+
+        $this->assertSame($hash, Cache::get($key));
+        $this->assertSame((int) config('hashing.bcrypt.rounds'), password_get_info($hash)['options']['cost']);
     }
 
     public function test_login_requires_fields(): void

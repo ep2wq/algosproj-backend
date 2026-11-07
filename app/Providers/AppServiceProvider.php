@@ -48,7 +48,12 @@ class AppServiceProvider extends ServiceProvider
             // Not a string (an array, say): validation refuses it after the limit is counted.
             $email = is_string($request->input('email')) ? Str::lower($request->input('email')) : '';
 
-            return Limit::perMinute(5)->by($email.'|'.$request->ip());
+            // Both limits apply, each with its own key: per email and IP, and per IP across all emails
+            // (password spraying; config/security.php).
+            return [
+                Limit::perMinute(5)->by($email.'|'.$request->ip()),
+                Limit::perMinute((int) config('security.login_per_ip_per_minute'))->by('ip:'.$request->ip()),
+            ];
         });
         // Per IP only. A plain throttle:5,1 would key on the logged-in user, and register logs the
         // new user in, so each new account would start a fresh count.

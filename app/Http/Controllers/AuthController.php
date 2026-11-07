@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 // Cookie sessions (README "Sessions"): login and register start a session, logout ends it.
@@ -67,7 +69,16 @@ class AuthController extends Controller
 
         $user = User::where('email', $data['email'])->first();
 
-        if (! $user || ! Hash::check($data['password'], $user->password)) {
+        // An unknown email (or an account without a password) is checked against a dummy hash of the
+        // same cost, so the answer takes as long as a wrong password and does not show the email exists.
+        // Made once per cost and cached: making it on every request would itself take a hash's time.
+        $hash = $user?->password ?? Cache::rememberForever(
+            'login-dummy-hash:'.config('hashing.bcrypt.rounds'),
+            fn () => Hash::make(Str::random(40)),
+        );
+        $passwordOk = Hash::check($data['password'], $hash);
+
+        if (! $user || ! $passwordOk) {
             // Only the attempted email is kept, never the password.
             UserActivityLog::record($user, $user->email ?? $data['email'], 'login_failed', $request);
 
