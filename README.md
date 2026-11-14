@@ -20,6 +20,7 @@ flowchart TD
         lang["Content language<br/>[SetContentLanguage.php]"]
         social["Social sign-in<br/>[SocialLoginController.php]"]
         auth["Session authentication<br/>[AuthController.php]"]
+        captcha["Captcha check<br/>[VerifyTurnstile.php]"]
     end
     subgraph learning["Learning and progress"]
         lessonb["Lesson browsing"]
@@ -38,6 +39,7 @@ flowchart TD
     end
     subgraph ext["External runtime"]
         sandbox{{"Code sandbox"}}
+        turnstile{{"Cloudflare Turnstile siteverify"}}
     end
     subgraph models["Domain models"]
         problem["Problems and tests<br/>[Problem.php]"]
@@ -57,6 +59,9 @@ flowchart TD
     safeguards -->|blocks banned IPs, records events| secrec
     safeguards -->|passes request| routes
     routes -->|guards user and admin routes| roles
+    routes -->|login, register, forgot, guest bug report| captcha
+    captcha -->|verifies token| turnstile
+    captcha -->|records failures| secev
     routes -->|routes to| email
     routes -->|routes to| social
     routes -->|routes to| auth
@@ -352,8 +357,10 @@ blocks a request on its own: only a ban does.
   `phpmyadmin`, `admin.php` or a path under them), `suspicious_input` (a GET query under `/api`,
   except the admin content lists, or `name`/`email` on the auth POSTs, matches `sql_injection`,
   `script_tag`, `path_traversal` or `null_byte`; field names that look like a secret, such as
-  `password`, `token` or `code`, are skipped), `rate_limited` (429), `csrf_mismatch` (419).
-  The last five are recorded by the global `RecordSecurityEvents` middleware after the response.
+  `password`, `token` or `code`, are skipped), `rate_limited` (429), `csrf_mismatch` (419),
+  `captcha_failed` (missing, empty, too long or refused Turnstile token) and `captcha_unavailable`
+  (Cloudflare did not answer; see "Captcha"). `unauthenticated_admin_route` to `csrf_mismatch` are recorded
+  by the global `RecordSecurityEvents` middleware after the response, the captcha types by `VerifyTurnstile`.
 - A row: `type`, `ip`, `user_agent` (cut to 200), `method`, `path`, `user_id` (null when logged
   out, and after the user is deleted), `detail` JSON (only `route`, `rule`, `fields`, `value`,
   `required`; strings cut to 200, control characters replaced), `count`, `first_seen_at`,
@@ -385,6 +392,32 @@ blocks a request on its own: only a ban does.
   `last_seen_at` is older than 90 days and bans that expired more than 30 days ago
   (`config/security.php`). Permanent bans stay until unbanned.
 - Tests: `SecurityEventTest`, `IpBanTest`, `HoneypotTest`, and the routes in `AdminTest`.
+
+### Captcha
+
+Cloudflare Turnstile protects `POST /api/login`, `/api/register`, `/api/forgot-password` and `/api/bug-reports`
+from a guest. Middleware `turnstile` (`VerifyTurnstile`), after each route's throttle and before the controller;
+bug reports use `turnstile:guests`, which skips a logged-in user. The other three check everyone, logged in or
+not, so a session of one's own does not open login or register to scripts:
+
+- Off while `TURNSTILE_ENABLED` is false (local and the tests): nothing is checked or sent.
+- Order: throttle first (a failed captcha still counts toward the limit), then the captcha, then the controller,
+  so no password is checked and no email is sent without a valid token. A filled honeypot (`form_extra`) skips the
+  captcha and gets the controller's decoy answer as before.
+- Field `turnstile_token`, a string of 1 to 2048 characters. It goes to
+  `https://challenges.cloudflare.com/turnstile/v0/siteverify` with the secret and the client IP (`$request->ip()`,
+  so `TRUSTED_PROXIES` must be set behind Cloudflare), 5 s timeout, no retry.
+- Missing, empty, too long or refused: 422 with the usual validation shape,
+  `{"message": "...", "errors": {"turnstile_token": ["..."]}}`, always the same message
+  (`messages.captcha_failed`, en and ar) and a `captcha_failed` security event.
+- Cloudflare unreachable, a timeout, a non-2xx answer or a body without a boolean `success`: the same 422
+  (fails closed) and a `captcha_unavailable` event. While Cloudflare is down, nobody can log in, register,
+  reset a password or report a bug as a guest.
+- The token and the secret are never logged or stored (the event has only the route, IP, method and path).
+- `APP_ENV=production` with `TURNSTILE_ENABLED=true` and no `TURNSTILE_SECRET_KEY`: the app refuses to start.
+- Cloudflare's public test secrets: `1x0000000000000000000000000000000AA` always passes,
+  `2x0000000000000000000000000000000AA` always fails.
+- Tests: `TurnstileTest` (`Http::fake`, `Http::preventStrayRequests`), the boot guard in `SecurityTest`.
 
 ### Bug reports
 
@@ -636,6 +669,8 @@ On top of the usual Laravel `APP_*` and `DB_*` settings:
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` — the OAuth apps; see "Social login"
 - `TRUSTED_PROXIES` — proxies allowed to set `X-Forwarded-For` (empty = none); see "Security events and IP bans"
 - `LOGIN_PER_IP_PER_MINUTE` — login attempts per minute from one IP across all emails (30); see "Sessions"
+- `TURNSTILE_ENABLED` — `true` turns the captcha on (default `false`); see "Captcha"
+- `TURNSTILE_SECRET_KEY` — the Turnstile widget's secret key (required in production when enabled); see "Captcha"
 
 ## API
 
@@ -1033,6 +1068,8 @@ docker run -d --name algosproj-backend -p 8080:80 \
   `log` or `array`. `DatabaseSeeder` creates its "Test User" only in `local` and `testing`.
 - `SESSION_SECURE_COOKIE=true`: with `APP_ENV=production` the app refuses to start without it
   (the session cookie's `Secure` flag comes only from this value).
+- Captcha: `TURNSTILE_ENABLED=true` and the widget's `TURNSTILE_SECRET_KEY`; with `APP_ENV=production` the
+  app refuses to start when it is enabled without the secret ("Captcha"). The frontend needs the matching site key.
 - Check for `X-Powered-By: PHP/...` on the production setup (the PHP dev server sends it); if it
   shows, set `expose_php = Off` in php.ini.
 - Every response carries `X-Content-Type-Options: nosniff` and

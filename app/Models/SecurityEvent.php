@@ -23,7 +23,7 @@ class SecurityEvent extends Model
 
     const TYPES = [
         'forbidden_admin_route', 'unauthenticated_admin_route', 'honeypot_filled', 'decoy_url',
-        'suspicious_input', 'rate_limited', 'csrf_mismatch',
+        'suspicious_input', 'rate_limited', 'csrf_mismatch', 'captcha_failed', 'captcha_unavailable',
     ];
 
     // The hidden form field of login, register and forgot-password (the frontend uses the same name).

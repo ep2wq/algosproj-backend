@@ -21,7 +21,7 @@ class BugReportController extends Controller
 {
     private const FIELDS = ['description', 'contact_email', 'page_path', 'page_title', 'app_version', 'language', 'theme',
         'viewport', 'timezone', 'error_context', 'failed_requests', 'console_errors', 'problem_context', 'included',
-        'screenshot', SecurityEvent::HONEYPOT_FIELD];
+        'screenshot', SecurityEvent::HONEYPOT_FIELD, 'turnstile_token'];
 
     private const MAX_ITEMS = 10;
 

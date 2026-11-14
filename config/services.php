@@ -48,6 +48,12 @@ return [
         'redirect' => rtrim((string) env('APP_URL', 'http://localhost:8000'), '/').'/auth/github/callback',
     ],
 
+    // Cloudflare Turnstile (README "Captcha"). The site key is the frontend's (VITE_TURNSTILE_SITE_KEY).
+    'turnstile' => [
+        'enabled' => (bool) env('TURNSTILE_ENABLED', false),
+        'secret' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'sandbox' => [
         'url' => env('SANDBOX_URL'),
         'secret' => env('SANDBOX_SECRET'),

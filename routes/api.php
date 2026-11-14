@@ -13,8 +13,9 @@ use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 // Guests are throttled per IP; login is throttled per IP plus email (see AppServiceProvider).
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+// turnstile (README "Captcha") runs after the throttle, so a failed captcha still counts.
+Route::post('/register', [AuthController::class, 'register'])->middleware(['throttle:register', 'turnstile']);
+Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:login', 'turnstile']);
 
 // The second step of a Google or GitHub sign-up (README "Social login"): the pending sign-in lives
 // in the session, so only the frontend can use these. complete shares register's limit.
@@ -25,7 +26,7 @@ Route::post('/auth/complete', [SocialLoginController::class, 'complete'])->middl
 // redirects to the frontend) and works without a session. Forgot and reset are for guests.
 Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->whereUuid('id')->name('verification.verify');
-Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:forgot-password');
+Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware(['throttle:forgot-password', 'turnstile']);
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:reset-password');
 
 // Course content in Arabic or English, from the Accept-Language header (README "Content languages").
@@ -39,7 +40,8 @@ Route::get('/challenges/{slug}', [ChallengeController::class, 'show']);
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
 // The "Report a bug" dialog (README "Bug reports"), logged out or logged in, CSRF like the other POSTs.
-Route::post('/bug-reports', [BugReportController::class, 'store'])->middleware('throttle:bug-reports');
+// The captcha applies to guests only.
+Route::post('/bug-reports', [BugReportController::class, 'store'])->middleware(['throttle:bug-reports', 'turnstile:guests']);
 
 // The session guard only: a bearer token never authenticates. not-banned refuses a banned user's
 // session (banning deletes their sessions; this catches any left).

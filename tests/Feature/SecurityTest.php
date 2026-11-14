@@ -122,6 +122,35 @@ class SecurityTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function test_production_refuses_an_enabled_captcha_without_a_secret(): void
+    {
+        $this->app['env'] = 'production';
+        config(['mail.default' => 'smtp', 'session.secure' => true, 'services.turnstile.enabled' => true]);
+
+        foreach (['', null] as $secret) {
+            config(['services.turnstile.secret' => $secret]);
+            try {
+                (new AppServiceProvider($this->app))->boot();
+                $this->fail('Booted in production with the captcha on and secret '.var_export($secret, true).'.');
+            } catch (RuntimeException $e) {
+                $this->assertStringContainsString('TURNSTILE_SECRET_KEY', $e->getMessage());
+            }
+        }
+    }
+
+    public function test_production_boots_with_the_captcha_secret_set_or_the_captcha_off(): void
+    {
+        $this->app['env'] = 'production';
+        config(['mail.default' => 'smtp', 'session.secure' => true]);
+
+        config(['services.turnstile.enabled' => true, 'services.turnstile.secret' => 'a-secret']);
+        (new AppServiceProvider($this->app))->boot();
+
+        config(['services.turnstile.enabled' => false, 'services.turnstile.secret' => '']);
+        (new AppServiceProvider($this->app))->boot();
+        $this->addToAssertionCount(1);
+    }
+
     public function test_the_storage_route_does_not_exist(): void
     {
         $this->get('/storage/bug-reports/anything.png')->assertNotFound();

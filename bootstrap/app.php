@@ -9,6 +9,7 @@ use App\Http\Middleware\EnsureUserIsOwner;
 use App\Http\Middleware\RecordSecurityEvents;
 use App\Http\Middleware\SetContentLanguage;
 use App\Http\Middleware\TrustProxies;
+use App\Http\Middleware\VerifyTurnstile;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => EnsureUserIsOwner::class,
             'not-banned' => EnsureUserIsNotBanned::class,
             'verified-email' => EnsureEmailIsVerified::class,
+            'turnstile' => VerifyTurnstile::class,
         ]);
         // Cookie sessions for the frontend (README "Sessions"): requests from an origin in
         // sanctum.stateful get the session, encrypted cookies and the CSRF check.

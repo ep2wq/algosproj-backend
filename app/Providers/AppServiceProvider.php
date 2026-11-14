@@ -44,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
         if (app()->isProduction() && config('session.secure') !== true) {
             throw new RuntimeException('SESSION_SECURE_COOKIE must be true in production.');
         }
+        // With the captcha on, an empty secret would refuse every login (README "Captcha").
+        if (app()->isProduction() && config('services.turnstile.enabled') && blank(config('services.turnstile.secret'))) {
+            throw new RuntimeException('TURNSTILE_SECRET_KEY must be set in production when TURNSTILE_ENABLED is true.');
+        }
 
         // Outside production a relation that was not eager-loaded throws, so an N+1 query shows up
         // in development and in the tests instead of slowing a list down unnoticed.
