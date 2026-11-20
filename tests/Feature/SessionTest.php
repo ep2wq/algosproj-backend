@@ -58,6 +58,9 @@ class SessionTest extends TestCase
 
     public function test_login_sets_an_http_only_session_cookie_and_returns_no_token(): void
     {
+        // Pinned so a local SESSION_SECURE_COOKIE does not change the result.
+        config(['session.secure' => false]);
+
         $response = $this->login()->assertOk()
             ->assertJsonPath('user.email', 'ada@example.com')
             ->assertJsonMissingPath('token')
